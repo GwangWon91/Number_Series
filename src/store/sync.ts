@@ -49,7 +49,8 @@ export function subscribeSync(fn: (s: SyncState) => void): () => void {
 let services: Promise<{ app: FirebaseApp; auth: Auth; db: Firestore }> | null = null;
 let user: User | null = null;
 
-function loadServices() {
+/** Firebase 지연 로딩 (동기화·익명 풀이 기록이 같이 쓴다) */
+export function loadServices() {
   services ??= (async () => {
     const [{ initializeApp }, { getAuth }, { initializeFirestore }] = await Promise.all([
       import('firebase/app'),
