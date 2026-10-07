@@ -16,6 +16,16 @@ npm run validate:bank
 - `다른 해석 [...]` → 실전에도 여유 항이 적은 문항이 있다는 뜻일 수 있음. `minRedundancy` 기준을 재검토할 근거.
 - `선택지 n개 (설정은 5개)` → `exam.choices` 근거
 
+## 2.5 분석 리포트 (새 회차를 넣을 때마다)
+```bash
+npm run review     # validate:bank + analyze
+```
+`docs/bank-analysis.md`(집계·id만, 커밋 가능)가 갱신된다. 이전 커밋과 diff로 변화를 본다.
+- 회차 × 형식(blank1/pair/nth) 분포, 유형별 은행 비중 vs 설정 `weight`
+- 미분류·여유 항 부족·모호 문항, 중복 후보 (→ 새 규칙·유형 후보)
+- `confidence: estimated`로 남은 활성 유형, 어떤 유형 `evidence`에도 안 쓰인 은행 문항 (→ 4단계에서 근거 연결)
+- private은 CI에 없으므로 로컬에서만 실행한다. 원본 캡처·전사는 `data/bank/private/captures/<출처>/`에 두고 id와 파일명을 맞춘다.
+
 ## 3. 비교
 ```bash
 npm run sample -- --compare --n 40

@@ -12,7 +12,9 @@
     "validate": "tsx scripts/validate.ts",
     "validate:bank": "tsx scripts/validate.ts --bank-only",
     "sample": "tsx scripts/sample.ts",
-    "calibrate": "tsx scripts/calibrate.ts"
+    "calibrate": "tsx scripts/calibrate.ts",
+    "analyze": "tsx scripts/analyze.ts",
+    "review": "npm run validate:bank && npm run analyze"
   },
   "dependencies": {
     "dexie": "^4.4.6",
