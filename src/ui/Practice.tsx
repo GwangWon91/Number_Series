@@ -155,16 +155,24 @@ export function Practice({ mode, onExit }: Props) {
   const wasCorrect = revealed && state.chosen !== null && eqNum(item.choices[state.chosen], item.answer);
 
   return (
-    <div className="screen practice">
+    <div className={`screen practice ${revealed ? 'revealed' : ''}`}>
       <header className="bar-head">
         <button className="icon" onClick={onExit} aria-label="홈으로">
           ←
         </button>
         <div className="head-title">
           <span>{mode === 'all' ? '전체 무작위' : typeLabel(mode)}</span>
-          <span className="muted small">
-            {state.solved}문제 · {state.correct}정답
-          </span>
+        </div>
+        <div className="score" aria-label={`${state.solved}문제 중 ${state.correct}문제 정답`}>
+          <div>
+            <b>{state.solved}</b>
+            <span>푼 문제</span>
+          </div>
+          {/* key가 바뀌면 다시 그려져 맞힌 순간 숫자가 한 번 튄다 */}
+          <div key={state.correct} className={`hit ${state.correct > 0 && wasCorrect ? 'pop' : ''}`}>
+            <b>{state.correct}</b>
+            <span>정답</span>
+          </div>
         </div>
         <Timer
           key={item.id + state.solved}
@@ -185,12 +193,9 @@ export function Practice({ mode, onExit }: Props) {
         {revealed && (
           <section className={`explain ${wasCorrect ? 'ok' : 'ng'}`} aria-live="polite">
             <p className="verdict">
-              {wasCorrect ? '정답' : '오답 · 정답'} <b><Term v={item.answer} /></b>
-              <span className="muted small">
-                {' '}
-                · {(state.elapsedMs / 1000).toFixed(0)}초
-                {item.source === 'bank' ? ' · 문제은행' : ''}
-              </span>
+              {wasCorrect ? '맞았어요' : '틀렸어요. 정답은'} <b><Term v={item.answer} /></b>
+              <span className="muted small"> {(state.elapsedMs / 1000).toFixed(0)}초</span>
+              {item.source === 'bank' && <span className="muted small"> 문제은행</span>}
             </p>
             {item.explain.map((line, i) => (
               <p key={i} className={i === 0 ? 'rule-name' : 'rule-line'}>
@@ -199,33 +204,8 @@ export function Practice({ mode, onExit }: Props) {
             ))}
           </section>
         )}
-      </main>
-
-      <footer className="dock">
-        {!revealed ? (
-          <>
-            <ol className="choices">
-              {item.choices.map((c, i) => (
-                <li key={i}>
-                  <button
-                    className={pending === i ? 'pending' : ''}
-                    onClick={() => choose(i)}
-                    aria-label={`${i + 1}번 ${formatValue(c)}`}
-                  >
-                    <span className="num">{i + 1}</span>
-                    <span className="val"><Term v={c} /></span>
-                  </button>
-                </li>
-              ))}
-            </ol>
-            {prefs.confirmBeforeSubmit && (
-              <button className="primary wide" disabled={pending === null} onClick={() => pending !== null && submit(pending)}>
-                제출
-              </button>
-            )}
-          </>
-        ) : (
-          <>
+        {revealed && (
+          <div className="reveal-actions">
             <ol className="choices compact">
               {item.choices.map((c, i) => {
                 const isAnswer = eqNum(c, item.answer);
@@ -250,9 +230,35 @@ export function Practice({ mode, onExit }: Props) {
                 다음
               </button>
             </div>
-          </>
+          </div>
         )}
-      </footer>
+      </main>
+
+      {!revealed && (
+        <footer className="dock">
+          <ol className="choices">
+            {item.choices.map((c, i) => (
+              <li key={i}>
+                <button
+                  className={pending === i ? 'pending' : ''}
+                  onClick={() => choose(i)}
+                  aria-label={`${i + 1}번 ${formatValue(c)}`}
+                >
+                  <span className="num">{i + 1}</span>
+                  <span className="val">
+                    <Term v={c} />
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ol>
+          {prefs.confirmBeforeSubmit && (
+            <button className="primary wide" disabled={pending === null} onClick={() => pending !== null && submit(pending)}>
+              제출
+            </button>
+          )}
+        </footer>
+      )}
 
       {flagOpen && (
         <FlagSheet reasons={config.feedback.reasons} onCancel={() => setFlagOpen(false)} onSave={saveFlag} />
