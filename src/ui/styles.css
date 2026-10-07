@@ -1,17 +1,19 @@
 /* 미니멀 UI: 문제에만 집중. 모바일 세로 한 손 조작 우선, PC는 가운데 좁은 열. */
 
+/* 색: 차가운 회색 바탕 + "빈칸 상자"의 파랑이 유일한 강조색. 정답·오답만 초록·빨강. */
 :root {
-  --bg: #f7f7f5;
+  --bg: #f3f5f8;
   --surface: #ffffff;
-  --fg: #1a1a1a;
-  --muted: #74746f;
-  --line: #e5e4e0;
-  --accent: #1f6feb;
+  --surface-2: #eaeef3;
+  --fg: #15181d;
+  --muted: #69707b;
+  --line: #dfe3ea;
+  --accent: #2f5bea;
   --accent-fg: #ffffff;
-  --ok: #1a7f37;
-  --ok-bg: #e7f5ec;
-  --ng: #c62828;
-  --ng-bg: #fdecec;
+  --ok: #138a4b;
+  --ok-bg: #e2f4e9;
+  --ng: #cf3a3a;
+  --ng-bg: #fbe8e8;
   --warn: #b26b00;
   --radius: 12px;
   --tap: 52px;
@@ -19,19 +21,37 @@
   color-scheme: light;
 }
 
+/* 다크: 예전 #111은 너무 깊어서 한 단계 밝은 슬레이트로. 설정에서 강제(data-theme)하거나 시스템을 따른다. */
+:root[data-theme='dark'] {
+  --bg: #1d2026;
+  --surface: #272b32;
+  --surface-2: #30353d;
+  --fg: #e8ebf0;
+  --muted: #9aa2ae;
+  --line: #3a3f49;
+  --accent: #7ea2ff;
+  --accent-fg: #0f1420;
+  --ok: #5fd08a;
+  --ok-bg: #1f3a2b;
+  --ng: #ff7d7d;
+  --ng-bg: #452628;
+  --warn: #f0a640;
+  color-scheme: dark;
+}
 @media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #111111;
-    --surface: #1b1b1b;
-    --fg: #ececea;
-    --muted: #8e8e89;
-    --line: #2c2c2a;
-    --accent: #4c8dff;
-    --accent-fg: #0b0b0b;
-    --ok: #4cc370;
-    --ok-bg: #12301c;
-    --ng: #ff6b6b;
-    --ng-bg: #3a1515;
+  :root:not([data-theme='light']) {
+    --bg: #1d2026;
+    --surface: #272b32;
+    --surface-2: #30353d;
+    --fg: #e8ebf0;
+    --muted: #9aa2ae;
+    --line: #3a3f49;
+    --accent: #7ea2ff;
+    --accent-fg: #0f1420;
+    --ok: #5fd08a;
+    --ok-bg: #1f3a2b;
+    --ng: #ff7d7d;
+    --ng-bg: #452628;
     --warn: #f0a640;
     color-scheme: dark;
   }
@@ -129,63 +149,251 @@ code {
 
 /* ───── 홈 ───── */
 .home-head {
-  padding: 28px 4px 8px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 4px 4px;
 }
 .home-head h1 {
   margin: 0;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-}
-.home-head p {
-  margin: 4px 0 0;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
 }
 .home-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding-top: 16px;
+  gap: 12px;
+  padding-top: 12px;
 }
-.home-main h2 {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-  margin: 20px 4px 2px;
-}
-button.big {
-  min-height: 84px;
-  font-size: 19px;
+
+/* 오늘의 수열: 오늘 푼 문제가 한 칸씩, 끝의 빈칸이 다음 문제. 홈에서 유일하게 힘을 준 요소. */
+.today {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 20px 18px 18px;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
+  gap: 16px;
 }
-button.big .sub {
-  font-size: 13px;
-  font-weight: 400;
-  opacity: 0.85;
+.today-line {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.35;
+}
+.today-line .num {
+  font-variant-numeric: tabular-nums;
+}
+.strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.strip li {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  background: var(--surface-2);
+}
+.strip li.ok {
+  background: var(--ok);
+}
+.strip li.ng {
+  background: var(--ng);
+}
+.strip li.next {
+  background: transparent;
+  border: 2px dashed var(--accent);
+  color: var(--accent);
+  font: 700 13px/18px var(--mono);
+  text-align: center;
+}
+.strip li.more {
+  width: auto;
+  padding: 0 6px;
+  background: none;
+  font-size: 12px;
+  line-height: 22px;
+  color: var(--muted);
+}
+.today-meta {
+  display: flex;
+  gap: 20px;
+  margin: -4px 0 0;
+  font-size: 14px;
+  color: var(--muted);
+}
+.today-meta b {
+  color: var(--fg);
+  font-variant-numeric: tabular-nums;
+}
+button.start {
+  min-height: 56px;
+  font-size: 17px;
+}
+.home-main h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 18px 4px 0;
 }
 .type-list {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
+}
+.type-list li + li {
+  border-top: 1px solid var(--line);
 }
 .type-list button {
   width: 100%;
+  min-height: 56px;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  padding: 8px 4px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
   text-align: left;
-  font-size: 14px;
+}
+.type-list .name {
+  flex: 1;
+  font-size: 15px;
   line-height: 1.3;
-  padding: 10px 12px;
+}
+.type-list .stat {
+  font-size: 13px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+  white-space: nowrap;
+}
+.type-list .stat b {
+  display: block;
+  font-size: 15px;
+  color: var(--fg);
+}
+.type-list .stat b.low {
+  color: var(--ng);
 }
 .home-foot {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
   padding: 20px 4px 16px;
+}
+.home-foot .ver {
+  text-align: right;
+  line-height: 1.4;
+}
+
+/* ───── 기록 ───── */
+.records-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-bottom: 24px;
+}
+.totals {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  margin: 4px 0 8px;
+  padding: 16px 0;
+  border-bottom: 1px solid var(--line);
+}
+.totals div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.totals div + div {
+  border-left: 1px solid var(--line);
+}
+.totals b {
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+.totals .ng b {
+  color: var(--ng);
+}
+.totals span {
+  font-size: 13px;
+  color: var(--muted);
+}
+.records-main h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 16px 4px 4px;
+}
+.records-main h2 small {
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 6px;
+}
+.tally {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.tally li {
+  padding: 12px 4px;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 4px 12px;
+  align-items: baseline;
+}
+.tally li + li {
+  border-top: 1px solid var(--line);
+}
+.tally .name {
+  font-size: 15px;
+}
+.tally .count {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted);
+}
+.tally .count b {
+  color: var(--ng);
+  font-weight: 700;
+}
+.tally .bar {
+  grid-column: 1 / -1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--ok);
+  overflow: hidden;
+  display: flex;
+  justify-content: flex-end;
+}
+.tally .bar span {
+  display: block;
+  height: 100%;
+  background: var(--ng);
+}
+.tally .avg {
+  grid-column: 1 / -1;
+  font-size: 12px;
+  color: var(--muted);
+}
+.empty {
+  padding: 48px 8px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
 }
 
 /* ───── 상단 바 ───── */
@@ -207,6 +415,43 @@ button.big .sub {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+/* 진행 점수: 헤더에서 가장 잘 보이는 숫자 */
+.score {
+  display: flex;
+  gap: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.score div {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1.1;
+}
+.score b {
+  font-size: 20px;
+  font-weight: 800;
+}
+.score .hit b {
+  color: var(--ok);
+}
+.score span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.score .pop b {
+  animation: pop 0.35s ease-out;
+}
+@keyframes pop {
+  40% {
+    transform: scale(1.35);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .score .pop b {
+    animation: none;
+  }
 }
 
 .timer {
@@ -244,14 +489,25 @@ button.big .sub {
 }
 
 /* ───── 풀이 ───── */
+/* 화면 높이 고정 → 긴 해설은 stage 안에서 스크롤, 다음 버튼은 해설 바로 아래 */
+.screen.practice {
+  height: 100dvh;
+}
 .stage {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   gap: 20px;
-  padding: 16px 0;
+  /* 위에 고정해 두면 정답 공개 때 수열이 움직이지 않고 해설·답이 그 아래로 이어진다 */
+  padding: clamp(16px, 7vh, 64px) 0 16px;
   overflow-y: auto;
+}
+.reveal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 .sequence {
@@ -531,13 +787,29 @@ input[type='password'] {
   color: var(--ng);
 }
 
-/* PC: 가로 공간이 넉넉하면 선택지를 조금 낮게 */
+/* PC: 가로 공간이 넉넉하면 위 여백을 조금 더 */
 @media (min-width: 720px) {
   .screen {
     padding-top: 24px;
   }
   .stage {
-    justify-content: flex-start;
-    padding-top: 12vh;
+    padding-top: 10vh;
   }
+}
+
+/* 설정: 테마 선택 */
+.segmented {
+  display: flex;
+  gap: 6px;
+}
+.segmented button {
+  flex: 1;
+  min-height: 44px;
+  font-size: 14px;
+}
+.segmented button[aria-pressed='true'] {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+  font-weight: 600;
 }

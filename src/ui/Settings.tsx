@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { config } from '../app/engine';
-import { loadPrefs, savePrefs, type Prefs } from '../app/prefs';
+import { applyTheme, loadPrefs, savePrefs, type Prefs } from '../app/prefs';
 import { BUILD_LABEL } from '../app/version';
 import { counts, exportAll, importAll } from '../store/records';
 import type { ExportFile } from '../store/types';
@@ -67,6 +67,30 @@ export function Settings({ onBack }: { onBack(): void }) {
               <span className="muted small block">선택한 뒤 한 번 더 눌러야 제출 (오탭 방지)</span>
             </span>
           </label>
+        </section>
+
+        <section>
+          <h2>화면</h2>
+          <div className="segmented" role="group" aria-label="화면 밝기">
+            {(
+              [
+                ['system', '기기 설정 따름'],
+                ['light', '밝게'],
+                ['dark', '어둡게'],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                aria-pressed={prefs.theme === value}
+                onClick={() => {
+                  updatePrefs({ ...prefs, theme: value });
+                  applyTheme(value);
+                }}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </section>
 
         <section>

@@ -35,6 +35,69 @@ export async function todayStats(): Promise<{ solved: number; correct: number }>
   return { solved: rows.length, correct: rows.filter((r) => r.correct).length };
 }
 
+export interface TallyRow {
+  key: string;
+  solved: number;
+  wrong: number;
+  /** 평균 풀이 시간(ms) */
+  avgMs: number;
+}
+
+export interface RecordSummary {
+  total: number;
+  wrong: number;
+  /** 오늘 푼 순서대로 맞았는지 (홈의 "오늘의 수열") */
+  today: boolean[];
+  /** 오늘(오늘 안 풀었으면 어제)부터 거슬러 연속으로 푼 날 수 */
+  streakDays: number;
+  /** 유형별, 틀린 비율 높은 순 */
+  byType: TallyRow[];
+  /** 묻는 방식별: blank / pair / nth */
+  byKind: TallyRow[];
+}
+
+const dayKey = (ts: number) => {
+  const d = new Date(ts);
+  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+};
+
+function tally(rows: readonly Attempt[], keyOf: (a: Attempt) => string): TallyRow[] {
+  const m = new Map<string, { solved: number; wrong: number; ms: number }>();
+  for (const a of rows) {
+    const t = m.get(keyOf(a)) ?? { solved: 0, wrong: 0, ms: 0 };
+    t.solved++;
+    if (!a.correct) t.wrong++;
+    t.ms += a.elapsedMs;
+    m.set(keyOf(a), t);
+  }
+  return [...m.entries()]
+    .map(([key, t]) => ({ key, solved: t.solved, wrong: t.wrong, avgMs: t.ms / t.solved }))
+    .sort((x, y) => y.wrong / y.solved - x.wrong / x.solved || y.solved - x.solved);
+}
+
+/** 기록 화면·홈용 집계. 기록은 개인 단위라 전부 읽어 메모리에서 센다 (수천 건 수준). */
+export async function recordSummary(): Promise<RecordSummary> {
+  const rows = await db.attempts.orderBy('ts').toArray();
+  const start = new Date();
+  start.setHours(0, 0, 0, 0);
+  const days = new Set(rows.map((r) => dayKey(r.ts)));
+  let streakDays = 0;
+  const d = new Date();
+  if (!days.has(dayKey(d.getTime()))) d.setDate(d.getDate() - 1);
+  while (days.has(dayKey(d.getTime()))) {
+    streakDays++;
+    d.setDate(d.getDate() - 1);
+  }
+  return {
+    total: rows.length,
+    wrong: rows.filter((r) => !r.correct).length,
+    today: rows.filter((r) => r.ts >= start.getTime()).map((r) => r.correct),
+    streakDays,
+    byType: tally(rows, (a) => a.typeId),
+    byKind: tally(rows, (a) => a.question?.kind ?? 'blank'),
+  };
+}
+
 export async function counts(): Promise<{ attempts: number; flags: number }> {
   return { attempts: await db.attempts.count(), flags: await db.flags.count() };
 }

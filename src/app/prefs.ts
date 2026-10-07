@@ -27,11 +27,27 @@ export function removeKey(key: string): void {
   }
 }
 
+export type Theme = 'system' | 'light' | 'dark';
+
 export interface Prefs {
   /** true면 선택 후 한 번 더 눌러야 제출 (흔들리는 차 안 오탭 방지) */
   confirmBeforeSubmit: boolean;
+  theme: Theme;
 }
 
 const PREFS_KEY = 'prefs';
-export const loadPrefs = (): Prefs => readJson<Prefs>(PREFS_KEY, { confirmBeforeSubmit: false });
+export const loadPrefs = (): Prefs => readJson<Prefs>(PREFS_KEY, { confirmBeforeSubmit: false, theme: 'system' });
 export const savePrefs = (p: Prefs) => writeJson(PREFS_KEY, p);
+
+const THEME_COLOR = { light: '#f3f5f8', dark: '#1d2026' } as const;
+
+/** <html data-theme>와 브라우저 상단 색(theme-color)을 맞춘다. system이면 OS 설정을 따른다. */
+export function applyTheme(theme: Theme): void {
+  const root = document.documentElement;
+  if (theme === 'system') delete root.dataset.theme;
+  else root.dataset.theme = theme;
+  document.querySelectorAll<HTMLMetaElement>('meta[name="theme-color"]').forEach((m) => {
+    m.dataset.original ??= m.content;
+    m.content = theme === 'system' ? m.dataset.original : THEME_COLOR[theme];
+  });
+}
