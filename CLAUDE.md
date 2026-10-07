@@ -1,0 +1,71 @@
+# SKCT 수열추리 연습 웹앱
+
+SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하는 PWA. 성패 기준은 **실전 유사도**이고,
+유사도 개선은 **코드가 아니라 설정·데이터 수정**으로 한다.
+
+## 명령어
+| 명령 | 용도 |
+|---|---|
+| `npm run dev` | 개발 서버 |
+| `npm run validate` | 품질 게이트: 설정 스키마 + 유형별 대량 생성 검사(정답 유일성·범위·중복) + 문제은행 검사. **엔진·설정·은행을 바꾸면 반드시 실행** |
+| `npm run validate -- --type <id> --n 2000` | 한 유형만 깊게 검사 |
+| `npm run validate:bank` | 문제은행만 검사 |
+| `npm test` | 엔진 단위 테스트 |
+| `npm run typecheck` / `npm run build` | 타입 검사 / 배포 빌드 |
+| `npm run sample -- [--type <id>] [--n 60] [--compare]` | 생성 문항 HTML 리포트 (`reports/`), `--compare`면 문제은행과 나란히 + 형식 통계 |
+| `npm run calibrate` | `data/feedback/*.json`(앱에서 내보낸 기록) 집계 → 조정 후보 제안 |
+
+## 구조
+```
+config/exam.yaml            공통 출제 설정 (선택지 수, 시간, 은행 비율, 난이도 비중, 검증 기준, 피드백 사유)
+config/types/<id>.yaml      유형별 설정 (비중, 근거 수준, 항 개수, 빈칸 위치, 숫자 범위, 난이도별 파라미터)
+data/bank/public/*.yaml     직접 만든·변형 문항 (앱에 포함, 공개)
+data/bank/private/*.yaml    실제 기출 복원 문항 (gitignore — 절대 커밋 금지)
+data/feedback/*.json        앱에서 내보낸 기록·피드백 (gitignore)
+src/engine/                 UI와 무관한 순수 TS (브라우저·스크립트·테스트 공용)
+  families/                 규칙 계열: 수열이 어떤 규칙으로 설명되는지 판정 (solver가 경쟁시킴)
+  plugins/                  유형 생성기 (유형 1개 = 파일 1개)
+  solver.ts                 정답 유일성 검사 (다른 규칙으로 다른 답이 나오면 모호)
+  compose.ts                생성 파이프라인 (범위·빈칸·자기일관성·모호성·오답 선택지)
+  bank.ts / session.ts      문제은행 / 다음 문항 선택
+src/app/                    브라우저 로더 (YAML을 빌드 시 번들), 기기별 설정
+src/store/                  기록 저장 (IndexedDB, append-only) + Firebase 동기화
+src/ui/                     React 화면 (홈 / 풀이 / 설정)
+src/node/                   스크립트용 로더·통계
+scripts/                    validate / sample / calibrate / make-icons
+```
+
+## 핵심 개념
+- **규칙 계열(Family)**: `fit(완성 수열)`로 규칙 성립 여부와 *여유 항*(= 항 수 − 자유 파라미터 수, 빈칸이면 −1)을 계산하고, `candidates`로 빈칸 후보를 낸다.
+- **정답 유일성**: solver가 등록된 모든 계열을 경쟁시킨다. 정답 해석의 여유 항 ≥ `minRedundancy`(기본 2), 다른 값을 내는 해석의 여유 항 ≥ `altMinRedundancy`(기본 1)이면 모호 → 폐기. 다른 해석으로 설명되는 값은 오답 선택지로도 쓰지 않는다.
+- **재현성**: 생성 문항은 `typeId + difficulty + seed + configVersion`으로 똑같이 재현된다 (플래그 분석용).
+
+## 작업 체크리스트
+
+### A. 출제 파라미터 조정 (가장 흔한 작업)
+1. `config/types/<id>.yaml` 또는 `config/exam.yaml` 수정. 근거는 YAML 주석/`note`에 남긴다.
+2. 근거가 생긴 유형은 `confidence: evidence`, `evidence: [은행 문항 id]`.
+3. `config/exam.yaml`의 `version` +1, `changelog`에 날짜·이유 추가.
+4. `npm run validate && npm test` 통과 확인. 성공률·중복률 실패 시 범위를 조정 (항 개수를 줄이면 모호 문항이 늘어난다).
+5. `docs/skct-format.md`의 확실/추정/모름 표 갱신.
+
+### B. 기출 복원 문항 추가
+1. 사용자가 준 메모를 `data/bank/private/<회차>.yaml`로 변환 (형식: `data/bank/private/README.md`). `publishable: false`.
+2. `npm run validate:bank` — 판별 실패·모호 경고는 새 유형/규칙 후보로 보고한다.
+3. `npm run sample -- --compare`로 생성 문항과 형식 통계 비교 → A로 보정.
+4. 공개 은행에 넣고 싶으면 숫자를 바꾼 **변형 문항**을 `data/bank/public/`에 `source.kind: variant`, `publishable: true`로 추가 (원문 금지).
+
+### C. 새 유형 추가
+1. 필요한 규칙이 `src/engine/families/`에 없으면 `rules.ts`에 `IntRule` 추가(또는 `combinators.ts`로 조합) 후 `families/index.ts`의 `FAMILIES`에 등록. 단위 테스트(`tests/engine/families.test.ts`)에 예시 수열 추가.
+2. `src/engine/plugins/<id>.ts`에 `definePlugin({ id, params, generate })` 작성 — `generate`는 완성 수열과 `family` id만 반환. 범위·빈칸·선택지·모호성은 compose가 처리.
+3. `src/engine/plugins/index.ts`에 1줄 등록.
+4. `config/types/<id>.yaml` 작성 (`confidence: estimated`로 시작).
+5. `npm run validate -- --type <id>` → `npm run sample -- --type <id>`로 눈 검토 → `npm test`.
+자세한 예: `docs/adding-a-type.md`
+
+## 규칙
+- `data/bank/private/`, `data/feedback/`, `reports/`의 내용은 **절대 커밋하지 않는다** (기출 저작권·개인 기록). `git status`로 확인.
+- 설정을 바꾸면 반드시 `version` +1과 `changelog`. 출제 결과가 바뀌면 이전 플래그의 재현 기준이 달라지기 때문.
+- 추정값에는 근거 수준을 표시한다 (`confidence`, YAML 주석의 [확실]/[추정]/[모름]). 추정을 사실처럼 쓰지 않는다.
+- 엔진(`src/engine`)은 DOM·Node API를 쓰지 않는다. 브라우저 전용은 `src/app`·`src/ui`·`src/store`, Node 전용은 `src/node`·`scripts`.
+- 커밋 전: `npm run validate && npm test && npm run typecheck`.

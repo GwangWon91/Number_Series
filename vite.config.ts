@@ -46,6 +46,10 @@ export default defineConfig({
       workbox: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'] },
     }),
   ],
+  build: {
+    // firebase/firestore 청크는 동기화를 켤 때만 지연 로딩된다
+    chunkSizeWarningLimit: 700,
+  },
   test: {
     include: ['tests/**/*.test.ts'],
   },

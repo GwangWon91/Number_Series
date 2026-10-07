@@ -10,4 +10,4 @@ numbers: { min: -999, max: 2999 }
 difficulty:
   "1": { variant: { affine: 0.5, alternating: 0.5 }, start: [1, 9], mul: [2, 2], add: [1, 5] }
   "2": { variant: { affine: 0.5, alternating: 0.5 }, start: [1, 15], mul: [2, 3], add: [-5, 9] }
-  "3": { variant: { affine: 0.6, alternating: 0.4 }, start: [-5, 20], mul: [2, 4], add: [-12, 12] }
+  "3": { variant: { affine: 0.6, alternating: 0.4 }, start: [1, 20], mul: [2, 4], add: [-12, 12] }

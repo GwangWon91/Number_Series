@@ -1,0 +1,526 @@
+/* 미니멀 UI: 문제에만 집중. 모바일 세로 한 손 조작 우선, PC는 가운데 좁은 열. */
+
+:root {
+  --bg: #f7f7f5;
+  --surface: #ffffff;
+  --fg: #1a1a1a;
+  --muted: #74746f;
+  --line: #e5e4e0;
+  --accent: #1f6feb;
+  --accent-fg: #ffffff;
+  --ok: #1a7f37;
+  --ok-bg: #e7f5ec;
+  --ng: #c62828;
+  --ng-bg: #fdecec;
+  --warn: #b26b00;
+  --radius: 12px;
+  --tap: 52px;
+  --mono: ui-monospace, 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #111111;
+    --surface: #1b1b1b;
+    --fg: #ececea;
+    --muted: #8e8e89;
+    --line: #2c2c2a;
+    --accent: #4c8dff;
+    --accent-fg: #0b0b0b;
+    --ok: #4cc370;
+    --ok-bg: #12301c;
+    --ng: #ff6b6b;
+    --ng-bg: #3a1515;
+    --warn: #f0a640;
+    color-scheme: dark;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.5 -apple-system, BlinkMacSystemFont, 'Pretendard', 'Apple SD Gothic Neo', 'Noto Sans KR', system-ui, sans-serif;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  min-height: var(--tap);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 0 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+button.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--accent-fg);
+  font-weight: 600;
+}
+button.ghost {
+  background: transparent;
+}
+button.link {
+  border: 0;
+  background: none;
+  padding: 0;
+  min-height: 44px;
+  color: var(--accent);
+}
+button.icon {
+  border: 0;
+  background: none;
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  font-size: 20px;
+}
+button.wide {
+  flex: 1;
+}
+
+.muted {
+  color: var(--muted);
+}
+.small {
+  font-size: 13px;
+}
+.block {
+  display: block;
+}
+code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+/* 화면 골격: 위아래 안전영역 포함, 최대 폭 제한 */
+.screen {
+  display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  max-width: 520px;
+  margin: 0 auto;
+  padding: env(safe-area-inset-top) 16px env(safe-area-inset-bottom);
+}
+
+/* ───── 홈 ───── */
+.home-head {
+  padding: 28px 4px 8px;
+}
+.home-head h1 {
+  margin: 0;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+}
+.home-head p {
+  margin: 4px 0 0;
+}
+.home-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 16px;
+}
+.home-main h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 20px 4px 2px;
+}
+button.big {
+  min-height: 84px;
+  font-size: 19px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+}
+button.big .sub {
+  font-size: 13px;
+  font-weight: 400;
+  opacity: 0.85;
+}
+.type-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+.type-list button {
+  width: 100%;
+  text-align: left;
+  font-size: 14px;
+  line-height: 1.3;
+  padding: 10px 12px;
+}
+.home-foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 4px 16px;
+}
+
+/* ───── 상단 바 ───── */
+.bar-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 56px;
+}
+.head-title {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+  font-weight: 600;
+  min-width: 0;
+}
+.head-title > span:first-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timer {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  width: 64px;
+  font-variant-numeric: tabular-nums;
+}
+.timer .secs {
+  font-size: 14px;
+  color: var(--muted);
+}
+.timer .track {
+  display: block;
+  width: 100%;
+  height: 3px;
+  background: var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.timer .fill {
+  display: block;
+  height: 100%;
+  background: var(--accent);
+  transform-origin: left;
+  transition: transform 0.25s linear;
+}
+.timer.over .secs {
+  color: var(--warn);
+}
+.timer.over .fill {
+  background: var(--warn);
+}
+
+/* ───── 풀이 ───── */
+.stage {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  padding: 16px 0;
+  overflow-y: auto;
+}
+
+.sequence {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px 14px;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: clamp(22px, 7vw, 30px);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+}
+.sequence.more {
+  font-size: clamp(20px, 6vw, 28px);
+  gap: 8px 12px;
+}
+.sequence.many {
+  font-size: clamp(18px, 5.4vw, 26px);
+  gap: 8px 10px;
+}
+.term.blank {
+  min-width: 2.2em;
+  padding: 0 0.3em;
+  text-align: center;
+  border: 2px dashed var(--accent);
+  border-radius: 8px;
+  color: var(--accent);
+}
+.term.blank.ok {
+  border-style: solid;
+  border-color: var(--ok);
+  color: var(--ok);
+  background: var(--ok-bg);
+}
+.term.blank.ng {
+  border-style: solid;
+  border-color: var(--ng);
+  color: var(--ng);
+  background: var(--ng-bg);
+}
+.group-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--line);
+}
+.frac {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  font-size: 0.8em;
+  line-height: 1.15;
+  vertical-align: middle;
+}
+.frac > span:first-child {
+  border-bottom: 2px solid currentColor;
+  padding: 0 0.15em;
+}
+
+.explain {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--ok);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 15px;
+}
+.explain.ng {
+  border-left-color: var(--ng);
+}
+.explain p {
+  margin: 0;
+}
+.explain .verdict {
+  margin-bottom: 6px;
+}
+.explain.ok .verdict {
+  color: var(--ok);
+}
+.explain.ng .verdict {
+  color: var(--ng);
+}
+.explain .verdict b {
+  font-family: var(--mono);
+}
+.explain .rule-name {
+  font-weight: 600;
+}
+.explain .rule-line {
+  font-family: var(--mono);
+  font-size: 14px;
+  color: var(--muted);
+  word-break: keep-all;
+}
+
+/* 하단 엄지 영역 */
+.dock {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 8px 0 16px;
+}
+.choices {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.choices button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-align: left;
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 20px;
+}
+.choices button .num {
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--muted);
+  width: 1em;
+}
+.choices button:active,
+.choices button.pending {
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.choices.compact {
+  flex-direction: row;
+  gap: 6px;
+}
+.choices.compact li {
+  flex: 1;
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font-family: var(--mono);
+  font-size: 15px;
+  color: var(--muted);
+}
+.choices.compact li.answer {
+  border-color: var(--ok);
+  color: var(--ok);
+  background: var(--ok-bg);
+  font-weight: 600;
+}
+.choices.compact li.wrong {
+  border-color: var(--ng);
+  color: var(--ng);
+  background: var(--ng-bg);
+  text-decoration: line-through;
+}
+.next-row {
+  display: flex;
+  gap: 8px;
+}
+.next-row .flag {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* ───── 플래그 시트 ───── */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(0 0 0 / 0.4);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  z-index: 10;
+}
+.sheet {
+  width: 100%;
+  max-width: 520px;
+  background: var(--bg);
+  border-radius: 16px 16px 0 0;
+  padding: 20px 16px calc(16px + env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.sheet h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+button.chip {
+  min-height: 40px;
+  border-radius: 20px;
+  font-size: 14px;
+}
+button.chip.on {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-fg);
+}
+textarea,
+input[type='email'],
+input[type='password'] {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface);
+  padding: 10px 12px;
+  font-size: 16px; /* iOS 확대 방지 */
+}
+
+/* ───── 설정 ───── */
+.settings-main section {
+  padding: 16px 4px;
+  border-bottom: 1px solid var(--line);
+}
+.settings-main h2 {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.settings-main p {
+  margin: 0 0 8px;
+}
+.row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.row input {
+  width: 20px;
+  height: 20px;
+  margin-top: 3px;
+}
+.btn-col {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 8px 0;
+}
+.sync-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.notice {
+  font-size: 14px;
+  color: var(--ok);
+}
+.notice.ng {
+  color: var(--ng);
+}
+
+/* PC: 가로 공간이 넉넉하면 선택지를 조금 낮게 */
+@media (min-width: 720px) {
+  .screen {
+    padding-top: 24px;
+  }
+  .stage {
+    justify-content: flex-start;
+    padding-top: 12vh;
+  }
+}
