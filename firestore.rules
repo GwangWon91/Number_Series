@@ -1,11 +1,48 @@
 rules_version = '2';
-// 각 사용자는 자기 uid 아래의 기록만 읽고 쓸 수 있다.
 // Firebase 콘솔 → Firestore → 규칙 에 붙여넣어 게시한다 (docs/deploy.md).
+//  - users/{uid}/…  : 각 사용자는 자기 기록만 읽고 쓴다 (기기 간 동기화)
+//  - poolAttempts / poolFlags : 익명 풀이 기록. 누구나 "생성"만, 읽기는 소유자만, 수정·삭제 금지
+//    OWNER_UID 를 소유자 계정의 uid로 바꿔서 게시할 것 (Firebase 콘솔 → Authentication → 사용자)
 service cloud.firestore {
   match /databases/{database}/documents {
+    function isOwner() {
+      return request.auth != null && request.auth.uid == 'OWNER_UID';
+    }
+
+    // 크기 상한: 수열 항 20개, 선택지 8개 (실제 문항은 10항·5지선다)
+    function poolCommon(d) {
+      return d.device is string && d.device.size() <= 64
+        && d.ts is int
+        && d.typeId is string && d.typeId.size() <= 64
+        && d.configVersion is int
+        && d.terms is list && d.terms.size() <= 20
+        && d.choices is list && d.choices.size() <= 8
+        && d.at == request.time;
+    }
+
     match /users/{uid}/{collection}/{docId} {
       allow read, write: if request.auth != null && request.auth.uid == uid
         && collection in ['attempts', 'flags'];
+    }
+
+    match /poolAttempts/{id} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'device', 'ts', 'mode', 'itemId', 'source', 'typeId', 'difficulty', 'seed', 'bankId',
+          'configVersion', 'appVersion', 'terms', 'question', 'answer', 'choices', 'chosen',
+          'correct', 'elapsedMs', 'at'])
+        && poolCommon(request.resource.data)
+        && request.resource.data.correct is bool
+        && request.resource.data.elapsedMs is int;
+      allow read: if isOwner();
+    }
+
+    match /poolFlags/{id} {
+      allow create: if request.resource.data.keys().hasOnly([
+          'device', 'ts', 'attemptId', 'itemId', 'typeId', 'difficulty', 'seed', 'configVersion',
+          'terms', 'question', 'answer', 'choices', 'reasons', 'at'])
+        && poolCommon(request.resource.data)
+        && request.resource.data.reasons is list && request.resource.data.reasons.size() <= 10;
+      allow read: if isOwner();
     }
   }
 }

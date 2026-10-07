@@ -19,12 +19,12 @@ export function newId(): string {
 }
 
 export async function addAttempt(a: Attempt): Promise<void> {
-  await db.attempts.put({ ...a, uploaded: 0 });
+  await db.attempts.put({ ...a, uploaded: 0, pooled: 0 });
   notify();
 }
 
 export async function addFlag(f: Flag): Promise<void> {
-  await db.flags.put({ ...f, uploaded: 0 });
+  await db.flags.put({ ...f, uploaded: 0, pooled: 0 });
   notify();
 }
 
@@ -102,7 +102,7 @@ export async function counts(): Promise<{ attempts: number; flags: number }> {
   return { attempts: await db.attempts.count(), flags: await db.flags.count() };
 }
 
-const strip = <T extends object>({ uploaded: _u, ...rest }: Stored<T>) => rest as unknown as T;
+const strip = <T extends object>({ uploaded: _u, pooled: _p, ...rest }: Stored<T>) => rest as unknown as T;
 
 export async function exportAll(): Promise<ExportFile> {
   return {
@@ -121,13 +121,13 @@ export async function importAll(file: ExportFile): Promise<{ attempts: number; f
   await db.transaction('rw', db.attempts, db.flags, async () => {
     for (const a of file.attempts ?? []) {
       if (!(await db.attempts.get(a.id))) {
-        await db.attempts.put({ ...a, uploaded: 0 });
+        await db.attempts.put({ ...a, uploaded: 0, pooled: 0 });
         added.attempts++;
       }
     }
     for (const f of file.flags ?? []) {
       if (!(await db.flags.get(f.id))) {
-        await db.flags.put({ ...f, uploaded: 0 });
+        await db.flags.put({ ...f, uploaded: 0, pooled: 0 });
         added.flags++;
       }
     }
@@ -136,12 +136,25 @@ export async function importAll(file: ExportFile): Promise<{ attempts: number; f
   return added;
 }
 
-/** 동기화 모듈용: 다른 기기에서 받은 기록 저장 (이미 업로드된 것으로 표시) */
+/** 동기화 모듈용: 다른 기기에서 받은 기록 저장 (이미 업로드됨 + 원래 기기가 pool로 보냈으므로 pooled도 1) */
 export async function mergeRemote(attempts: Attempt[], flags: Flag[]): Promise<void> {
   await db.transaction('rw', db.attempts, db.flags, async () => {
-    if (attempts.length) await db.attempts.bulkPut(attempts.map((a) => ({ ...a, uploaded: 1 as const })));
-    if (flags.length) await db.flags.bulkPut(flags.map((f) => ({ ...f, uploaded: 1 as const })));
+    if (attempts.length) await db.attempts.bulkPut(attempts.map((a) => ({ ...a, uploaded: 1 as const, pooled: 1 as const })));
+    if (flags.length) await db.flags.bulkPut(flags.map((f) => ({ ...f, uploaded: 1 as const, pooled: 1 as const })));
   });
+}
+
+/** 익명 풀이 기록 모듈용: 아직 보내지 않은 기록 */
+export async function pendingPool(limit = 400): Promise<{ attempts: Attempt[]; flags: Flag[] }> {
+  return {
+    attempts: (await db.attempts.where('pooled').equals(0).limit(limit).toArray()).map(strip<Attempt>),
+    flags: (await db.flags.where('pooled').equals(0).limit(limit).toArray()).map(strip<Flag>),
+  };
+}
+
+export async function markPooled(kind: 'attempts' | 'flags', ids: string[]): Promise<void> {
+  const table = kind === 'attempts' ? db.attempts : db.flags;
+  await table.bulkUpdate(ids.map((key) => ({ key, changes: { pooled: 1 as const } })));
 }
 
 export async function pendingUploads(): Promise<{ attempts: Attempt[]; flags: Flag[] }> {
