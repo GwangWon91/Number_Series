@@ -1,11 +1,12 @@
-import type { Difficulty, EngineConfig, TypeConfig } from './config';
+import type { Difficulty, EngineConfig, QuestionKind, TypeConfig } from './config';
 import { getType } from './config';
 import { distractorPool } from './distractors';
-import { getFamily } from './families';
+import { getFamily, type FitResult } from './families';
 import type { Item } from './item';
+import { analyzeQuestion, applyPairOp, PAIR_OPS, type PairOp, type Question } from './question';
 import { Rng } from './rng';
-import { analyze, judge } from './solver';
-import { isFrac, numKey, toNumber, type Value } from './value';
+import { analyze, judge, type Analysis } from './solver';
+import { formatValue, isFrac, numKey, toNumber, type Value } from './value';
 
 /**
  * 생성 파이프라인: 유형·난이도 선택 → 생성기 → 범위 검사 → 빈칸 위치 → 자기 일관성
@@ -58,6 +59,42 @@ function pickBlank(rng: Rng, type: TypeConfig, length: number): number {
   return mode === 'middle' && lo <= hi ? rng.int(lo, hi) : length - 1;
 }
 
+/**
+ * A·B 위치: B는 끝에서 3칸 이내, A는 B보다 2~3칸 앞 (실전 2026H2 10문항: A 2~5번째 칸, B는 A+2~A+3)
+ */
+function pickPair(rng: Rng, length: number): [number, number] {
+  const ib = rng.int(Math.max(4, length - 3), length - 1);
+  const ia = rng.int(Math.max(2, ib - 3), ib - 2);
+  return [ia, ib];
+}
+
+const pairLine = (op: PairOp, a: Value, b: Value, v: Value) =>
+  `A = ${formatValue(a)}, B = ${formatValue(b)} → A ${op} B = ${formatValue(v)}`;
+
+/** A·B 오답: 한쪽·양쪽을 근처 값으로 바꾼 연산값, 다른 연산으로 계산한 값, 순서를 바꾼 값 */
+function pairDistractors(
+  rng: Rng,
+  terms: readonly Value[],
+  [ia, ib]: [number, number],
+  op: PairOp,
+  weights: EngineConfig['exam']['distractors'],
+  size: number,
+): Value[] {
+  const near = (i: number) => {
+    const s: (Value | null)[] = terms.slice();
+    s[i] = null;
+    return distractorPool(rng, s, i, terms[i], weights, 3);
+  };
+  const [a, b] = [terms[ia], terms[ib]];
+  const as = [a, ...near(ia)];
+  const bs = [b, ...near(ib)];
+  const out: (Value | null)[] = [];
+  for (const x of as) for (const y of bs) if (x !== a || y !== b) out.push(applyPairOp(op, x, y));
+  for (const o of PAIR_OPS) if (o !== op) out.push(applyPairOp(o, a, b));
+  if (op === '−' || op === '/') out.push(applyPairOp(op, b, a));
+  return rng.shuffle(out.filter((v): v is Value => v !== null)).slice(0, size);
+}
+
 export function minRedundancyOf(config: EngineConfig, type: TypeConfig): number {
   return type.minRedundancy ?? config.validation.minRedundancy;
 }
@@ -75,8 +112,13 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
   const rejects: GenerateOutcome['rejects'] = {};
   const reject = (r: RejectReason) => (rejects[r] = (rejects[r] ?? 0) + 1);
 
+  const qs = config.exam.questions;
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
-    const length = rng.range(type.length);
+    // 비중이 하나뿐이면 rng를 쓰지 않는다 (빈칸 1개만 내는 설정의 기존 seed 재현 유지)
+    const activeKinds = Object.entries(qs.kinds).filter(([, w]) => (w ?? 0) > 0);
+    const kind = (activeKinds.length > 1 ? rng.weighted(qs.kinds) : (activeKinds[0]?.[0] ?? 'blank')) as QuestionKind;
+    const ahead = kind === 'nth' ? rng.range(qs.nthAhead) : 0;
+    const length = rng.range(type.length) + (kind === 'pair' ? qs.pairExtraLength : ahead);
     const g = type.plugin.generate({ rng, length, params });
     if (!g) {
       reject('generate');
@@ -88,12 +130,57 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
       continue;
     }
 
-    const blank = pickBlank(rng, type, terms.length);
-    const answer = terms[blank];
-    const shown: (Value | null)[] = terms.slice();
-    shown[blank] = null;
+    const family = getFamily(g.family);
+    const weights = config.exam.distractors;
+    let shown: (Value | null)[];
+    let blank: number;
+    let answer: Value;
+    let question: Question | undefined;
+    let intended: FitResult | null;
+    let pool: Value[];
+    let analysis: Analysis;
 
-    const intended = getFamily(g.family).fit(terms, blank);
+    if (kind === 'pair') {
+      const [ia, ib] = pickPair(rng, terms.length);
+      const op = rng.weighted(qs.pairOps) as PairOp;
+      const v = applyPairOp(op, terms[ia], terms[ib]);
+      if (v === null) {
+        reject('generate');
+        continue;
+      }
+      blank = ia;
+      answer = v;
+      shown = terms.slice();
+      shown[ia] = shown[ib] = null;
+      question = { kind: 'pair', op, blanks: [ia, ib], values: [terms[ia], terms[ib]] };
+      const fit = family.fit(terms, null);
+      intended = fit && { redundancy: fit.redundancy - 2, explain: [...fit.explain, pairLine(op, terms[ia], terms[ib], v)] };
+      pool = intended ? pairDistractors(rng, terms, [ia, ib], op, weights, choiceCount * 3) : [];
+      analysis = analyzeQuestion(shown, question, { pairs: [[terms[ia], terms[ib]]] });
+    } else if (kind === 'nth') {
+      const n = terms.length;
+      blank = n - 1;
+      answer = terms[n - 1];
+      shown = terms.slice(0, n - ahead);
+      question = { kind: 'nth', n };
+      const fit = family.fit(shown as Value[], null);
+      intended = fit && {
+        redundancy: fit.redundancy,
+        explain: [...fit.explain, `이어 쓰면 ${terms.slice(n - ahead).map(formatValue).join(', ')} → ${n}번째 ${formatValue(answer)}`],
+      };
+      const hidden = [...terms.slice(0, n - 1), null];
+      pool = [terms[n - 2], ...distractorPool(rng, hidden, n - 1, answer, weights, choiceCount * 3)];
+      analysis = analyzeQuestion(shown, question);
+    } else {
+      blank = pickBlank(rng, type, terms.length);
+      answer = terms[blank];
+      shown = terms.slice();
+      shown[blank] = null;
+      intended = family.fit(terms, blank);
+      pool = intended ? distractorPool(rng, shown, blank, answer, weights, choiceCount * 3) : [];
+      analysis = analyze(shown, [answer, ...pool]);
+    }
+
     if (!intended) {
       reject('self');
       continue;
@@ -102,9 +189,6 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
       reject('redundancy');
       continue;
     }
-
-    const pool = distractorPool(rng, shown, blank, answer, config.exam.distractors, choiceCount * 3);
-    const analysis = analyze(shown, [answer, ...pool]);
     const verdict = judge(analysis, answer, minRed, altMinRedundancy);
     if (verdict.alternatives.length > 0) {
       reject('ambiguous');
@@ -115,8 +199,10 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
     const explained = new Set(
       analysis.explanations.filter((e) => e.redundancy >= altMinRedundancy).map((e) => numKey(e.value)),
     );
+    const seen = new Set([numKey(answer)]);
     const distractors = pool
-      .filter((v) => !explained.has(numKey(v)) && inNumberRange(v, type))
+      .filter((v) => !explained.has(numKey(v)) && (kind === 'pair' || inNumberRange(v, type)))
+      .filter((v) => !seen.has(numKey(v)) && seen.add(numKey(v)))
       .slice(0, choiceCount - 1);
     if (distractors.length < choiceCount - 1) {
       reject('distractors');
@@ -139,6 +225,7 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
         configVersion: config.version,
         terms: shown,
         blankIndex: blank,
+        question,
         answer,
         choices,
         explain: intended.explain,

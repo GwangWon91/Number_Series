@@ -7,6 +7,8 @@ export interface Explanation {
   value: Value;
   redundancy: number;
   explain: string[];
+  /** A·B 문항에서 이 해석의 (A, B) */
+  pair?: [Value, Value];
 }
 
 export interface Analysis {

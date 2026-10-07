@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
+import { analyzeQuestion } from '../../src/engine/question';
 import { analyze, judge } from '../../src/engine/solver';
-import type { Value } from '../../src/engine/value';
+import { frac, parseValue, type Value } from '../../src/engine/value';
 
 const verdict = (seq: (Value | null)[], answer: Value) => judge(analyze(seq, [answer]), answer, 2, 1);
 
@@ -24,6 +25,20 @@ describe('정답 유일성 검사', () => {
 
   it('정답 규칙의 여유 항이 부족하면 supporting이 비어 있다', () => {
     expect(verdict([2, 4, null], 6).supporting).toEqual([]);
+  });
+
+  it('A·B 문항: (A, B)를 함께 찾아 연산값으로 판정 (2026H2-1 98: 4, 9, 13, 22, A, 57, 92, B → A+B)', () => {
+    const seq = [4, 9, 13, 22, null, 57, 92, null];
+    const a = analyzeQuestion(seq, { kind: 'pair', op: '+', blanks: [4, 7] });
+    const v = judge(a, 184, 1, 1);
+    expect(v.supporting.some((e) => e.pair?.[0] === 35 && e.pair?.[1] === 149)).toBe(true);
+    expect(v.alternatives).toEqual([]);
+  });
+
+  it('n번째 항: 계열마다 이어 붙여 값을 낸다 (12, 6, 3, 1.5, 3/4 → 8번째 3/32)', () => {
+    const seq = [12, 6, 3, parseValue('1.5'), frac(3, 4)];
+    const v = judge(analyzeQuestion(seq, { kind: 'nth', n: 8 }), frac(3, 32), 1, 9);
+    expect(v.supporting.length).toBeGreaterThan(0);
   });
 
   it('빈칸이 1개가 아니면 오류', () => {

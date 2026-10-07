@@ -3,6 +3,7 @@ import { bank, config } from '../app/engine';
 import { loadPrefs } from '../app/prefs';
 import { itemKey } from '../engine/item';
 import { pickNextItem } from '../engine/session';
+import { questionText } from '../engine/question';
 import { eqNum, formatValue } from '../engine/value';
 import { addAttempt, addFlag, newId } from '../store/records';
 import { FlagSheet } from './FlagSheet';
@@ -67,6 +68,7 @@ export function Practice({ mode, onExit }: Props) {
         bankId: item.bankId,
         configVersion: item.configVersion,
         terms: item.terms,
+        question: item.question,
         answer: item.answer,
         choices: item.choices,
         chosen,
@@ -137,6 +139,7 @@ export function Practice({ mode, onExit }: Props) {
       seed: item.seed,
       configVersion: item.configVersion,
       terms: item.terms,
+      question: item.question,
       answer: item.answer,
       choices: item.choices,
       reasons,
@@ -170,6 +173,7 @@ export function Practice({ mode, onExit }: Props) {
       </header>
 
       <main className="stage">
+        <p className="prompt">{questionText(item.question)}</p>
         <SequenceView
           item={item}
           revealed={revealed}

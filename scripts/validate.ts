@@ -13,7 +13,8 @@ import { checkBankEntry } from '../src/engine/bank';
 import { generateItem, inNumberRange, minRedundancyOf, type RejectReason } from '../src/engine/compose';
 import type { Difficulty, EngineConfig, TypeConfig } from '../src/engine/config';
 import { itemKey, type Item } from '../src/engine/item';
-import { analyze, judge } from '../src/engine/solver';
+import { analyzeQuestion } from '../src/engine/question';
+import { judge } from '../src/engine/solver';
 import { eqNum, valueKey } from '../src/engine/value';
 import { loadBank, requireConfig } from '../src/node/load';
 
@@ -32,13 +33,17 @@ const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 /** compose를 거쳐 나온 문항을 독립적으로 다시 검사 (compose 버그 방어) */
 function recheck(item: Item, type: TypeConfig, config: EngineConfig): string[] {
   const problems: string[] = [];
+  const q = item.question;
   const shown = item.terms.filter((t) => t !== null);
-  if (![...shown, item.answer].every((v) => inNumberRange(v, type))) problems.push('숫자 범위 위반');
+  // A·B 문항의 정답은 연산값이라 숫자 범위 대상이 아님
+  const checked = q?.kind === 'pair' ? [...shown, ...(q.values ?? [])] : [...shown, item.answer];
+  if (!checked.every((v) => inNumberRange(v, type))) problems.push('숫자 범위 위반');
   if (item.choices.length !== config.exam.choices) problems.push('선택지 개수 불일치');
   if (new Set(item.choices.map(valueKey)).size !== item.choices.length) problems.push('선택지 중복');
   if (item.choices.filter((c) => eqNum(c, item.answer)).length !== 1) problems.push('정답이 선택지에 1개가 아님');
+  const extra = q?.kind === 'pair' ? { pairs: q.values ? [q.values] : [] } : q ? {} : { values: item.choices };
   const verdict = judge(
-    analyze(item.terms, item.choices),
+    analyzeQuestion(item.terms, q, extra),
     item.answer,
     minRedundancyOf(config, type),
     config.validation.altMinRedundancy,

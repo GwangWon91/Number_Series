@@ -47,6 +47,17 @@ export const mulV = (a: Value, b: Value): Value => {
   return rational(an * bn, ad * bd);
 };
 
+export const addV = (a: Value, b: Value): Value => {
+  const [an, ad] = nd(a);
+  const [bn, bd] = nd(b);
+  return rational(an * bd + bn * ad, ad * bd);
+};
+
+export const subV = (a: Value, b: Value): Value => {
+  const [bn, bd] = nd(b);
+  return addV(a, frac(-bn, bd));
+};
+
 export const divV = (a: Value, b: Value): Value | null => {
   const [an, ad] = nd(a);
   const [bn, bd] = nd(b);

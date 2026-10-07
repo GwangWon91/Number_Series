@@ -86,7 +86,10 @@ for (const typeId of typeIds) {
 if (flags.size) {
   console.log(`\n■ '실전과 다름' 표시 문항 (최근 20건)\n`);
   for (const f of [...flags.values()].sort((a, b) => b.ts - a.ts).slice(0, 20)) {
-    const seq = f.terms.map((t) => (t === null ? '?' : formatValue(t))).join(', ');
+    const q = f.question;
+    const seq =
+      f.terms.map((t, i) => (t === null ? (q?.kind === 'pair' ? (q.blanks[0] === i ? 'A' : 'B') : '?') : formatValue(t))).join(', ') +
+      (q?.kind === 'pair' ? ` (A ${q.op} B)` : q?.kind === 'nth' ? ` … ${q.n}번째` : '');
     const why = f.reasons.map((r) => reasonLabel.get(r) ?? r).join(', ');
     console.log(`- [${typeLabel(f.typeId)}] ${seq} (정답 ${formatValue(f.answer)}) — ${why}${f.note ? ` / "${f.note}"` : ''}`);
     console.log(`    재현: typeId=${f.typeId} difficulty=${f.difficulty} seed=${f.seed ?? '-'} config v${f.configVersion}`);
