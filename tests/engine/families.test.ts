@@ -86,6 +86,16 @@ describe('유리수·소수·대분수 (실전 복원 문항 예시)', () => {
     expect(fits('interleaved', [2, 3, 6, 4, 8, 7, 14, 11, 22, 18])).not.toBeNull();
   });
 
+  it('추가 규칙: 연산 순환·±제곱 계차·비 등차·군수열 둘째 자리 결과', () => {
+    expect(fits('op-cycle-4', [12, 36, 16, 8, 58, 174, 154, 77, 127, 381])).not.toBeNull();
+    expect(has(cands('rational', p(['1.2', '3.6', '1.6', '0.8', '5.8', '17.4', '15.4', '7.7', '12.7', null])), '38.1')).toBe(true);
+    expect(fits('diff-alt-square', [50, 51, 47, 56, 40, 65, 29])).not.toBeNull();
+    expect(has(cands('ratio-progression', p([1, '1/2', '1/6', '1/24', '1/120', null])), '1/720')).toBe(true);
+    expect(fits('ratio-progression', [1, 2, 6, 24, 120])).not.toBeNull();
+    expect(has(cands('grouped', p(['0.5', '2.0', '1.5', '1.2', '3.0', '1.8', '0.7', null, '2.3'])), '3.0')).toBe(true);
+    expect(has(cands('grouped', p(['1/2', '0.4', '4/5', '3/4', '1.5', 2, '2/5', null, '3/2'])), '0.6')).toBe(true);
+  });
+
   it('소수 표기는 분자·분모 분리(fraction)로 해석하지 않는다', () => {
     expect(fits('fraction', p(['0.4', '0.9', '1.3', '2.2']) as Value[])).toBeNull();
   });

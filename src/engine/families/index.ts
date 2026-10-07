@@ -6,10 +6,13 @@ import {
   interleavedFamily,
   rationalFamily,
   rationalGeometricFamily,
+  ratioProgressionFamily,
 } from './combinators';
 import {
   affineRule,
   alternatingOpsRule,
+  altSquaresRule,
+  opCycleRule,
   arithmeticRule,
   constantRule,
   cycleRule,
@@ -32,7 +35,7 @@ const SUB_RULES = [constantRule, arithmeticRule, geometricRule, diffArithmetic, 
 const FRACTION_SUB_RULES = [constantRule, arithmeticRule, geometricRule, diffArithmetic, fibSumRule, affineRule];
 
 /** 배율(×L)을 바꾸면 성립 여부가 달라지는 계열 — 유리수 통분 판정에서 제외 */
-const SCALE_VARIANT = new Set(['power', 'fib-product', 'fraction']);
+const SCALE_VARIANT = new Set(['power', 'fib-product', 'fraction', 'diff-alt-square']);
 
 /**
  * solver가 경쟁시키는 모든 규칙 계열.
@@ -50,6 +53,9 @@ const BASE_FAMILIES: readonly Family[] = [
   familyFromRule(diffOf(cycleRule(3), 1, 'diff-cycle-3', '차이가 주기적으로 반복')),
   familyFromRule(affineRule),
   familyFromRule(alternatingOpsRule),
+  familyFromRule(opCycleRule(3)),
+  familyFromRule(opCycleRule(4)),
+  familyFromRule(diffOf(altSquaresRule, 1, 'diff-alt-square', '차이가 ±제곱수로 번갈아')),
   familyFromRule(powerRule),
   familyFromRule(fibSumRule),
   familyFromRule(fibSumConstRule),
@@ -64,6 +70,7 @@ export const FAMILIES: readonly Family[] = [
   ...BASE_FAMILIES,
   rationalFamily(BASE_FAMILIES.filter((f) => !SCALE_VARIANT.has(f.id))),
   rationalGeometricFamily,
+  ratioProgressionFamily,
 ];
 
 const BY_ID = new Map(FAMILIES.map((f) => [f.id, f]));

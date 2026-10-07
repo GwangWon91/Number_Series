@@ -1,9 +1,12 @@
 import {
+  addV,
   allFracs,
   allInts,
   divV,
   eqNum,
+  formatValue as fmtValue,
   frac,
+  subV,
   isFrac,
   mulV,
   plain,
@@ -186,45 +189,68 @@ export const GROUP_OPS: Record<
 
 const GROUP_SIZE = 3;
 
-/** 3개씩 묶었을 때 각 묶음에서 (첫째 ○ 둘째 = 셋째)가 성립하는 수열 */
+/** 판정용: 분수·소수도 그대로 계산 (1/2 × 4/5 = 0.4) */
+const GROUP_VOPS: { symbol: string; apply(a: Value, b: Value): Value | null; solveA(b: Value, c: Value): Value | null; solveB(a: Value, c: Value): Value | null }[] = [
+  { symbol: '+', apply: addV, solveA: (b, c) => subV(c, b), solveB: (a, c) => subV(c, a) },
+  { symbol: '−', apply: subV, solveA: (b, c) => addV(c, b), solveB: (a, c) => subV(a, c) },
+  { symbol: '×', apply: mulV, solveA: (b, c) => divV(c, b), solveB: (a, c) => divV(c, a) },
+  { symbol: '÷', apply: divV, solveA: (b, c) => mulV(b, c), solveB: (a, c) => divV(a, c) },
+];
+
+/** 묶음 안 배치: 결과가 셋째 (첫째 ○ 둘째 = 셋째) 또는 둘째 (첫째 ○ 셋째 = 둘째, 실전 2026H2) */
+const LAYOUTS = [
+  { x: 0, y: 1, r: 2, text: (s: string) => `첫째 ${s} 둘째 = 셋째` },
+  { x: 0, y: 2, r: 1, text: (s: string) => `첫째 ${s} 셋째 = 둘째` },
+] as const;
+
+/** 3개씩 묶었을 때 각 묶음에서 (첫째 ○ 둘째 = 셋째) 또는 (첫째 ○ 셋째 = 둘째)가 성립하는 수열 */
 export const groupedFamily: Family = {
   id: 'grouped',
   label: '군수열',
   fit(seq, blank) {
-    if (!allInts(seq) || seq.length % GROUP_SIZE !== 0) return null;
+    if (seq.length % GROUP_SIZE !== 0) return null;
     const groups = seq.length / GROUP_SIZE;
     if (groups < 3) return null;
-    for (const op of Object.values(GROUP_OPS)) {
-      const triples = Array.from({ length: groups }, (_, g) => seq.slice(g * 3, g * 3 + 3));
-      if (!triples.every(([a, b, c]) => op.apply(a, b) === c)) continue;
-      return {
-        // 묶음마다 a, b 두 개가 자유 + 연산 1개
-        redundancy: redundancyOf(seq.length, groups * 2 + 1, blank),
-        explain: [
-          `${GROUP_SIZE}개씩 묶으면 각 묶음에서 (첫째 ${op.symbol} 둘째 = 셋째)`,
-          triples
-            .map(([a, b, c]) => `(${plain(a)} ${op.symbol} ${plain(b)} = ${plain(c)})`)
-            .join('  '),
-        ],
-      };
+    const triples = Array.from({ length: groups }, (_, g) => seq.slice(g * 3, g * 3 + 3));
+    for (const L of LAYOUTS) {
+      for (const op of GROUP_VOPS) {
+        if (!triples.every((t) => {
+          const v = op.apply(t[L.x], t[L.y]);
+          return v !== null && eqNum(v, t[L.r]);
+        })) continue;
+        const f = formatValueShort;
+        return {
+          // 묶음마다 피연산자 두 개가 자유 + 연산 1개
+          redundancy: redundancyOf(seq.length, groups * 2 + 1, blank),
+          explain: [
+            `${GROUP_SIZE}개씩 묶으면 각 묶음에서 (${L.text(op.symbol)})`,
+            triples.map((t) => `(${f(t[L.x])} ${op.symbol} ${f(t[L.y])} = ${f(t[L.r])})`).join('  '),
+          ],
+        };
+      }
     }
     return null;
   },
   candidates(seq, blank) {
     if (seq.length % GROUP_SIZE !== 0) return [];
-    if (!seq.every((v, i) => i === blank || typeof v === 'number')) return [];
     const g = Math.floor(blank / GROUP_SIZE) * GROUP_SIZE;
-    const [a, b, c] = seq.slice(g, g + 3) as (number | null)[];
+    const t = seq.slice(g, g + 3);
     const pos = blank % GROUP_SIZE;
-    const out: number[] = [];
-    for (const op of Object.values(GROUP_OPS)) {
-      const v =
-        pos === 2 ? op.apply(a!, b!) : pos === 0 ? op.solveA(b!, c!) : op.solveB(a!, c!);
-      if (v !== null) out.push(v);
+    if (t.some((v, i) => i !== pos && v === null)) return [];
+    const out: Value[] = [];
+    for (const L of LAYOUTS) {
+      for (const op of GROUP_VOPS) {
+        const [x, y, r] = [t[L.x], t[L.y], t[L.r]] as Value[];
+        const v = pos === L.r ? op.apply(x, y) : pos === L.x ? op.solveA(y, r) : op.solveB(x, r);
+        if (v !== null) out.push(v);
+      }
     }
     return out;
   },
 };
+
+// 해설용 짧은 표기 (정수는 그대로, 분수·소수는 표기대로)
+const formatValueShort = (v: Value) => (isFrac(v) ? fmtValue(v) : plain(v));
 
 // ───────────────────────── 분수 ─────────────────────────
 
@@ -326,6 +352,62 @@ export function rationalFamily(bases: readonly Family[]): Family {
     },
   };
 }
+
+/**
+ * 곱하는 수가 일정하게 변하는 수열: ×2, ×3, ×4 … (1, 2, 6, 24) 또는 ÷2, ÷3, ÷4 … (1, 1/2, 1/6, 1/24, 실전 2026H2-2 87번).
+ * 비(또는 비의 역수)가 등차.
+ */
+export const ratioProgressionFamily: Family = {
+  id: 'ratio-progression',
+  label: '곱하는 수가 일정하게 변함',
+  fit(seq, blank) {
+    if (seq.length < 4) return null;
+    const ratios: Value[] = [];
+    for (let i = 1; i < seq.length; i++) {
+      const r = divV(seq[i], seq[i - 1]);
+      if (r === null) return null;
+      ratios.push(r);
+    }
+    for (const inverse of [false, true]) {
+      const xs = inverse ? ratios.map((r) => divV(1, r)) : ratios;
+      if (xs.some((x) => x === null)) continue;
+      const d = subV(xs[1]!, xs[0]!);
+      if (eqNum(d, 0)) continue;
+      if (!xs.every((x, i) => i === 0 || eqNum(subV(x!, xs[i - 1]!), d))) continue;
+      const step = (x: Value) => (inverse ? `÷${fmtValue(x)}` : `×${fmtValue(x)}`);
+      return {
+        redundancy: redundancyOf(seq.length, 3, blank),
+        explain: [`곱하는 수가 일정하게 변함: ${(xs as Value[]).map(step).join(', ')}`],
+      };
+    }
+    return null;
+  },
+  candidates(seq, blank) {
+    const out: Value[] = [];
+    const at = (i: number) => (i >= 0 && i < seq.length ? seq[i] : null);
+    // 앞쪽 세 항 a, b, c → 다음 비 = 비 + (비의 차), 역수 모드도 같이
+    const fromThree = (a: Value | null, b: Value | null, c: Value | null, forward: boolean) => {
+      if (a === null || b === null || c === null) return;
+      const r1 = divV(b, a);
+      const r2 = divV(c, b);
+      if (r1 === null || r2 === null) return;
+      for (const inverse of [false, true]) {
+        const x1 = inverse ? divV(1, r1) : r1;
+        const x2 = inverse ? divV(1, r2) : r2;
+        if (x1 === null || x2 === null) continue;
+        // forward: 다음 비 = x2 + (x2 − x1) / backward(a,b,c가 빈칸 뒤 세 항): 이전 비 = x1 − (x2 − x1)
+        const x = forward ? addV(x2, subV(x2, x1)) : subV(x1, subV(x2, x1));
+        const r = inverse ? divV(1, x) : x;
+        if (r === null || eqNum(r, 0)) continue;
+        const v = forward ? mulV(c, r) : divV(a, r);
+        if (v !== null) out.push(v);
+      }
+    };
+    fromThree(at(blank - 3), at(blank - 2), at(blank - 1), true);
+    fromThree(at(blank + 1), at(blank + 2), at(blank + 3), false);
+    return out;
+  },
+};
 
 const ratioText = (r: Value) => (isFrac(r) ? `×${plain(r.n)}/${r.d}` : `×${plain(r)}`);
 
