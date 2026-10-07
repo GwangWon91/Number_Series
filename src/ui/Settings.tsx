@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { config } from '../app/engine';
 import { loadPrefs, savePrefs, type Prefs } from '../app/prefs';
+import { BUILD_LABEL } from '../app/version';
 import { counts, exportAll, importAll } from '../store/records';
 import type { ExportFile } from '../store/types';
 import { SyncPanel } from './SyncPanel';
@@ -96,9 +97,10 @@ export function Settings({ onBack }: { onBack(): void }) {
         </section>
 
         <section>
-          <h2>출제 설정</h2>
+          <h2>버전</h2>
+          <p className="muted small">앱 {BUILD_LABEL}</p>
           <p className="muted small">
-            v{config.version}
+            출제 설정 v{config.version}
             {latest ? ` · ${latest.date} · ${latest.note}` : ''}
           </p>
           <p className="muted small">

@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { bank, config } from '../app/engine';
 import { loadPrefs } from '../app/prefs';
+import { APP_VERSION } from '../app/version';
 import { itemKey } from '../engine/item';
 import { pickNextItem } from '../engine/session';
 import { questionText } from '../engine/question';
@@ -67,6 +68,7 @@ export function Practice({ mode, onExit }: Props) {
         seed: item.seed,
         bankId: item.bankId,
         configVersion: item.configVersion,
+        appVersion: APP_VERSION,
         terms: item.terms,
         question: item.question,
         answer: item.answer,

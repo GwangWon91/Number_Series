@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { config } from '../app/engine';
+import { BUILD_LABEL } from '../app/version';
 import { todayStats } from '../store/records';
 import { savedPracticeMode } from './practiceState';
 
@@ -54,7 +55,9 @@ export function Home({ onStart, onSettings }: Props) {
         <button className="link" onClick={onSettings}>
           설정 · 기록 · 동기화
         </button>
-        <span className="muted small">출제 설정 v{config.version}</span>
+        <span className="muted small">
+          {BUILD_LABEL} · 출제 설정 v{config.version}
+        </span>
       </footer>
     </div>
   );

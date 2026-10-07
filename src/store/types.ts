@@ -15,6 +15,8 @@ export interface Attempt {
   seed?: number;
   bankId?: string;
   configVersion: number;
+  /** 풀었을 때의 앱 버전 (v0.2.0 이후 기록부터) */
+  appVersion?: string;
   terms: (Value | null)[];
   /** 묻는 방식 (없으면 빈칸 1개). 2026-10 이전 기록에는 없음 */
   question?: Question;
