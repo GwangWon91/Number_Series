@@ -1,0 +1,13 @@
+id: diff-geometric
+label: 계차수열 (차이가 등비)
+enabled: true
+weight: 10
+confidence: estimated
+evidence: []
+length: [6, 8]
+blank: { last: 0.7, middle: 0.3 }
+numbers: { min: -999, max: 999 }
+difficulty:
+  "1": { start: [1, 20], firstDiff: [1, 3], ratio: [2, 2] }
+  "2": { start: [1, 50], firstDiff: [1, 5], ratio: [2, 3] }
+  "3": { start: [-20, 80], firstDiff: [-6, 6], ratio: [-3, 3] }

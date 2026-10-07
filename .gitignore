@@ -1,0 +1,15 @@
+node_modules/
+dist/
+dev-dist/
+*.local
+.DS_Store
+
+# 실제 기출 복원 문항: 문제 생성·보정에 참고하지만 리포에는 절대 올리지 않는다.
+data/bank/private/*
+!data/bank/private/README.md
+# 앱에서 내보낸 플래그/기록 (개인 데이터)
+data/feedback/*
+!data/feedback/README.md
+# 비교 리포트 (기출 원문이 포함될 수 있음)
+reports/*
+!reports/.gitkeep

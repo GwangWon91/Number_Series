@@ -1,0 +1,13 @@
+id: diff-second
+label: 2단계 계차
+enabled: true
+weight: 5
+confidence: estimated
+evidence: []
+note: 차이의 차이까지 봐야 하는 고난도 유형으로 추정.
+length: [7, 8]
+blank: { last: 0.8, middle: 0.2 }
+numbers: { min: -99, max: 999 }
+difficulty:
+  "2": { variant: { arithmetic: 0.6, geometric: 0.4 }, start: [1, 30], firstDiff: [1, 6], firstSecond: [1, 3], secondStep: [1, 2], secondRatio: [2, 2] }
+  "3": { variant: { arithmetic: 0.5, geometric: 0.5 }, start: [1, 60], firstDiff: [-5, 9], firstSecond: [-3, 4], secondStep: [1, 3], secondRatio: [2, 3] }

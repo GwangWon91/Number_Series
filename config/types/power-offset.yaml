@@ -1,0 +1,13 @@
+id: power-offset
+label: 제곱수·세제곱수 ± 상수
+enabled: true
+weight: 5
+confidence: estimated
+evidence: []
+length: [5, 7]
+blank: { last: 0.7, middle: 0.3 }
+numbers: { min: -99, max: 999 }
+difficulty:
+  "1": { base: [1, 6], power: { "2": 1, "3": 0 }, offset: [-5, 5] }
+  "2": { base: [1, 9], power: { "2": 0.7, "3": 0.3 }, offset: [-9, 9] }
+  "3": { base: [2, 9], power: { "2": 0.6, "3": 0.4 }, offset: [-9, 9] }

@@ -1,0 +1,13 @@
+id: diff-cycle
+label: 차이 주기 반복
+enabled: true
+weight: 6
+confidence: estimated
+evidence: []
+length: [7, 9]
+blank: { last: 0.7, middle: 0.3 }
+numbers: { min: -99, max: 999 }
+difficulty:
+  "1": { start: [1, 30], period: [2, 2], diff: [-5, 9] }
+  "2": { start: [5, 60], period: [2, 3], diff: [-9, 12] }
+  "3": { start: [10, 99], period: [3, 3], diff: [-15, 15] }

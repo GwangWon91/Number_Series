@@ -1,0 +1,13 @@
+id: fibonacci-like
+label: 앞 항들의 합·곱 (피보나치형)
+enabled: true
+weight: 10
+confidence: estimated
+evidence: []
+length: [6, 8]
+blank: { last: 0.7, middle: 0.3 }
+numbers: { min: -99, max: 999 }
+difficulty:
+  "1": { variant: { sum: 0.8, sumConst: 0, tribonacci: 0, product: 0.2 }, start: [1, 9], productStart: [1, 3], constant: [1, 3] }
+  "2": { variant: { sum: 0.4, sumConst: 0.3, tribonacci: 0.2, product: 0.1 }, start: [1, 12], productStart: [1, 3], constant: [-3, 4] }
+  "3": { variant: { sum: 0.2, sumConst: 0.4, tribonacci: 0.3, product: 0.1 }, start: [1, 15], productStart: [1, 3], constant: [-5, 6] }

@@ -1,0 +1,16 @@
+id: grouped
+label: 군수열 (3개씩 묶음)
+enabled: true
+weight: 9
+confidence: estimated
+evidence: []
+note: 실전에서 묶음 구분이 화면에 보이는지는 [모름] → display.groupSeparator로 조정.
+length: [9, 12]           # 실제 항 개수는 groups × 3
+blank: { last: 0.8, middle: 0.2 }
+minRedundancy: 1
+numbers: { min: -99, max: 999 }
+display: { groupSeparator: false }
+difficulty:
+  "1": { groups: [3, 3], ops: { add: 0.6, sub: 0.2, mul: 0.2, div: 0 }, operand: [1, 15] }
+  "2": { groups: [3, 4], ops: { add: 0.3, sub: 0.3, mul: 0.3, div: 0.1 }, operand: [2, 20] }
+  "3": { groups: [3, 4], ops: { add: 0.2, sub: 0.2, mul: 0.3, div: 0.3 }, operand: [2, 30] }

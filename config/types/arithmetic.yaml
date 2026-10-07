@@ -1,0 +1,14 @@
+id: arithmetic
+label: 등차수열
+enabled: true
+weight: 4
+confidence: estimated
+evidence: []
+note: 단독 출제는 드물 것으로 추정. 너무 쉬워 비중 낮게 시작.
+length: [6, 7]
+blank: { last: 0.6, middle: 0.4 }
+numbers: { min: -99, max: 999 }
+difficulty:
+  "1": { start: [1, 30], diff: [2, 9] }
+  "2": { start: [10, 99], diff: [7, 19] }
+  "3": { start: [-50, 150], diff: [-23, 23] }

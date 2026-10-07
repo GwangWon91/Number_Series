@@ -1,0 +1,24 @@
+id: interleaved
+label: 홀짝 교대 수열
+enabled: true
+weight: 14
+confidence: estimated
+evidence: []
+note: 부분 수열마다 확인 항이 필요해 길이가 길다.
+length: [9, 10]
+blank: { last: 0.7, middle: 0.3 }
+minRedundancy: 1
+numbers: { min: -99, max: 999 }
+difficulty:
+  "1":
+    kinds: { arithmetic: 0.7, geometric: 0.3, diffArithmetic: 0 }
+    odd: { start: [1, 20], diff: [1, 9], ratio: [2, 2], step: [1, 2] }
+    even: { start: [1, 30], diff: [-6, 9], ratio: [2, 2], step: [1, 2] }
+  "2":
+    kinds: { arithmetic: 0.5, geometric: 0.3, diffArithmetic: 0.2 }
+    odd: { start: [1, 40], diff: [-9, 12], ratio: [2, 3], step: [1, 3] }
+    even: { start: [1, 60], diff: [-9, 15], ratio: [2, 3], step: [1, 3] }
+  "3":
+    kinds: { arithmetic: 0.3, geometric: 0.3, diffArithmetic: 0.4 }
+    odd: { start: [-20, 60], diff: [-15, 15], ratio: [2, 3], step: [1, 4] }
+    even: { start: [-20, 80], diff: [-15, 15], ratio: [2, 4], step: [-4, 4] }
