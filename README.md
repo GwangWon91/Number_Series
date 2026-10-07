@@ -1,5 +1,7 @@
 # SKCT 수열추리 연습
 
+https://gwangwon91.github.io/Number_Series/
+
 SKCT 인지역량 '수열추리'를 출퇴근길 폰과 노트북에서 끊김 없이 연습하는 웹앱(PWA).
 
 - 한 문제씩 출제 → 선택 즉시 정답과 적용 규칙 해설 → 다음 문제 (끝없이 연속)
