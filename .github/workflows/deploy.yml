@@ -1,10 +1,9 @@
-# main에 push하면 검증 → 테스트 → 빌드 → GitHub Pages 배포.
-# validate/test가 실패하면 배포하지 않는다 (품질 게이트).
+# 릴리스가 만들어지면(release.yml에서 호출) 검증 → 테스트 → 빌드 → GitHub Pages 배포.
+# 급할 때는 Actions 탭에서 수동 실행. validate/test가 실패하면 배포하지 않는다 (품질 게이트).
 name: deploy
 
 on:
-  push:
-    branches: [main]
+  workflow_call:
   workflow_dispatch:
 
 permissions:

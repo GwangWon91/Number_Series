@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bump-minor-pre-major": true,
+  "include-component-in-tag": false,
+  "pull-request-title-pattern": "chore: release v${version}",
+  "packages": {
+    ".": {
+      "release-type": "node",
+      "package-name": "skct-number-series",
+      "changelog-sections": [
+        { "type": "feat", "section": "새 기능" },
+        { "type": "fix", "section": "버그 수정" },
+        { "type": "perf", "section": "성능" },
+        { "type": "config", "section": "출제 설정" },
+        { "type": "docs", "section": "문서" },
+        { "type": "refactor", "section": "내부 정리", "hidden": true },
+        { "type": "test", "section": "테스트", "hidden": true },
+        { "type": "chore", "section": "기타", "hidden": true },
+        { "type": "ci", "section": "CI", "hidden": true }
+      ]
+    }
+  }
+}

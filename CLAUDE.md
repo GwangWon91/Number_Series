@@ -69,3 +69,12 @@ scripts/                    validate / sample / calibrate / make-icons
 - 추정값에는 근거 수준을 표시한다 (`confidence`, YAML 주석의 [확실]/[추정]/[모름]). 추정을 사실처럼 쓰지 않는다.
 - 엔진(`src/engine`)은 DOM·Node API를 쓰지 않는다. 브라우저 전용은 `src/app`·`src/ui`·`src/store`, Node 전용은 `src/node`·`scripts`.
 - 커밋 전: `npm run validate && npm test && npm run typecheck`.
+
+## 브랜치·커밋·릴리스
+- `main`에 직접 push하지 않는다. 브랜치(`feat/…`, `fix/…`, `chore/…`) → PR → CI(`.github/workflows/ci.yml`) 통과 → 병합.
+- 커밋 메시지는 Conventional Commits. release-please가 이걸로 다음 버전과 CHANGELOG를 만든다.
+  - `feat(scope): …` 새 기능(마이너↑), `fix(scope): …` 버그(패치↑), `config: …` 출제 설정 보정, `docs`·`refactor`·`test`·`chore`·`ci`는 버전 안 올림
+  - scope: `engine` · `ui` · `store` · `config` · `bank` · `scripts`
+  - 호환이 깨지면 본문에 `BREAKING CHANGE:` (1.0 전까지는 마이너↑)
+- 릴리스: main에 병합될 때마다 release-please가 "chore: release vX.Y.Z" PR을 갱신해 둔다. 그 PR을 병합하면 태그·GitHub Release·CHANGELOG.md가 생기고 GitHub Pages에 배포된다(`release.yml` → `deploy.yml`). 급한 배포는 Actions에서 deploy 수동 실행.
+- 앱 버전(`package.json`, 화면 하단 `vX.Y.Z (커밋)`)과 출제 설정 버전(`config/exam.yaml`의 `version`)은 별개다. 풀이 기록에는 둘 다 남는다(`appVersion`, `configVersion`).
