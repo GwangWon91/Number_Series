@@ -1,11 +1,11 @@
 id: fraction
 label: 분수 수열
 enabled: true
-weight: 5
-confidence: estimated
-evidence: []
+weight: 12                # [추정] 링커리어 2026H2-2: 20문항 중 9문항이 분수 포함 (5 → 12)
+confidence: evidence
+evidence: [lk-2026h2-2-081, lk-2026h2-2-088]
 length: [5, 7]
-blank: { last: 0.8, middle: 0.2 }
+blank: { last: 0.4, middle: 0.6 }   # [추정] 같은 회차 분수 빈칸 문항 4개 모두 중간 빈칸 (0.8/0.2 → 0.4/0.6)
 numbers: { min: 1, max: 999 }
 difficulty:
   "1":

@@ -2,8 +2,8 @@ id: diff-geometric
 label: 계차수열 (차이가 등비)
 enabled: true
 weight: 10
-confidence: estimated
-evidence: []
+confidence: evidence
+evidence: [lk-2026h2-2-086]
 length: [6, 8]
 blank: { last: 0.7, middle: 0.3 }
 numbers: { min: -999, max: 999 }

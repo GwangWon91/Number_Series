@@ -2,8 +2,8 @@ id: grouped
 label: 군수열 (3개씩 묶음)
 enabled: true
 weight: 9
-confidence: estimated
-evidence: []
+confidence: evidence
+evidence: [lk-2026h2-2-083]   # 링커리어 2026H2-2 83번(곱), 94번(합·소수, 스키마 밖)
 note: 실전에서 묶음 구분이 화면에 보이는지는 [모름] → display.groupSeparator로 조정.
 length: [9, 12]           # 실제 항 개수는 groups × 3
 blank: { last: 0.8, middle: 0.2 }
