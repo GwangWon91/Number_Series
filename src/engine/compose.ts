@@ -5,7 +5,7 @@ import { getFamily } from './families';
 import type { Item } from './item';
 import { Rng } from './rng';
 import { analyze, judge } from './solver';
-import { isFrac, toNumber, valueKey, type Value } from './value';
+import { isFrac, numKey, toNumber, type Value } from './value';
 
 /**
  * 생성 파이프라인: 유형·난이도 선택 → 생성기 → 범위 검사 → 빈칸 위치 → 자기 일관성
@@ -113,10 +113,10 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
 
     // 다른 규칙으로 "설명되는" 값은 오답 선택지로 쓰지 않는다 (복수 정답 방지)
     const explained = new Set(
-      analysis.explanations.filter((e) => e.redundancy >= altMinRedundancy).map((e) => valueKey(e.value)),
+      analysis.explanations.filter((e) => e.redundancy >= altMinRedundancy).map((e) => numKey(e.value)),
     );
     const distractors = pool
-      .filter((v) => !explained.has(valueKey(v)) && inNumberRange(v, type))
+      .filter((v) => !explained.has(numKey(v)) && inNumberRange(v, type))
       .slice(0, choiceCount - 1);
     if (distractors.length < choiceCount - 1) {
       reject('distractors');

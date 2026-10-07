@@ -1,5 +1,20 @@
-import { allFracs, allInts, frac, isFrac, plain, signed, type Frac, type Value } from '../value';
-import { redundancyOf, type Family, type IntRule, type RuleMatch } from './types';
+import {
+  allFracs,
+  allInts,
+  divV,
+  eqNum,
+  frac,
+  isFrac,
+  mulV,
+  plain,
+  rational,
+  reducedDen,
+  signed,
+  toNumber,
+  type Frac,
+  type Value,
+} from '../value';
+import { redundancyOf, type Family, type FitResult, type IntRule, type RuleMatch } from './types';
 
 /** 정수 규칙 하나로 빈칸 후보를 만든다: 앞부분의 다음 값 + 뒷부분의 이전 값 */
 export function ruleCandidates(
@@ -220,7 +235,8 @@ export function fractionFamily(subRules: readonly IntRule[]): Family {
     id: 'fraction',
     label: '분수 수열',
     fit(seq, blank) {
-      if (seq.length < 4 || !allFracs(seq)) return null;
+      // 소수 표기(0.4 = 4/10)의 분자·분모는 화면에 안 보이므로 제외
+      if (seq.length < 4 || !allFracs(seq) || seq.some((f) => f.fmt === 'dec')) return null;
       const [nums, dens] = parts(seq);
       const fn = simplestMatch(subRules, nums);
       const fd = simplestMatch(subRules, dens);
@@ -239,7 +255,7 @@ export function fractionFamily(subRules: readonly IntRule[]): Family {
       };
     },
     candidates(seq, blank) {
-      if (!seq.every((v, i) => i === blank || (v !== null && isFrac(v)))) return [];
+      if (!seq.every((v, i) => i === blank || (v !== null && isFrac(v) && v.fmt !== 'dec'))) return [];
       const known = seq as (Frac | null)[];
       const comp = (pick: (f: Frac) => number) => {
         const sub = known.map((f) => (f === null ? null : pick(f)));
@@ -253,3 +269,91 @@ export function fractionFamily(subRules: readonly IntRule[]): Family {
     },
   };
 }
+
+// ───────────────────────── 유리수 (통분 후 정수 규칙) ─────────────────────────
+
+const MAX_LCD = 1000;
+const gcdInt = (x: number, y: number): number => (y === 0 ? x : gcdInt(y, x % y));
+const lcm = (a: number, b: number) => (a / gcdInt(a, b)) * b;
+
+/** 약분한 분모들의 최소공배수 (너무 크면 null) */
+function commonDen(values: readonly Value[]): number | null {
+  let L = 1;
+  for (const v of values) {
+    L = lcm(L, reducedDen(v));
+    if (L > MAX_LCD) return null;
+  }
+  return L;
+}
+
+const scaleTo = (v: Value, L: number) => Math.round(toNumber(v) * L);
+
+/**
+ * 분수·소수·대분수가 섞인 수열을 공통분모 L로 통분(×L)해 정수 계열로 판정한다.
+ * 예: 1/3, 1/2, 5/6, 4/3, 2 → ×6 → 2, 3, 5, 8, 12 (계차) / 0.4, 0.9, 1.3 → ×10 → 4, 9, 13 (피보나치)
+ * bases는 배율을 바꿔도 성립이 유지되는 정수 계열만 (등차·계차·합·홀짝·군수열 합 등).
+ */
+export function rationalFamily(bases: readonly Family[]): Family {
+  return {
+    id: 'rational',
+    label: '유리수 수열 (통분)',
+    fit(seq, blank) {
+      if (allInts(seq)) return null;
+      const L = commonDen(seq);
+      if (!L) return null;
+      const scaled = seq.map((v) => scaleTo(v, L));
+      let best: FitResult | null = null;
+      for (const f of bases) {
+        const r = f.fit(scaled, blank);
+        if (r && (!best || r.redundancy > best.redundancy)) best = r;
+      }
+      if (!best) return null;
+      return {
+        redundancy: best.redundancy,
+        explain: [`모두 ${L}배 하면(통분) ${scaled.map(plain).join(', ')}`, ...best.explain],
+      };
+    },
+    candidates(seq, blank) {
+      const known = seq.filter((v): v is Value => v !== null);
+      if (allInts(known)) return [];
+      const L = commonDen(known);
+      if (!L) return [];
+      const scaled = seq.map((v) => (v === null ? null : scaleTo(v, L)));
+      return bases
+        .flatMap((f) => f.candidates(scaled, blank))
+        .filter((c): c is number => typeof c === 'number')
+        .map((c) => rational(c, L));
+    },
+  };
+}
+
+const ratioText = (r: Value) => (isFrac(r) ? `×${plain(r.n)}/${r.d}` : `×${plain(r)}`);
+
+/** 공비가 분수인 등비수열 (×3/2, ×2/3, ×1.5). 공비가 정수(또는 ÷정수)인 정수열은 geometric이 맡는다. */
+export const rationalGeometricFamily: Family = {
+  id: 'rational-geometric',
+  label: '등비수열 (분수 공비)',
+  fit(seq, blank) {
+    if (seq.length < 3) return null;
+    const r = divV(seq[1], seq[0]);
+    if (r === null || eqNum(r, 0) || eqNum(r, 1)) return null;
+    if (allInts(seq) && (!isFrac(r) || Math.abs(r.n) === 1)) return null;
+    for (let i = 1; i < seq.length; i++) if (!eqNum(mulV(seq[i - 1], r), seq[i])) return null;
+    return { redundancy: redundancyOf(seq.length, 2, blank), explain: [`등비수열 — ${ratioText(r)}씩`] };
+  },
+  candidates(seq, blank) {
+    const at = (i: number) => (i >= 0 && i < seq.length ? seq[i] : null);
+    const [p2, p1, n1, n2] = [at(blank - 2), at(blank - 1), at(blank + 1), at(blank + 2)];
+    const out: Value[] = [];
+    if (p2 !== null && p1 !== null) {
+      const r = divV(p1, p2);
+      if (r !== null) out.push(mulV(p1, r));
+    }
+    if (n1 !== null && n2 !== null) {
+      const r = divV(n2, n1);
+      const v = r === null ? null : divV(n1, r);
+      if (v !== null) out.push(v);
+    }
+    return out;
+  },
+};

@@ -4,6 +4,8 @@ import {
   fractionFamily,
   groupedFamily,
   interleavedFamily,
+  rationalFamily,
+  rationalGeometricFamily,
 } from './combinators';
 import {
   affineRule,
@@ -26,15 +28,18 @@ const diffArithmetic = diffOf(arithmeticRule, 1, 'diff-arithmetic', '계차수�
 const diffGeometric = diffOf(geometricRule, 1, 'diff-geometric', '계차수열 (차이가 등비)');
 
 /** 홀짝·분수 수열의 부분 수열에 쓰는 단순 규칙 */
-const SUB_RULES = [constantRule, arithmeticRule, geometricRule, diffArithmetic, affineRule];
-const FRACTION_SUB_RULES = [constantRule, arithmeticRule, geometricRule, diffArithmetic, fibSumRule];
+const SUB_RULES = [constantRule, arithmeticRule, geometricRule, diffArithmetic, affineRule, fibSumRule];
+const FRACTION_SUB_RULES = [constantRule, arithmeticRule, geometricRule, diffArithmetic, fibSumRule, affineRule];
+
+/** 배율(×L)을 바꾸면 성립 여부가 달라지는 계열 — 유리수 통분 판정에서 제외 */
+const SCALE_VARIANT = new Set(['power', 'fib-product', 'fraction']);
 
 /**
  * solver가 경쟁시키는 모든 규칙 계열.
  * 여기 등록된 규칙은 출제 여부(config의 enabled)와 무관하게 "다른 해석" 판정에 쓰인다.
  * 새 규칙 계열을 추가하면 기존 유형 문항의 모호성 검사도 자동으로 강화된다.
  */
-export const FAMILIES: readonly Family[] = [
+const BASE_FAMILIES: readonly Family[] = [
   familyFromRule(arithmeticRule),
   familyFromRule(geometricRule),
   familyFromRule(diffArithmetic),
@@ -53,6 +58,12 @@ export const FAMILIES: readonly Family[] = [
   interleavedFamily(SUB_RULES),
   groupedFamily,
   fractionFamily(FRACTION_SUB_RULES),
+];
+
+export const FAMILIES: readonly Family[] = [
+  ...BASE_FAMILIES,
+  rationalFamily(BASE_FAMILIES.filter((f) => !SCALE_VARIANT.has(f.id))),
+  rationalGeometricFamily,
 ];
 
 const BY_ID = new Map(FAMILIES.map((f) => [f.id, f]));

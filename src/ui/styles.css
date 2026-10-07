@@ -311,6 +311,11 @@ button.big .sub {
   border-bottom: 2px solid currentColor;
   padding: 0 0.15em;
 }
+.mixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
+}
 
 .explain {
   background: var(--surface);

@@ -2,17 +2,21 @@ import { Fragment } from 'react';
 import type { Item } from '../engine/item';
 import { formatValue, isFrac, type Value } from '../engine/value';
 
-function Term({ v }: { v: Value }) {
-  if (isFrac(v)) {
-    const [n, d] = formatValue(v).split('/');
-    return (
-      <span className="frac" aria-label={`${d}분의 ${n}`}>
+/** 값 하나 표시: 분수는 세로, 대분수는 정수 + 세로 분수, 소수·정수는 그대로 */
+export function Term({ v }: { v: Value }) {
+  const s = formatValue(v);
+  if (!isFrac(v) || v.fmt === 'dec' || !s.includes('/')) return <>{s}</>;
+  const [whole, f] = s.includes(' ') ? s.split(' ') : ['', s];
+  const [n, d] = f.split('/');
+  return (
+    <span className="mixed" aria-label={`${whole ? `${whole}과 ` : ''}${d}분의 ${n}`}>
+      {whole}
+      <span className="frac" aria-hidden>
         <span>{n}</span>
         <span>{d}</span>
       </span>
-    );
-  }
-  return <>{formatValue(v)}</>;
+    </span>
+  );
 }
 
 interface Props {

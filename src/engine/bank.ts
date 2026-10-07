@@ -3,7 +3,7 @@ import type { Difficulty, EngineConfig } from './config';
 import { minRedundancyOf } from './compose';
 import type { Item } from './item';
 import { analyze, judge } from './solver';
-import { eqValue, parseValue, valueKey, type Value } from './value';
+import { eqNum, parseValue, valueKey, type Value } from './value';
 
 /**
  * 정적 문제은행.
@@ -11,7 +11,8 @@ import { eqValue, parseValue, valueKey, type Value } from './value';
  *  - data/bank/private/*.yaml : 실제 기출 복원 문항. gitignore 대상. 로컬 비교·보정 스크립트에서만 쓴다.
  */
 
-const rawValue = z.union([z.number().int(), z.string()]);
+/** 정수, "3/4", "2.70"(소수), "1 1/4"(대분수) */
+const rawValue = z.union([z.number(), z.string()]);
 
 export const bankEntrySchema = z.object({
   id: z.string().regex(/^[A-Za-z0-9_-]+$/),
@@ -97,7 +98,7 @@ export function checkBankEntry(entry: BankEntry, config: EngineConfig): BankChec
 
   const blanks = entry.terms.filter((t) => t === null).length;
   if (blanks !== 1) errors.push(`${where}: 빈칸(null)은 정확히 1개여야 합니다 (현재 ${blanks}개)`);
-  if (!entry.choices.some((c) => eqValue(c, entry.answer))) errors.push(`${where}: 정답이 선택지에 없습니다`);
+  if (!entry.choices.some((c) => eqNum(c, entry.answer))) errors.push(`${where}: 정답이 선택지에 없습니다`);
   if (new Set(entry.choices.map(valueKey)).size !== entry.choices.length) errors.push(`${where}: 선택지가 중복됩니다`);
   if (entry.visibility === 'public' && !entry.publishable) {
     errors.push(`${where}: publishable: false 문항이 public 은행에 있습니다 — data/bank/private/로 옮기세요`);

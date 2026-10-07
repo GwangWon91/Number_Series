@@ -1,5 +1,5 @@
 import { FAMILIES, type Family } from './families';
-import { eqValue, uniqueValues, type Value } from './value';
+import { eqNum, uniqueValues, type Value } from './value';
 
 /** 빈칸 값 하나에 대한 하나의 해석 */
 export interface Explanation {
@@ -60,10 +60,10 @@ export function judge(
 ): Verdict {
   return {
     supporting: analysis.explanations.filter(
-      (e) => eqValue(e.value, answer) && e.redundancy >= minRedundancy,
+      (e) => eqNum(e.value, answer) && e.redundancy >= minRedundancy,
     ),
     alternatives: analysis.explanations.filter(
-      (e) => !eqValue(e.value, answer) && e.redundancy >= altMinRedundancy,
+      (e) => !eqNum(e.value, answer) && e.redundancy >= altMinRedundancy,
     ),
   };
 }

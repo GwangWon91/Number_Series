@@ -1,6 +1,6 @@
 import type { DistractorStrategy } from './config';
 import type { Rng } from './rng';
-import { eqValue, frac, isFrac, type Frac, type Value } from './value';
+import { eqNum, frac, isFrac, type Frac, type Value } from './value';
 
 /**
  * 오답 선택지 후보를 넉넉히 만든다. 최종 선택(다른 해석으로 설명되는 값 제외)은 compose가 한다.
@@ -23,7 +23,7 @@ export function distractorPool(
     const v = isFrac(answer)
       ? fracDistractor(rng, strategy, seq as (Frac | null)[], blank, answer)
       : intDistractor(rng, strategy, seq as (number | null)[], blank, answer);
-    if (v === null || eqValue(v, answer) || out.some((o) => eqValue(o, v))) continue;
+    if (v === null || eqNum(v, answer) || out.some((o) => eqNum(o, v))) continue;
     if (!plausible(v, answer)) continue;
     out.push(v);
   }

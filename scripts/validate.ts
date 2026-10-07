@@ -14,7 +14,7 @@ import { generateItem, inNumberRange, minRedundancyOf, type RejectReason } from 
 import type { Difficulty, EngineConfig, TypeConfig } from '../src/engine/config';
 import { itemKey, type Item } from '../src/engine/item';
 import { analyze, judge } from '../src/engine/solver';
-import { eqValue, valueKey } from '../src/engine/value';
+import { eqNum, valueKey } from '../src/engine/value';
 import { loadBank, requireConfig } from '../src/node/load';
 
 const { values: args } = parseArgs({
@@ -36,7 +36,7 @@ function recheck(item: Item, type: TypeConfig, config: EngineConfig): string[] {
   if (![...shown, item.answer].every((v) => inNumberRange(v, type))) problems.push('숫자 범위 위반');
   if (item.choices.length !== config.exam.choices) problems.push('선택지 개수 불일치');
   if (new Set(item.choices.map(valueKey)).size !== item.choices.length) problems.push('선택지 중복');
-  if (item.choices.filter((c) => eqValue(c, item.answer)).length !== 1) problems.push('정답이 선택지에 1개가 아님');
+  if (item.choices.filter((c) => eqNum(c, item.answer)).length !== 1) problems.push('정답이 선택지에 1개가 아님');
   const verdict = judge(
     analyze(item.terms, item.choices),
     item.answer,
