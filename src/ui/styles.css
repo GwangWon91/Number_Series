@@ -282,6 +282,18 @@ button.big .sub {
   border-radius: 8px;
   color: var(--accent);
 }
+.blank-label {
+  font-size: 0.55em;
+  font-weight: 700;
+  margin-right: 0.25em;
+  opacity: 0.8;
+}
+.prompt {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--muted);
+}
 .term.blank.ok {
   border-style: solid;
   border-color: var(--ok);
@@ -310,6 +322,11 @@ button.big .sub {
 .frac > span:first-child {
   border-bottom: 2px solid currentColor;
   padding: 0 0.15em;
+}
+.mixed {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.1em;
 }
 
 .explain {

@@ -2,8 +2,9 @@ import { z } from 'zod';
 import type { Difficulty, EngineConfig } from './config';
 import { minRedundancyOf } from './compose';
 import type { Item } from './item';
-import { analyze, judge } from './solver';
-import { eqValue, parseValue, valueKey, type Value } from './value';
+import { analyzeQuestion, type Question } from './question';
+import { judge } from './solver';
+import { eqNum, parseValue, valueKey, type Value } from './value';
 
 /**
  * 정적 문제은행.
@@ -11,14 +12,20 @@ import { eqValue, parseValue, valueKey, type Value } from './value';
  *  - data/bank/private/*.yaml : 실제 기출 복원 문항. gitignore 대상. 로컬 비교·보정 스크립트에서만 쓴다.
  */
 
-const rawValue = z.union([z.number().int(), z.string()]);
+/** 정수, "3/4", "2.70"(소수), "1 1/4"(대분수) */
+const rawValue = z.union([z.number(), z.string()]);
 
 export const bankEntrySchema = z.object({
   id: z.string().regex(/^[A-Za-z0-9_-]+$/),
-  /** 빈칸은 null. 분수는 "3/4" */
+  /** 빈칸은 null. 분수는 "3/4". A·B 문항은 두 칸을 "A", "B"로 */
   terms: z.array(z.union([rawValue, z.null()])).min(3),
   choices: z.array(rawValue).min(2),
+  /** 묻는 값: 빈칸 값 / A○B 값 / n번째 항 */
   answer: rawValue,
+  /** A·B 문항의 연산 (A + B, A − B, A × B, A / B) */
+  op: z.enum(['+', '−', '×', '/']).optional(),
+  /** n번째 항을 묻는 문항 (terms는 보이는 항만) */
+  nth: z.number().int().min(2).optional(),
   /** 알면 적는다. 모르면 비워 두면 solver가 판별을 시도한다 */
   typeId: z.string().optional(),
   /** 사람이 쓴 규칙 설명 (해설 첫 줄로 쓰인다) */
@@ -40,6 +47,7 @@ export interface BankEntry {
   terms: (Value | null)[];
   choices: Value[];
   answer: Value;
+  question?: Question;
   typeId?: string;
   rule: string;
   difficulty?: Difficulty;
@@ -65,12 +73,19 @@ export function parseBankFile(
       return;
     }
     try {
-      const e = p.data;
+      const { op, nth, ...e } = p.data;
+      const isAB = (t: unknown) => t === 'A' || t === 'B';
+      const question: Question | undefined = op
+        ? { kind: 'pair', op, blanks: [e.terms.indexOf('A'), e.terms.indexOf('B')] }
+        : nth
+          ? { kind: 'nth', n: nth }
+          : undefined;
       entries.push({
         ...e,
-        terms: e.terms.map((t) => (t === null ? null : parseValue(t))),
+        terms: e.terms.map((t) => (t === null || isAB(t) ? null : parseValue(t))),
         choices: e.choices.map(parseValue),
         answer: parseValue(e.answer),
+        question,
         difficulty: e.difficulty as Difficulty | undefined,
         visibility,
         file,
@@ -96,8 +111,12 @@ export function checkBankEntry(entry: BankEntry, config: EngineConfig): BankChec
   const where = `${entry.file} ${entry.id}`;
 
   const blanks = entry.terms.filter((t) => t === null).length;
-  if (blanks !== 1) errors.push(`${where}: 빈칸(null)은 정확히 1개여야 합니다 (현재 ${blanks}개)`);
-  if (!entry.choices.some((c) => eqValue(c, entry.answer))) errors.push(`${where}: 정답이 선택지에 없습니다`);
+  const q = entry.question;
+  const want = q?.kind === 'pair' ? 2 : q?.kind === 'nth' ? 0 : 1;
+  if (blanks !== want) errors.push(`${where}: 빈칸 수가 ${want}개여야 합니다 (현재 ${blanks}개)`);
+  if (q?.kind === 'pair' && q.blanks.some((b) => b < 0)) errors.push(`${where}: op가 있으면 terms에 "A"와 "B"가 모두 있어야 합니다`);
+  if (q?.kind === 'nth' && q.n <= entry.terms.length) errors.push(`${where}: nth(${q.n})는 보이는 항 수보다 커야 합니다`);
+  if (!entry.choices.some((c) => eqNum(c, entry.answer))) errors.push(`${where}: 정답이 선택지에 없습니다`);
   if (new Set(entry.choices.map(valueKey)).size !== entry.choices.length) errors.push(`${where}: 선택지가 중복됩니다`);
   if (entry.visibility === 'public' && !entry.publishable) {
     errors.push(`${where}: publishable: false 문항이 public 은행에 있습니다 — data/bank/private/로 옮기세요`);
@@ -113,7 +132,7 @@ export function checkBankEntry(entry: BankEntry, config: EngineConfig): BankChec
   const type = config.types.find((t) => t.id === entry.typeId);
   const minRed = type ? minRedundancyOf(config, type) : config.validation.minRedundancy;
   const verdict = judge(
-    analyze(entry.terms, entry.choices),
+    analyzeBank(entry),
     entry.answer,
     0,
     config.validation.altMinRedundancy,
@@ -129,11 +148,18 @@ export function checkBankEntry(entry: BankEntry, config: EngineConfig): BankChec
   return { errors, warnings, families };
 }
 
+/** 빈칸 1개는 선택지도 후보로 넣는다 (pair·nth의 선택지는 항 값이 아니라 묻는 값) */
+const analyzeBank = (entry: BankEntry) =>
+  analyzeQuestion(entry.terms, entry.question, entry.question ? {} : { values: entry.choices });
+
 export function bankToItem(entry: BankEntry, config: EngineConfig): Item {
-  const blankIndex = entry.terms.indexOf(null);
-  const verdict = judge(analyze(entry.terms, entry.choices), entry.answer, 0, Infinity);
+  const q = entry.question;
+  const blankIndex = q?.kind === 'pair' ? q.blanks[0] : q?.kind === 'nth' ? q.n - 1 : entry.terms.indexOf(null);
+  const verdict = judge(analyzeBank(entry), entry.answer, 0, Infinity);
   const best = verdict.supporting.sort((a, b) => b.redundancy - a.redundancy)[0];
+  const question: Question | undefined = q?.kind === 'pair' && best?.pair ? { ...q, values: best.pair } : q;
   return {
+    question,
     id: `bank:${entry.id}`,
     source: 'bank',
     typeId: entry.typeId ?? best?.familyId ?? 'unknown',

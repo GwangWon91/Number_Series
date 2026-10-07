@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateItem } from '../../src/engine/compose';
-import { eqValue } from '../../src/engine/value';
+import { applyPairOp } from '../../src/engine/question';
+import { eqNum } from '../../src/engine/value';
 import { loadConfig } from '../../src/node/load';
 
 const { config, errors } = loadConfig();
@@ -23,11 +24,51 @@ describe('문항 생성', () => {
     for (let seed = 1; seed <= 20; seed++) {
       const item = generateItem(config!, { seed, typeId }).item!;
       expect(item).not.toBeNull();
-      expect(item.terms.filter((t) => t === null)).toHaveLength(1);
-      expect(item.terms[item.blankIndex]).toBeNull();
+      const kind = item.question?.kind;
+      const blanks = kind === 'pair' ? 2 : kind === 'nth' ? 0 : 1;
+      expect(item.terms.filter((t) => t === null)).toHaveLength(blanks);
+      if (blanks) expect(item.terms[item.blankIndex]).toBeNull();
       expect(item.choices).toHaveLength(config!.exam.choices);
-      expect(item.choices.filter((c) => eqValue(c, item.answer))).toHaveLength(1);
+      expect(item.choices.filter((c) => eqNum(c, item.answer))).toHaveLength(1);
       expect(item.explain.length).toBeGreaterThan(0);
+    }
+  });
+
+  const only = (kind: 'pair' | 'nth') => ({
+    ...config!,
+    exam: { ...config!.exam, questions: { ...config!.exam.questions, kinds: { [kind]: 1 }, pairOps: { '+': 1, '×': 1, '−': 1, '/': 1 } } },
+  });
+
+  it('A·B 문항: 빈칸 2개, 정답 = A ○ B, 정답 선택지 1개', () => {
+    const cfg = only('pair');
+    let made = 0;
+    for (let seed = 1; seed <= 40; seed++) {
+      const item = generateItem(cfg, { seed, typeId: 'diff-arithmetic' }).item;
+      if (!item) continue;
+      made++;
+      const q = item.question!;
+      expect(q.kind).toBe('pair');
+      if (q.kind !== 'pair') continue;
+      expect(item.terms.filter((t) => t === null)).toHaveLength(2);
+      expect(q.blanks.map((b) => item.terms[b])).toEqual([null, null]);
+      expect(eqNum(applyPairOp(q.op, ...q.values!)!, item.answer)).toBe(true);
+      expect(item.choices.filter((c) => eqNum(c, item.answer))).toHaveLength(1);
+    }
+    expect(made).toBeGreaterThan(30);
+  });
+
+  it('n번째 항 문항: 보이는 항 뒤의 n번째, 빈칸 없음', () => {
+    const cfg = only('nth');
+    for (let seed = 1; seed <= 20; seed++) {
+      const item = generateItem(cfg, { seed, typeId: 'arithmetic' }).item!;
+      const q = item.question!;
+      expect(q.kind).toBe('nth');
+      if (q.kind !== 'nth') continue;
+      expect(item.terms.includes(null)).toBe(false);
+      expect(q.n).toBeGreaterThan(item.terms.length);
+      const [a, b] = item.terms as number[];
+      expect(item.answer).toBe(a + (b - a) * (q.n - 1));
+      expect(item.choices.filter((c) => eqNum(c, item.answer))).toHaveLength(1);
     }
   });
 });

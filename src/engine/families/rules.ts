@@ -182,6 +182,82 @@ function opsForParity(s: readonly number[], parity: number): Op[] | null {
   return ops;
 }
 
+/** 단계 i(i → i+1) 중 i % k === r 인 단계들을 모두 설명하는 연산 후보 */
+function opsForResidue(s: readonly number[], r: number, k: number): Op[] | null {
+  let ops: Op[] | null = null;
+  for (let i = r; i + 1 < s.length; i += k) {
+    const here = stepOps(s[i], s[i + 1]);
+    ops = ops === null ? here : ops.filter((o) => here.some((h) => sameOp(h, o)));
+  }
+  return ops;
+}
+
+/**
+ * k가지 연산을 차례로 반복 (k ≥ 3). 예: ×3, −2, ÷2, +5 반복 (실전 2026H2-1 94번, 소수는 통분 후).
+ * 각 연산이 최소 두 번씩 확인되도록 길이 ≥ 2k+1. 두 연산 번갈아는 alternatingOpsRule.
+ */
+export function opCycleRule(k: number): IntRule {
+  const pick = (ops: Op[]) => ops.find((o) => o.kind !== 'add') ?? ops[0];
+  return {
+    id: `op-cycle-${k}`,
+    label: `${k}가지 연산을 차례로 반복`,
+    minLength: 2 * k + 1,
+    match(seq) {
+      if (seq.length < 2 * k + 1) return null;
+      const found = Array.from({ length: k }, (_, r) => opsForResidue(seq, r, k));
+      if (found.some((o) => !o?.length)) return null;
+      const chosen = (found as Op[][]).map(pick);
+      if (chosen.every((o) => o.kind === 'add')) return null; // 덧셈만이면 "차이 주기 반복"
+      // k개 연산이 모두 달라야 한다: 각 연산이 두 번씩만 확인되므로, 겹치면
+      // ×2만 반복하는 등비수열도 "×2, ×2, +60 반복"으로 읽혀 가짜 대안이 생긴다
+      if (chosen.some((o, i) => chosen.some((p, j) => j < i && sameOp(o, p)))) return null;
+      return { params: k + 1, summary: `${chosen.map(opText).join(', ')}을(를) 차례로 반복` };
+    },
+    next(s) {
+      if (s.length < 2) return [];
+      const ops = opsForResidue(s, (s.length - 1) % k, k) ?? [];
+      return ops.map((o) => applyOp(o, last(s))).filter((v): v is number => v !== null);
+    },
+    prev(s) {
+      if (s.length < k + 1) return [];
+      // 새 단계(-1 → 0)는 단계 k−1과 같은 자리
+      const ops = opsForResidue(s, k - 1, k) ?? [];
+      return ops.map((o) => invertOp(o, s[0])).filter((v): v is number => v !== null);
+    },
+  };
+}
+
+/** 부호가 번갈아 바뀌는 연속 제곱수: +1, −4, +9, −16 … (계차에 씀, 실전 2026H2-2 97번) */
+export const altSquaresRule: IntRule = {
+  id: 'alt-squares',
+  label: '부호가 번갈아 바뀌는 제곱수',
+  minLength: 3,
+  match(seq, fmt) {
+    const base = altSquareBase(seq);
+    if (!base) return null;
+    return { params: 2, summary: `${seq.slice(0, 4).map(fmt).join(', ')} … (±${base.r0}², ±${base.r0 + 1}², …)` };
+  },
+  next(s) {
+    const base = altSquareBase(s);
+    return base ? [altSquareAt(base, s.length)] : [];
+  },
+  prev(s) {
+    const base = altSquareBase(s);
+    return base && base.r0 > 1 ? [altSquareAt(base, -1)] : [];
+  },
+};
+
+function altSquareBase(seq: readonly number[]): { r0: number; sign: number } | null {
+  if (seq.length < 2 || seq[0] === 0) return null;
+  const r0 = Math.round(Math.sqrt(Math.abs(seq[0])));
+  if (r0 * r0 !== Math.abs(seq[0])) return null;
+  const base = { r0, sign: Math.sign(seq[0]) };
+  return seq.every((v, i) => v === altSquareAt(base, i)) ? base : null;
+}
+
+const altSquareAt = ({ r0, sign }: { r0: number; sign: number }, i: number) =>
+  sign * (i % 2 === 0 ? 1 : -1) * (r0 + i) ** 2;
+
 export const alternatingOpsRule: IntRule = {
   id: 'alternating-ops',
   label: '두 연산을 번갈아 적용',

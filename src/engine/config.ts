@@ -16,6 +16,8 @@ const difficultyKey = z.enum(['1', '2', '3']);
 export type Difficulty = 1 | 2 | 3;
 
 export const DISTRACTOR_STRATEGIES = ['near', 'step', 'mistake', 'digit'] as const;
+export const QUESTION_KINDS = ['blank', 'pair', 'nth'] as const;
+export type QuestionKind = (typeof QUESTION_KINDS)[number];
 export type DistractorStrategy = (typeof DISTRACTOR_STRATEGIES)[number];
 
 export const examSchema = z.object({
@@ -28,6 +30,17 @@ export const examSchema = z.object({
     difficultyMix: z.partialRecord(difficultyKey, weight),
     avoidRecent: z.number().int().nonnegative(),
     distractors: z.partialRecord(z.enum(DISTRACTOR_STRATEGIES), weight),
+    /** 묻는 방식 비중. 없으면 빈칸 1개만 */
+    questions: z
+      .object({
+        kinds: z.partialRecord(z.enum(QUESTION_KINDS), weight),
+        pairOps: z.partialRecord(z.enum(['+', '−', '×', '/']), weight),
+        /** A·B 문항은 빈칸이 하나 더 있으므로 항을 이만큼 늘린다 */
+        pairExtraLength: z.number().int().nonnegative(),
+        /** n번째 항 문항: 마지막으로 보이는 항에서 몇 항 뒤를 묻는가 */
+        nthAhead: rangeSchema,
+      })
+      .default({ kinds: { blank: 1 }, pairOps: { '+': 1 }, pairExtraLength: 1, nthAhead: [2, 4] }),
   }),
   validation: z.object({
     minRedundancy: z.number().int().nonnegative(),
@@ -68,7 +81,15 @@ export const typeSchema = z.object({
   minRedundancy: z.number().int().nonnegative().optional(),
   /** 문항 공간이 본래 좁은 유형(등비 등)의 중복률 허용치 덮어쓰기 */
   maxDuplicateRate: z.number().min(0).max(1).optional(),
-  display: z.object({ groupSeparator: z.boolean().default(false) }).default({ groupSeparator: false }),
+  display: z
+    .object({
+      groupSeparator: z.boolean().default(false),
+      /** 분수 값의 화면 표기 비중 (frac 분수 / dec 소수 / mixed 대분수). 없으면 생성된 그대로 */
+      notation: z.partialRecord(z.enum(['frac', 'dec', 'mixed']), weight).optional(),
+      /** 한 수열 안에서 항마다 표기를 섞을 확률 (1/2, 0.4, 4/5 …) */
+      mixNotation: z.number().min(0).max(1).default(0),
+    })
+    .default({ groupSeparator: false, mixNotation: 0 }),
   /** 난이도별 생성 파라미터 — 형태는 유형 플러그인의 params 스키마가 정한다 */
   difficulty: z.partialRecord(difficultyKey, z.unknown()),
 });

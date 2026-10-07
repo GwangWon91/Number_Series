@@ -1,4 +1,5 @@
 import type { Difficulty } from '../engine/config';
+import type { Question } from '../engine/question';
 import type { Value } from '../engine/value';
 
 /** 풀이 기록 1건. 추가만 하고 수정하지 않는다(append-only) → 기기 간 동기화 시 충돌이 없다. */
@@ -15,6 +16,8 @@ export interface Attempt {
   bankId?: string;
   configVersion: number;
   terms: (Value | null)[];
+  /** 묻는 방식 (없으면 빈칸 1개). 2026-10 이전 기록에는 없음 */
+  question?: Question;
   answer: Value;
   choices: Value[];
   chosen: Value;
@@ -33,6 +36,7 @@ export interface Flag {
   seed?: number;
   configVersion: number;
   terms: (Value | null)[];
+  question?: Question;
   answer: Value;
   choices: Value[];
   reasons: string[];

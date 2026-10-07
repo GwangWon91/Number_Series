@@ -11,6 +11,7 @@ import grouped from './grouped';
 import interleaved from './interleaved';
 import linearRecurrence from './linear-recurrence';
 import powerOffset from './power-offset';
+import rational from './rational';
 
 /** 유형 생성기 등록부. 새 유형은 여기에 한 줄 추가하고 config/types/<id>.yaml을 만든다. */
 export const PLUGINS: readonly TypePlugin[] = [
@@ -26,4 +27,5 @@ export const PLUGINS: readonly TypePlugin[] = [
   grouped,
   fraction,
   powerOffset,
+  rational,
 ];

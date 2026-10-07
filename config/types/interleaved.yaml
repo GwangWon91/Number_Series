@@ -2,8 +2,8 @@ id: interleaved
 label: 홀짝 교대 수열
 enabled: true
 weight: 14
-confidence: estimated
-evidence: []
+confidence: evidence
+evidence: [lk-2026h2-2-085, lk-2026h2-2-092]   # 링커리어 2026H2-2 85(분수)·92(부분수열 피보나치)·95 — 현재 엔진은 둘 다 판별 못 함
 note: 부분 수열마다 확인 항이 필요해 길이가 길다.
 length: [9, 10]
 blank: { last: 0.7, middle: 0.3 }

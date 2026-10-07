@@ -3,11 +3,12 @@ import { bank, config } from '../app/engine';
 import { loadPrefs } from '../app/prefs';
 import { itemKey } from '../engine/item';
 import { pickNextItem } from '../engine/session';
-import { eqValue, formatValue } from '../engine/value';
+import { questionText } from '../engine/question';
+import { eqNum, formatValue } from '../engine/value';
 import { addAttempt, addFlag, newId } from '../store/records';
 import { FlagSheet } from './FlagSheet';
 import { loadPractice, savePractice, type PracticeState } from './practiceState';
-import { SequenceView } from './SequenceView';
+import { SequenceView, Term } from './SequenceView';
 import { Timer } from './Timer';
 
 interface Props {
@@ -53,7 +54,7 @@ export function Practice({ mode, onExit }: Props) {
       if (state.phase !== 'answering') return;
       const elapsedMs = Math.round(performance.now() - startedAt.current);
       const chosen = item.choices[index];
-      const correct = eqValue(chosen, item.answer);
+      const correct = eqNum(chosen, item.answer);
       const attemptId = newId();
       void addAttempt({
         id: attemptId,
@@ -67,6 +68,7 @@ export function Practice({ mode, onExit }: Props) {
         bankId: item.bankId,
         configVersion: item.configVersion,
         terms: item.terms,
+        question: item.question,
         answer: item.answer,
         choices: item.choices,
         chosen,
@@ -137,6 +139,7 @@ export function Practice({ mode, onExit }: Props) {
       seed: item.seed,
       configVersion: item.configVersion,
       terms: item.terms,
+      question: item.question,
       answer: item.answer,
       choices: item.choices,
       reasons,
@@ -147,7 +150,7 @@ export function Practice({ mode, onExit }: Props) {
   };
 
   const revealed = phase === 'revealed';
-  const wasCorrect = revealed && state.chosen !== null && eqValue(item.choices[state.chosen], item.answer);
+  const wasCorrect = revealed && state.chosen !== null && eqNum(item.choices[state.chosen], item.answer);
 
   return (
     <div className="screen practice">
@@ -170,6 +173,7 @@ export function Practice({ mode, onExit }: Props) {
       </header>
 
       <main className="stage">
+        <p className="prompt">{questionText(item.question)}</p>
         <SequenceView
           item={item}
           revealed={revealed}
@@ -179,7 +183,7 @@ export function Practice({ mode, onExit }: Props) {
         {revealed && (
           <section className={`explain ${wasCorrect ? 'ok' : 'ng'}`} aria-live="polite">
             <p className="verdict">
-              {wasCorrect ? '정답' : '오답 · 정답'} <b>{formatValue(item.answer)}</b>
+              {wasCorrect ? '정답' : '오답 · 정답'} <b><Term v={item.answer} /></b>
               <span className="muted small">
                 {' '}
                 · {(state.elapsedMs / 1000).toFixed(0)}초
@@ -207,7 +211,7 @@ export function Practice({ mode, onExit }: Props) {
                     aria-label={`${i + 1}번 ${formatValue(c)}`}
                   >
                     <span className="num">{i + 1}</span>
-                    <span className="val">{formatValue(c)}</span>
+                    <span className="val"><Term v={c} /></span>
                   </button>
                 </li>
               ))}
@@ -222,11 +226,11 @@ export function Practice({ mode, onExit }: Props) {
           <>
             <ol className="choices compact">
               {item.choices.map((c, i) => {
-                const isAnswer = eqValue(c, item.answer);
+                const isAnswer = eqNum(c, item.answer);
                 const cls = isAnswer ? 'answer' : i === state.chosen ? 'wrong' : '';
                 return (
                   <li key={i} className={cls}>
-                    {formatValue(c)}
+                    <Term v={c} />
                   </li>
                 );
               })}
