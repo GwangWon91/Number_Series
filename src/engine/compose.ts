@@ -6,7 +6,17 @@ import type { Item } from './item';
 import { analyzeQuestion, applyPairOp, PAIR_OPS, type PairOp, type Question } from './question';
 import { Rng } from './rng';
 import { analyze, judge, type Analysis } from './solver';
-import { formatValue, isFrac, numKey, toNumber, type Value } from './value';
+import {
+  decimalDigits,
+  formatValue,
+  isFrac,
+  numKey,
+  rational,
+  toNumber,
+  withNotation,
+  type Notation,
+  type Value,
+} from './value';
 
 /**
  * 생성 파이프라인: 유형·난이도 선택 → 생성기 → 범위 검사 → 빈칸 위치 → 자기 일관성
@@ -19,6 +29,7 @@ export type RejectReason =
   | 'self' // 생성기가 지정한 규칙으로 자기 수열을 설명 못함 (생성기 버그)
   | 'redundancy' // 정답 규칙을 확정할 항이 부족
   | 'ambiguous' // 다른 규칙으로 다른 답이 나옴
+  | 'unsolvable' // 이 묻는 방식으로는 solver가 정답을 재확인 못함 (유형과 형식이 안 맞음)
   | 'distractors'; // 오답 선택지를 충분히 못 만듦
 
 export interface GenerateSpec {
@@ -49,7 +60,9 @@ export function pickDifficulty(config: EngineConfig, type: TypeConfig, rng: Rng)
 
 export function inNumberRange(v: Value, type: TypeConfig): boolean {
   const ok = (n: number) => n >= type.numbers.min && n <= type.numbers.max;
-  return isFrac(v) ? ok(v.n) && ok(v.d) : ok(v);
+  // 소수·대분수 표기는 약분한 값으로 (15.25 = 1525/100 → 61/4)
+  const r = isFrac(v) && v.fmt ? rational(v.n, v.d) : v;
+  return isFrac(r) ? ok(r.n) && ok(r.d) : ok(r);
 }
 
 function pickBlank(rng: Rng, type: TypeConfig, length: number): number {
@@ -92,7 +105,11 @@ function pairDistractors(
   for (const x of as) for (const y of bs) if (x !== a || y !== b) out.push(applyPairOp(op, x, y));
   for (const o of PAIR_OPS) if (o !== op) out.push(applyPairOp(o, a, b));
   if (op === '−' || op === '/') out.push(applyPairOp(op, b, a));
-  return rng.shuffle(out.filter((v): v is Value => v !== null)).slice(0, size);
+  // 정답이 양수인데 0 이하인 오답은 바로 소거되므로 쓰지 않는다
+  const answer = applyPairOp(op, a, b);
+  const positive = answer !== null && toNumber(answer) > 0;
+  const ok = (v: Value | null): v is Value => v !== null && (!positive || toNumber(v) > 0);
+  return rng.shuffle(out.filter(ok)).slice(0, size);
 }
 
 export function minRedundancyOf(config: EngineConfig, type: TypeConfig): number {
@@ -182,7 +199,8 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
     }
 
     if (!intended) {
-      reject('self');
+      // 빈칸 1개에서 실패하면 생성기 버그, nth는 보이는 항이 규칙 단위(군수열 3개씩)에 안 맞는 경우
+      reject(kind === 'blank' ? 'self' : 'unsolvable');
       continue;
     }
     if (intended.redundancy < minRed) {
@@ -194,19 +212,48 @@ export function generateItem(config: EngineConfig, spec: GenerateSpec): Generate
       reject('ambiguous');
       continue;
     }
+    // solver가 정답을 재확인하지 못하는 형식 (예: 군수열의 n번째 항은 다음 묶음을 예측할 수 없다)
+    if (verdict.supporting.length === 0) {
+      reject('unsolvable');
+      continue;
+    }
 
     // 다른 규칙으로 "설명되는" 값은 오답 선택지로 쓰지 않는다 (복수 정답 방지)
     const explained = new Set(
       analysis.explanations.filter((e) => e.redundancy >= altMinRedundancy).map((e) => numKey(e.value)),
     );
+    // 화면 표기: 정해진 유형만 (분자·분모 규칙인 fraction은 보이는 그대로여야 하므로 설정 안 함)
+    const known = [...shown.filter((v): v is Value => v !== null), answer];
+    let notation: Notation | null = type.display.notation ? (rng.weighted(type.display.notation) as Notation) : null;
+    let digits = 0;
+    if (notation === 'dec') {
+      const ds = known.map(decimalDigits);
+      if (ds.some((d) => d === null)) notation = 'frac';
+      else digits = Math.max(...(ds as number[]));
+    }
+    const fits = (v: Value) => notation !== 'dec' || (decimalDigits(v) ?? 9) <= digits;
+
     const seen = new Set([numKey(answer)]);
     const distractors = pool
-      .filter((v) => !explained.has(numKey(v)) && (kind === 'pair' || inNumberRange(v, type)))
+      .filter((v) => !explained.has(numKey(v)) && (kind === 'pair' || inNumberRange(v, type)) && fits(v))
       .filter((v) => !seen.has(numKey(v)) && seen.add(numKey(v)))
       .slice(0, choiceCount - 1);
     if (distractors.length < choiceCount - 1) {
       reject('distractors');
       continue;
+    }
+
+    if (notation) {
+      const conv = (v: Value) => withNotation(v, notation!, digits);
+      // 혼용: 항마다 문항 표기(선택지와 같음)와 다른 표기 중 하나 → 선택지 표기가 수열과 동떨어지지 않게
+      const mix = rng.chance(type.display.mixNotation);
+      const other: Notation = notation === 'dec' ? 'frac' : 'dec';
+      shown = shown.map((t) =>
+        t === null ? null : mix ? withNotation(t, rng.pick([notation!, other])) : conv(t),
+      );
+      answer = conv(answer);
+      distractors.splice(0, distractors.length, ...distractors.map(conv));
+      if (question?.kind === 'pair' && question.values) question.values = [conv(question.values[0]), conv(question.values[1])];
     }
 
     const choices = [answer, ...distractors];

@@ -81,7 +81,15 @@ export const typeSchema = z.object({
   minRedundancy: z.number().int().nonnegative().optional(),
   /** 문항 공간이 본래 좁은 유형(등비 등)의 중복률 허용치 덮어쓰기 */
   maxDuplicateRate: z.number().min(0).max(1).optional(),
-  display: z.object({ groupSeparator: z.boolean().default(false) }).default({ groupSeparator: false }),
+  display: z
+    .object({
+      groupSeparator: z.boolean().default(false),
+      /** 분수 값의 화면 표기 비중 (frac 분수 / dec 소수 / mixed 대분수). 없으면 생성된 그대로 */
+      notation: z.partialRecord(z.enum(['frac', 'dec', 'mixed']), weight).optional(),
+      /** 한 수열 안에서 항마다 표기를 섞을 확률 (1/2, 0.4, 4/5 …) */
+      mixNotation: z.number().min(0).max(1).default(0),
+    })
+    .default({ groupSeparator: false, mixNotation: 0 }),
   /** 난이도별 생성 파라미터 — 형태는 유형 플러그인의 params 스키마가 정한다 */
   difficulty: z.partialRecord(difficultyKey, z.unknown()),
 });

@@ -64,6 +64,32 @@ export const divV = (a: Value, b: Value): Value | null => {
   return bn === 0 ? null : rational(an * bd, ad * bn);
 };
 
+export type Notation = 'frac' | 'dec' | 'mixed';
+
+/** 소수로 쓸 때 필요한 자릿수 (분모가 2·5로만 이루어져야 함, 최대 3자리). 불가능하면 null */
+export function decimalDigits(v: Value): number | null {
+  let d = reducedDen(v);
+  let k2 = 0;
+  let k5 = 0;
+  for (; d % 2 === 0; d /= 2) k2++;
+  for (; d % 5 === 0; d /= 5) k5++;
+  const k = Math.max(k2, k5);
+  return d === 1 && k <= 3 ? k : null;
+}
+
+/** 같은 값을 다른 표기로: frac = 약분한 분수, dec = 소수(digits 자리 이상), mixed = 대분수 */
+export function withNotation(v: Value, fmt: Notation, digits = 0): Value {
+  const r = isFrac(v) ? rational(v.n, v.d) : v;
+  if (fmt === 'frac') return r;
+  if (fmt === 'mixed') return isFrac(r) && Math.abs(r.n) > r.d ? frac(r.n, r.d, 'mixed') : r;
+  const need = decimalDigits(v);
+  if (need === null) return r;
+  const k = Math.max(digits, need);
+  if (k === 0) return r;
+  const D = 10 ** k;
+  return frac(Math.round(toNumber(v) * D), D, 'dec');
+}
+
 /** 중복 판정·직렬화용 키 (표기 기준) */
 export function valueKey(v: Value): string {
   return isFrac(v) ? `${v.n}/${v.d}` : String(v);

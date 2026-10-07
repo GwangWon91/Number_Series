@@ -1,7 +1,7 @@
 import { FAMILIES, type Family } from './families';
 import type { Analysis, Explanation } from './solver';
 import { analyze } from './solver';
-import { addV, divV, formatValue, mulV, numKey, subV, uniqueValues, type Value } from './value';
+import { addV, divV, formatValue, mulV, subV, uniqueValues, valueKey, type Value } from './value';
 
 /**
  * 묻는 방식. 없으면 빈칸 1개(기본).
@@ -50,12 +50,14 @@ function analyzePair(
   families: readonly Family[],
 ): Analysis {
   const [ia, ib] = q.blanks;
+  // 표기 기준 키: 6/32와 3/16은 값이 같아도 분자·분모 규칙에서는 다른 후보다
+  const key = (a: Value, b: Value) => `${valueKey(a)}|${valueKey(b)}`;
   const pairs = new Map<string, [Value, Value]>();
-  for (const p of extraPairs) pairs.set(`${numKey(p[0])}|${numKey(p[1])}`, p);
+  for (const p of extraPairs) pairs.set(key(...p), p);
   for (const a of blankCandidates(seq, ia, families)) {
     const withA = seq.slice();
     withA[ia] = a;
-    for (const b of blankCandidates(withA, ib, families)) pairs.set(`${numKey(a)}|${numKey(b)}`, [a, b]);
+    for (const b of blankCandidates(withA, ib, families)) if (!pairs.has(key(a, b))) pairs.set(key(a, b), [a, b]);
   }
   const explanations: Explanation[] = [];
   for (const [a, b] of pairs.values()) {

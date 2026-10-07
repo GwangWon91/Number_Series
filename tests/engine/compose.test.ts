@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { generateItem } from '../../src/engine/compose';
 import { applyPairOp } from '../../src/engine/question';
-import { eqNum, eqValue } from '../../src/engine/value';
+import { eqNum } from '../../src/engine/value';
 import { loadConfig } from '../../src/node/load';
 
 const { config, errors } = loadConfig();
@@ -24,10 +24,12 @@ describe('문항 생성', () => {
     for (let seed = 1; seed <= 20; seed++) {
       const item = generateItem(config!, { seed, typeId }).item!;
       expect(item).not.toBeNull();
-      expect(item.terms.filter((t) => t === null)).toHaveLength(1);
-      expect(item.terms[item.blankIndex]).toBeNull();
+      const kind = item.question?.kind;
+      const blanks = kind === 'pair' ? 2 : kind === 'nth' ? 0 : 1;
+      expect(item.terms.filter((t) => t === null)).toHaveLength(blanks);
+      if (blanks) expect(item.terms[item.blankIndex]).toBeNull();
       expect(item.choices).toHaveLength(config!.exam.choices);
-      expect(item.choices.filter((c) => eqValue(c, item.answer))).toHaveLength(1);
+      expect(item.choices.filter((c) => eqNum(c, item.answer))).toHaveLength(1);
       expect(item.explain.length).toBeGreaterThan(0);
     }
   });
@@ -63,7 +65,7 @@ describe('문항 생성', () => {
       expect(q.kind).toBe('nth');
       if (q.kind !== 'nth') continue;
       expect(item.terms.includes(null)).toBe(false);
-      expect(q.n).toBeGreaterThan(item.terms.length + 1);
+      expect(q.n).toBeGreaterThan(item.terms.length);
       const [a, b] = item.terms as number[];
       expect(item.answer).toBe(a + (b - a) * (q.n - 1));
       expect(item.choices.filter((c) => eqNum(c, item.answer))).toHaveLength(1);

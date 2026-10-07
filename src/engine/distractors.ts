@@ -1,6 +1,6 @@
 import type { DistractorStrategy } from './config';
 import type { Rng } from './rng';
-import { eqNum, frac, isFrac, type Frac, type Value } from './value';
+import { addV, eqNum, frac, isFrac, mulV, rational, reducedDen, subV, toNumber, type Frac, type Value } from './value';
 
 /**
  * 오답 선택지 후보를 넉넉히 만든다. 최종 선택(다른 해석으로 설명되는 값 제외)은 compose가 한다.
@@ -20,9 +20,13 @@ export function distractorPool(
   const out: Value[] = [];
   for (let i = 0; i < size * 4 && out.length < size; i++) {
     const strategy = rng.weighted(weights);
-    const v = isFrac(answer)
-      ? fracDistractor(rng, strategy, seq as (Frac | null)[], blank, answer)
-      : intDistractor(rng, strategy, seq as (number | null)[], blank, answer);
+    const known = seq.filter((v): v is Value => v !== null);
+    const allPlainFrac = isFrac(answer) && known.every((v) => isFrac(v) && !v.fmt);
+    const v = allPlainFrac
+      ? fracDistractor(rng, strategy, seq as (Frac | null)[], blank, answer as Frac)
+      : isFrac(answer) || known.some(isFrac)
+        ? ratDistractor(rng, strategy, seq, blank, answer)
+        : intDistractor(rng, strategy, seq as (number | null)[], blank, answer as number);
     if (v === null || eqNum(v, answer) || out.some((o) => eqNum(o, v))) continue;
     if (!plausible(v, answer)) continue;
     out.push(v);
@@ -40,8 +44,44 @@ function plausible(v: Value, answer: Value): boolean {
   if (typeof v === 'number' && typeof answer === 'number') {
     return (answer <= 0 || v > 0) && close(v, answer);
   }
-  return false;
+  // 유리수(정수·분수 혼합): 값으로 비교
+  const [x, a] = [toNumber(v), toNumber(answer)];
+  return (a <= 0 || x > 0) && Math.abs(x - a) <= Math.max(1, Math.abs(a) * 0.5);
 }
+
+/**
+ * 유리수 수열 오답: 정답 ± 1/L (L = 수열의 공통분모), ± 이웃 간격, 간격을 한 번 더 적용, 자릿수(×10·÷10) 실수.
+ */
+function ratDistractor(
+  rng: Rng,
+  strategy: DistractorStrategy,
+  seq: readonly (Value | null)[],
+  blank: number,
+  answer: Value,
+): Value | null {
+  const known = [...seq.filter((v): v is Value => v !== null), answer];
+  const L = known.reduce<number>((l, v) => lcm(l, reducedDen(v)), 1);
+  const sign = rng.chance(0.5) ? 1 : -1;
+  const unit = (k: number) => rational(sign * k, Math.min(L, 100));
+  const at = (i: number) => (i >= 0 && i < seq.length ? seq[i] : null);
+  const [l1, l2] = [at(blank - 1), at(blank - 2)];
+  const gap = l1 !== null && l2 !== null ? subV(l1, l2) : null;
+  switch (strategy) {
+    case 'near':
+      return addV(answer, unit(rng.int(1, 3)));
+    case 'step':
+      return gap ? (sign > 0 ? addV(answer, gap) : subV(answer, gap)) : addV(answer, unit(2));
+    case 'mistake':
+      return gap && l1 !== null ? addV(l1, gap) : addV(answer, unit(rng.int(2, 5)));
+    case 'digit':
+      return rng.chance(0.5) ? addV(answer, sign) : mulV(answer, rng.chance(0.5) ? 10 : frac(1, 10));
+  }
+}
+
+const lcm = (a: number, b: number) => {
+  const g = (x: number, y: number): number => (y === 0 ? x : g(y, x % y));
+  return (a / g(a, b)) * b;
+};
 
 /** blank 주변의 알려진 이웃 차이 (왼쪽 우선) */
 function neighborGaps(seq: readonly (number | null)[], blank: number): number[] {
