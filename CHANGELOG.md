@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.0](https://github.com/GwangWon91/Number_Series/compare/v0.6.0...v0.7.0) (2026-10-08)
+
+
+### 새 기능
+
+* **ui:** 업적과 주별 정답률 그래프, 기록 화면 개편 ([835713f](https://github.com/GwangWon91/Number_Series/commit/835713fb43851282fd70cdfc7b2ea4354d80b4be))
+* **ui:** 첫 방문 안내와 접근성 다듬기 ([e50ccf6](https://github.com/GwangWon91/Number_Series/commit/e50ccf675afc965ce7fe281b098a2f7a9ac15474))
+
 ## [0.6.0](https://github.com/GwangWon91/Number_Series/compare/v0.5.0...v0.6.0) (2026-10-08)
 
 
