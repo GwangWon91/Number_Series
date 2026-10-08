@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.6.0](https://github.com/GwangWon91/Number_Series/compare/v0.5.0...v0.6.0) (2026-10-08)
+
+
+### 새 기능
+
+* **bank:** 기출 유형 변형 문항 78개 (공개 은행 12 → 90) ([5717f3b](https://github.com/GwangWon91/Number_Series/commit/5717f3bcdf2aa523c48df8481877828e50d54a98))
+* **config:** 게임 모드 설정 파일 config/modes.yaml ([d9c76a9](https://github.com/GwangWon91/Number_Series/commit/d9c76a9d4a60c4ae3a9bcf811be8d1a34d799605))
+* **engine:** 실력에 맞춘 난이도와 약점 유형 출제 ([2061697](https://github.com/GwangWon91/Number_Series/commit/2061697d3c3b2bf1477bdb0118cd9543d0feec0e))
+* **store:** 모드별 최고 점수 조회 (홈 모드 카드) ([6ae3c09](https://github.com/GwangWon91/Number_Series/commit/6ae3c093982856d90512ee40ace5c15dc6d140af))
+* **ui:** 실전·타임어택·서바이벌·약점 집중 모드와 홈 개편 ([763b4d6](https://github.com/GwangWon91/Number_Series/commit/763b4d6cccee61fd8fe2262f405d1f73467bc301))
+
+
+### 문서
+
+* 모드·게임 규칙·변형 문항 생성 반영 ([1fbc5cc](https://github.com/GwangWon91/Number_Series/commit/1fbc5cc96e4fae7ebd3365b0b59f90997afa0434))
+
 ## [0.5.0](https://github.com/GwangWon91/Number_Series/compare/v0.4.0...v0.5.0) (2026-10-08)
 
 
