@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.10.0](https://github.com/GwangWon91/Number_Series/compare/v0.9.0...v0.10.0) (2026-10-08)
+
+
+### 새 기능
+
+* **config:** 실전 모드 점수 = 정답 1점, 20점 만점, 오답 감점 없음 ([2218037](https://github.com/GwangWon91/Number_Series/commit/22180371ff92d31202d1499553da6b567403f8ec))
+* **config:** 실전 모드 점수 = 정답 1점, 20점 만점, 오답 감점 없음 ([d4f8d38](https://github.com/GwangWon91/Number_Series/commit/d4f8d3853327f49d75005bea234f462d588439de))
+
 ## [0.9.0](https://github.com/GwangWon91/Number_Series/compare/v0.8.1...v0.9.0) (2026-10-08)
 
 
