@@ -411,6 +411,11 @@ B10(은행 확충, 콘텐츠) ─▶ 실전 모드 은행 비율 상향 (4단계
 - **커밋**: `feat(engine): 선택지 출처·규칙 계열 태그` · `feat(store): 세션 기록 테이블` · `feat(store): 설정 값 스키마 버전` · `feat(store): 익명 기록에 선택지 출처 포함` · `feat(store): 세션 동기화`
 
 ### 3단계 — 핵심 게임 루프: 무한 연습 게임화
+- **진행 기록 (2026-10-08 완료)**
+  - 게임 규칙은 `src/game/run.ts` 하나로 모았다 (`answer()` → `{run, events}`, 테스트 `tests/game/run.test.ts`). 점수 수치는 상수이고, 4단계에서 modes.yaml로 옮긴다.
+  - 이름 변경(`Practice.tsx` → `Play.tsx`)과 `Checkpoint.tsx` 분리는 하지 않았다. 구간 요약은 `Practice.tsx` 안의 작은 컴포넌트다.
+  - 효과음은 WebAudio 합성음이고, 콤보가 이어질수록 음이 올라간다. 진동은 Android만 (iOS 미지원).
+  - 머리말 버튼으로 효과음을 바로 끄고 켤 수 있다. 설정 화면에서 효과음·진동을 따로 끌 수 있다.
 - **항목**: A4, A5, A6, D1, D2, D3, D5, D12(새 애니메이션 부분)
 - **파일**
   - 신규: `src/game/session.ts`, `src/game/score.ts`, `src/ui/effects.ts`, `src/ui/Checkpoint.tsx`, `src/ui/Summary.tsx`, `tests/game/session.test.ts`
