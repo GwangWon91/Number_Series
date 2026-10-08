@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.3.0](https://github.com/GwangWon91/Number_Series/compare/v0.2.0...v0.3.0) (2026-10-08)
+
+
+### 새 기능
+
+* **ui:** 게임화 1단계 — 구조 정리·테마 마감·연속 일수 삭제 ([0ae0028](https://github.com/GwangWon91/Number_Series/commit/0ae00285714d138cd8b9213c77defedd51cbcf45))
+* **ui:** 홈 테마 전환 버튼, 테마 깜빡임 제거·라이트 대비 보강 ([d5fa264](https://github.com/GwangWon91/Number_Series/commit/d5fa264547e7ffdabba44ec0f5d34b01347352b0))
+
+
+### 버그 수정
+
+* **ui:** 오류 화면과 저장된 진행 상태 검증 ([d4d4207](https://github.com/GwangWon91/Number_Series/commit/d4d4207d9477aab909554984e92960ec7561256e))
+
+
+### 문서
+
+* Firebase 미연결 — 수집 필드(B7)를 5단계로 연기 ([f4400df](https://github.com/GwangWon91/Number_Series/commit/f4400df758ac03d1a44ab41d3bec84414ba6a83e))
+* 게임화 리팩토링 계획 ([ec388fc](https://github.com/GwangWon91/Number_Series/commit/ec388fcb85892539d465112fcaab6bceeba9b619))
+
 ## [0.2.0](https://github.com/GwangWon91/Number_Series/compare/v0.1.0...v0.2.0) (2026-10-07)
 
 
