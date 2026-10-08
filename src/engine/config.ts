@@ -187,6 +187,10 @@ export function buildConfig(
   };
 }
 
+/** 화면·리포트용 유형 이름 (모르는 id는 그대로) */
+export const typeLabel = (config: EngineConfig, id: string): string =>
+  config.types.find((t) => t.id === id)?.label ?? id;
+
 export function getType(config: EngineConfig, id: string): TypeConfig {
   const t = config.types.find((x) => x.id === id);
   if (!t) throw new Error(`알 수 없는 유형: ${id}`);

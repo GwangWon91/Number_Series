@@ -1,3 +1,4 @@
+import type { Item } from '../engine/item';
 import { db, type Stored } from './db';
 import type { Attempt, ExportFile, Flag } from './types';
 
@@ -13,6 +14,19 @@ export function onLocalWrite(fn: Listener): () => void {
   return () => listeners.delete(fn);
 }
 const notify = () => listeners.forEach((fn) => fn());
+
+/** 풀이 기록·플래그에 함께 남기는 문항 스냅숏 (설정이 바뀐 뒤에도 그대로 검토할 수 있게) */
+export const itemSnapshot = (item: Item) => ({
+  itemId: item.id,
+  typeId: item.typeId,
+  difficulty: item.difficulty,
+  seed: item.seed,
+  configVersion: item.configVersion,
+  terms: item.terms,
+  question: item.question,
+  answer: item.answer,
+  choices: item.choices,
+});
 
 export function newId(): string {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
@@ -48,18 +62,11 @@ export interface RecordSummary {
   wrong: number;
   /** 오늘 푼 순서대로 맞았는지 (홈의 "오늘의 수열") */
   today: boolean[];
-  /** 오늘(오늘 안 풀었으면 어제)부터 거슬러 연속으로 푼 날 수 */
-  streakDays: number;
   /** 유형별, 틀린 비율 높은 순 */
   byType: TallyRow[];
   /** 묻는 방식별: blank / pair / nth */
   byKind: TallyRow[];
 }
-
-const dayKey = (ts: number) => {
-  const d = new Date(ts);
-  return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-};
 
 function tally(rows: readonly Attempt[], keyOf: (a: Attempt) => string): TallyRow[] {
   const m = new Map<string, { solved: number; wrong: number; ms: number }>();
@@ -80,19 +87,10 @@ export async function recordSummary(): Promise<RecordSummary> {
   const rows = await db.attempts.orderBy('ts').toArray();
   const start = new Date();
   start.setHours(0, 0, 0, 0);
-  const days = new Set(rows.map((r) => dayKey(r.ts)));
-  let streakDays = 0;
-  const d = new Date();
-  if (!days.has(dayKey(d.getTime()))) d.setDate(d.getDate() - 1);
-  while (days.has(dayKey(d.getTime()))) {
-    streakDays++;
-    d.setDate(d.getDate() - 1);
-  }
   return {
     total: rows.length,
     wrong: rows.filter((r) => !r.correct).length,
     today: rows.filter((r) => r.ts >= start.getTime()).map((r) => r.correct),
-    streakDays,
     byType: tally(rows, (a) => a.typeId),
     byKind: tally(rows, (a) => a.question?.kind ?? 'blank'),
   };
