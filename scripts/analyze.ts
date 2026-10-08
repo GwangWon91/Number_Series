@@ -1,13 +1,12 @@
 /**
- * 문제은행 분석 리포트: 회차·형식·유형별 집계, 미분류·모호·중복 후보, 설정 근거(evidence) 커버리지.
+ * 문제은행 분석 리포트: 회차·형식별 집계, 기출 유형·묻는 방식 비중 vs 설정 비중, 미분류·모호·중복 후보, 근거 커버리지.
  *   npm run analyze            # reports/bank-analysis.md 갱신 (gitignore — 커밋하지 않는다)
  *   npm run analyze -- --stdout
  * 문항 본문은 쓰지 않는다(집계와 id만). 그래도 기출 집계라 공개 저장소에 올리지 않는다 (reports/는 gitignore).
  * private은 CI에 없으므로 로컬 전용이다.
  */
-import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { parse } from 'yaml';
 import { parseArgs } from 'node:util';
 import { bankToItem, checkBankEntry } from '../src/engine/bank';
 import { valueKey } from '../src/engine/value';
@@ -16,10 +15,13 @@ import { loadBank, requireConfig, ROOT } from '../src/node/load';
 const { values: args } = parseArgs({ options: { stdout: { type: 'boolean', default: false } } });
 const config = requireConfig();
 const { entries, errors } = loadBank();
-// 유형별 근거 문항 id는 공개 config에 두지 않고 비공개 파일에 둔다 (data/bank/private/meta/evidence.yaml)
-const evidenceFile = join(ROOT, 'data/bank/private/meta/evidence.yaml');
-const privateEvidence: Record<string, string[]> = existsSync(evidenceFile) ? (parse(readFileSync(evidenceFile, 'utf8')) ?? {}) : {};
-const evidenceOf = (t: (typeof config.types)[number]) => [...t.evidence, ...(privateEvidence[t.id] ?? [])];
+/** 기출 비중과 설정 비중이 이만큼(%p) 벌어지면 점검 표시 */
+const DRIFT_PP = 5;
+// 유형별 근거 = 그 typeId를 적은 비공개 기출 문항 (공개 config에는 id를 두지 않는다)
+const evidenceOf = (t: (typeof config.types)[number]) => [
+  ...t.evidence,
+  ...entries.filter((e) => e.visibility === 'private' && e.typeId === t.id).map((e) => e.id),
+];
 
 const count = <T>(xs: T[], key: (x: T) => string) => {
   const m = new Map<string, number>();
@@ -67,25 +69,43 @@ out.push(
     return [rd, ...fmts.map((f) => rs.filter((r) => r.fmt === f).length), rs.length, dif.length ? (dif.reduce((s, r) => s + r.e.difficulty!, 0) / dif.length).toFixed(2) : '-'];
   })),
   '',
-  '## 유형별 은행 비중 vs 설정 비중',
-  '분류 = 문항에 적은 typeId, 없으면 solver가 고른 규칙 계열. 설정에 없는 행(rational-geometric 등)은 solver 규칙 계열이라 새 유형 후보다.',
+  '## 기출 유형 비중 vs 설정 생성 비중',
+  `기출 = 비공개 은행 문항의 typeId (공개 변형은 기출에서 나온 것이라 세지 않는다). 차이가 ${DRIFT_PP}%p 이상이면 점검. 설정에 없는 행은 새 유형 후보.`,
   '',
 );
-const typeIds = [...new Set([...config.types.map((t) => t.id), ...rows.map((r) => r.typeId)])];
+const exam = rows.filter((r) => r.e.visibility === 'private');
+const pct = (n: number, d: number) => (n / (d || 1)) * 100;
+const drift = (a: number, b: number) => `${(a - b).toFixed(0)}${Math.abs(a - b) >= DRIFT_PP ? ' **점검**' : ''}`;
+const isType = (id: string) => config.types.some((t) => t.id === id);
+const typeIds = [...new Set([...config.types.map((t) => t.id), ...exam.map((r) => r.typeId)])];
 const totalW = config.types.filter((t) => t.enabled).reduce((s, t) => s + t.weight, 0) || 1;
-const byType = count(rows, (r) => r.typeId);
+const byType = count(exam, (r) => r.typeId);
+const kinds = config.exam.questions.kinds;
+const totalK = Object.values(kinds).reduce((s, w) => s + (w ?? 0), 0) || 1;
+const byFmt = count(exam, (r) => r.fmt);
 out.push(
-  table(['유형', '은행', '은행 %', '설정 weight %', '근거 수준', '설정 evidence id 수'], typeIds.map((id) => {
+  table(['유형', '기출', '기출 %', '설정 %', '차이 %p', '근거 수준'], typeIds.map((id) => {
     const t = config.types.find((x) => x.id === id);
-    const n = byType.get(id) ?? 0;
-    return [id, n, `${((n / (rows.length || 1)) * 100).toFixed(0)}`, t?.enabled ? `${((t.weight / totalW) * 100).toFixed(0)}` : '-', t?.confidence ?? '(설정 없음)', (t ? evidenceOf(t).length : '-')];
+    const got = pct(byType.get(id) ?? 0, exam.length);
+    const want = t?.enabled ? pct(t.weight, totalW) : 0;
+    return [id, byType.get(id) ?? 0, got.toFixed(0), t?.enabled ? want.toFixed(0) : '-', t ? drift(got, want) : '후보', t?.confidence ?? '(설정 없음)'];
+  })),
+  '',
+  '## 기출 묻는 방식 비중 vs 설정 (exam.questions.kinds)',
+  table(['방식', '기출', '기출 %', '설정 %', '차이 %p'], (
+    [['blank1', 'blank'], ['pair', 'pair'], ['nth', 'nth']] as const
+  ).map(([fmt, kind]) => {
+    const got = pct(byFmt.get(fmt) ?? 0, exam.length);
+    const want = pct(kinds[kind] ?? 0, totalK);
+    return [fmt, byFmt.get(fmt) ?? 0, got.toFixed(0), want.toFixed(0), drift(got, want)];
   })),
   '',
   '## 점검 대상',
   `- 미분류(규칙 판별 실패 → 새 규칙·유형 후보): ${ids(rows.filter((r) => r.unclassified))}`,
+  `- 후보 유형(typeId가 설정에 없음 → 생성기 만들 때까지 변형 안 만듦): ${ids(exam.filter((r) => !isType(r.typeId)))}`,
   `- 정답 규칙 여유 항 부족: ${ids(rows.filter((r) => r.thin))}`,
   `- 다른 해석으로 다른 답이 나옴(모호): ${ids(rows.filter((r) => r.ambiguous))}`,
-  `- typeId를 안 적은 문항: ${rows.filter((r) => !r.declared).length}문항`,
+  `- typeId를 안 적은 기출 문항: ${ids(exam.filter((r) => !r.declared))}`,
 );
 const dupGroups = [...count(rows, (r) => r.key)].filter(([, n]) => n > 1);
 out.push(
