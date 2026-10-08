@@ -5,8 +5,6 @@ on:
   pull_request:
   push:
     branches: [main]
-  # 기본 토큰이 만든 릴리스 PR에는 pull_request 이벤트가 안 올 수 있어 scripts/ship.sh가 직접 실행한다
-  workflow_dispatch:
 
 permissions:
   contents: read
