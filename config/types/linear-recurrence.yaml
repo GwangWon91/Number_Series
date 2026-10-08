@@ -3,7 +3,6 @@ label: 앞 항에 연산 적용 (×a+b, 번갈아)
 enabled: true
 weight: 14
 confidence: estimated
-evidence: []
 length: [6, 7]
 blank: { last: 0.7, middle: 0.3 }
 numbers: { min: -999, max: 2999 }

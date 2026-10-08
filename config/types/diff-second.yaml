@@ -3,7 +3,6 @@ label: 2단계 계차
 enabled: true
 weight: 5
 confidence: estimated
-evidence: []
 note: 차이의 차이까지 봐야 하는 고난도 유형으로 추정.
 length: [7, 8]
 blank: { last: 0.8, middle: 0.2 }

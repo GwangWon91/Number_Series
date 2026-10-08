@@ -90,7 +90,7 @@
 * **store:** 익명 풀이 기록을 소유자에게 모으기 (pool) ([6a88ad0](https://github.com/GwangWon91/Number_Series/commit/6a88ad0377c3fdd9f8d7fc0f5bae63af34c98f63))
 * **ui:** 기록 화면, 정답 공개 후 배치, 다크 모드, 점수 표시, 홈 리디자인 ([624e15d](https://github.com/GwangWon91/Number_Series/commit/624e15d66a2d33b725639e3c5cdc5de8bc986596))
 * **ui:** 기록 화면, 풀이 화면 배치, 다크 모드, 점수 표시, 홈 리디자인 ([863cdb4](https://github.com/GwangWon91/Number_Series/commit/863cdb40b626ff877cf9b5712f36f941a432f46f))
-* 링커리어 2026H2-2 복원 20문항 반영 (config v2) ([185da8a](https://github.com/GwangWon91/Number_Series/commit/185da8a3e94be4471c3ac1a0101cb836c21c29b4))
+* 기출 복원 문항 반영 (config v2) ([185da8a](https://github.com/GwangWon91/Number_Series/commit/185da8a3e94be4471c3ac1a0101cb836c21c29b4))
 * 수열추리 문항 생성 엔진, 설정 파일, 검증 도구 ([cd21120](https://github.com/GwangWon91/Number_Series/commit/cd21120f1498939de5e3b2c8a6547046132719a1))
 * 유리수 유형·표기 설정·문항 형식 비중 (엔진 확장 3단계, config v3) ([1dfb463](https://github.com/GwangWon91/Number_Series/commit/1dfb463a283e4542f94982b9d53fafbb93f99379))
 * 풀이 UI, 기록 저장·동기화, PWA 배포, 보정 도구, 작업 문서 ([fe08884](https://github.com/GwangWon91/Number_Series/commit/fe088848930037368ee5deb48f418fbe8af9241e))

@@ -1,11 +1,10 @@
 id: fraction
 label: 분수 수열
 enabled: true
-weight: 45                # [추정] 링커리어 2026H2 1·2회: 분자·분모가 따로 규칙인 문항 8/40 (rational.yaml 비중 주석 참고). 생성 비교 후 58 → 45 (분수 56% → 실전 45%)
+weight: 45                # [추정: 비공개 기출 분석] rational.yaml 비중 주석 참고. 생성 문항과 비교 후 58 → 45
 confidence: evidence
-evidence: [lk-2026h2-2-081, lk-2026h2-2-088, lk-2026h2-1-081, lk-2026h2-1-085, lk-2026h2-1-088, lk-2026h2-1-089, lk-2026h2-1-092]
 length: [5, 7]
-blank: { last: 0.4, middle: 0.6 }   # [추정] 같은 회차 분수 빈칸 문항 4개 모두 중간 빈칸 (0.8/0.2 → 0.4/0.6)
+blank: { last: 0.4, middle: 0.6 }   # [추정: 비공개 기출 분석] 분수는 중간 빈칸이 많다 (0.8/0.2 → 0.4/0.6)
 numbers: { min: 1, max: 999 }
 difficulty:
   "1":

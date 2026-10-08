@@ -9,7 +9,7 @@
  *  - 숫자가 유형의 범위 안 (음수 없던 문항은 음수 없음, 진분수 문항은 진분수)
  * 선택지도 같은 변환을 받으므로 오답의 성격(근처 값·흔한 실수)이 유지된다.
  * A·B 문항은 연산에 따라 정답·선택지가 변하는 방식이 달라서 덧셈·뺄셈은 배율·이동, 곱셈·나눗셈은 배율만 쓴다.
- * 원문은 공개하지 않는다: 숫자가 모두 바뀌고, 선택지 순서를 섞고, 규칙 설명은 유형 이름으로 바꾼다.
+ * 원문은 공개하지 않는다: 숫자가 모두 바뀌고, 선택지 순서를 섞고, 규칙 설명은 유형 이름으로, id는 해시로, 회차는 적지 않는다.
  */
 import { writeFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -89,12 +89,13 @@ function variant(e: BankEntry, t: Transform, families: readonly string[]): BankE
   }
   const v: BankEntry = {
     ...e,
-    id: `var-${e.id}-${t.tag}`,
+    // 공개 파일에 원문 id·회차를 남기지 않는다 (해시 id, round 없음)
+    id: `var-${hash(e.id + t.tag).toString(36)}`,
     terms,
     answer,
     choices: new Rng(hash(e.id + t.tag)).shuffle([...choices]),
     rule: e.typeId ? typeLabel(config, e.typeId) : '규칙을 찾아보세요',
-    source: { kind: 'variant', round: e.source.round, note: '기출 유형 변형 (숫자 변경)' },
+    source: { kind: 'variant', note: '기출 유형 변형 (숫자 변경)' },
     publishable: true,
     visibility: 'public',
     file: 'data/bank/public/variants.yaml',

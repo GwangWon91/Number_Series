@@ -3,7 +3,6 @@ label: 차이 주기 반복
 enabled: true
 weight: 6
 confidence: estimated
-evidence: []
 length: [7, 9]
 blank: { last: 0.7, middle: 0.3 }
 numbers: { min: -99, max: 999 }

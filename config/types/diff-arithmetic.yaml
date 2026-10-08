@@ -3,7 +3,6 @@ label: 계차수열 (차이가 등차)
 enabled: true
 weight: 14
 confidence: estimated
-evidence: []
 length: [6, 8]
 blank: { last: 0.7, middle: 0.3 }
 numbers: { min: -99, max: 999 }

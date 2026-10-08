@@ -27,17 +27,17 @@ describe('정답 유일성 검사', () => {
     expect(verdict([2, 4, null], 6).supporting).toEqual([]);
   });
 
-  it('A·B 문항: (A, B)를 함께 찾아 연산값으로 판정 (2026H2-1 98: 4, 9, 13, 22, A, 57, 92, B → A+B)', () => {
-    const seq = [4, 9, 13, 22, null, 57, 92, null];
+  it('A·B 문항: (A, B)를 함께 찾아 연산값으로 판정 (3, 7, 10, 17, A, 44, 71, B → A+B)', () => {
+    const seq = [3, 7, 10, 17, null, 44, 71, null];
     const a = analyzeQuestion(seq, { kind: 'pair', op: '+', blanks: [4, 7] });
-    const v = judge(a, 184, 1, 1);
-    expect(v.supporting.some((e) => e.pair?.[0] === 35 && e.pair?.[1] === 149)).toBe(true);
+    const v = judge(a, 142, 1, 1);
+    expect(v.supporting.some((e) => e.pair?.[0] === 27 && e.pair?.[1] === 115)).toBe(true);
     expect(v.alternatives).toEqual([]);
   });
 
-  it('n번째 항: 계열마다 이어 붙여 값을 낸다 (12, 6, 3, 1.5, 3/4 → 8번째 3/32)', () => {
-    const seq = [12, 6, 3, parseValue('1.5'), frac(3, 4)];
-    const v = judge(analyzeQuestion(seq, { kind: 'nth', n: 8 }), frac(3, 32), 1, 9);
+  it('n번째 항: 계열마다 이어 붙여 값을 낸다 (20, 10, 5, 2.5, 5/4 → 8번째 5/32)', () => {
+    const seq = [20, 10, 5, parseValue('2.5'), frac(5, 4)];
+    const v = judge(analyzeQuestion(seq, { kind: 'nth', n: 8 }), frac(5, 32), 1, 9);
     expect(v.supporting.length).toBeGreaterThan(0);
   });
 

@@ -197,7 +197,7 @@ const GROUP_VOPS: { symbol: string; apply(a: Value, b: Value): Value | null; sol
   { symbol: '÷', apply: divV, solveA: (b, c) => mulV(b, c), solveB: (a, c) => divV(a, c) },
 ];
 
-/** 묶음 안 배치: 결과가 셋째 (첫째 ○ 둘째 = 셋째) 또는 둘째 (첫째 ○ 셋째 = 둘째, 실전 2026H2) */
+/** 묶음 안 배치: 결과가 셋째 (첫째 ○ 둘째 = 셋째) 또는 둘째 (첫째 ○ 셋째 = 둘째 — 실전에도 나온 배치) */
 const LAYOUTS = [
   { x: 0, y: 1, r: 2, text: (s: string) => `첫째 ${s} 둘째 = 셋째` },
   { x: 0, y: 2, r: 1, text: (s: string) => `첫째 ${s} 셋째 = 둘째` },
@@ -354,7 +354,7 @@ export function rationalFamily(bases: readonly Family[]): Family {
 }
 
 /**
- * 곱하는 수가 일정하게 변하는 수열: ×2, ×3, ×4 … (1, 2, 6, 24) 또는 ÷2, ÷3, ÷4 … (1, 1/2, 1/6, 1/24, 실전 2026H2-2 87번).
+ * 곱하는 수가 일정하게 변하는 수열: ×2, ×3, ×4 … (1, 2, 6, 24) 또는 ÷2, ÷3, ÷4 … (1, 1/2, 1/6, 1/24).
  * 비(또는 비의 역수)가 등차.
  */
 export const ratioProgressionFamily: Family = {

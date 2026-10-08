@@ -73,7 +73,7 @@ function pickBlank(rng: Rng, type: TypeConfig, length: number): number {
 }
 
 /**
- * A·B 위치: B는 끝에서 3칸 이내, A는 B보다 2~3칸 앞 (실전 2026H2 10문항: A 2~5번째 칸, B는 A+2~A+3)
+ * A·B 위치: B는 끝에서 3칸 이내, A는 B보다 2~3칸 앞 [추정: 비공개 기출 분석]
  */
 function pickPair(rng: Rng, length: number): [number, number] {
   const ib = rng.int(Math.max(4, length - 3), length - 1);

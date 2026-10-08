@@ -3,7 +3,6 @@ label: 앞 항들의 합·곱 (피보나치형)
 enabled: true
 weight: 10
 confidence: evidence
-evidence: [lk-2026h2-2-089, lk-2026h2-2-100]   # 링커리어 2026H2-2 89(합)·100(곱), 98(합·소수, 스키마 밖)
 length: [6, 8]
 blank: { last: 0.7, middle: 0.3 }
 numbers: { min: -99, max: 999 }
