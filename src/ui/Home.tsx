@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
-import { config } from '../app/engine';
+import { config, modes } from '../app/engine';
 import { applyTheme, loadPrefs, savePrefs, THEME_OPTIONS, type Theme } from '../app/prefs';
-import { recordSummary, type RecordSummary } from '../store/records';
-import { savedPracticeMode } from './practiceState';
+import { skillOf, weakWeights } from '../game/adapt';
+import { bestScores, recordSummary, type RecordSummary } from '../store/records';
+import { playTitle } from './Practice';
+import { loadSkills, savedPractice, type PlaySpec } from './practiceState';
 
 interface Props {
-  onStart(mode: string): void;
+  onStart(spec: PlaySpec): void;
   onSettings(): void;
   onRecords(): void;
 }
@@ -26,12 +28,16 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
     applyTheme(next);
     setTheme(next);
   };
-  const resumeMode = savedPracticeMode();
+  const [bests, setBests] = useState<Record<string, number>>({});
+  const saved = savedPractice();
   // 출제 비중이 큰 유형부터
   const types = config.types.filter((t) => t.enabled).sort((a, b) => b.weight - a.weight);
+  const skills = loadSkills();
+  const [main, ...others] = modes.modes;
 
   useEffect(() => {
     recordSummary().then(setSum, () => setSum(null));
+    bestScores().then(setBests, () => undefined);
   }, []);
 
   const today = sum?.today ?? [];
@@ -39,7 +45,14 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
   const shown = today.slice(-STRIP_MAX);
   const hidden = today.length - shown.length;
   const byType = new Map((sum?.byType ?? []).map((r) => [r.key, r]));
-  const resumeLabel = resumeMode && resumeMode !== 'all' ? types.find((t) => t.id === resumeMode)?.label : null;
+  const weak = weakWeights(sum?.byType ?? [], new Set(types.map((t) => t.id)));
+  // 기본 모드의 전체 무작위가 아닌 진행 중 세션만 따로 '이어 하기'
+  const resume = saved && saved.mode !== 'all' ? saved.spec : null;
+  const specFor = (modeId: string): PlaySpec | null => {
+    const m = modes.modes.find((x) => x.id === modeId)!;
+    if (m.pool !== 'weak') return { modeId, typeId: null };
+    return weak ? { modeId, typeId: null, typeWeights: weak } : null;
+  };
 
   return (
     <div className="screen home">
@@ -87,26 +100,53 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
               </span>
             </p>
           )}
-          <button className="primary start" onClick={() => onStart('all')}>
+          <button className="primary start" onClick={() => onStart({ modeId: main.id, typeId: null })}>
             {today.length > 0 ? '이어서 풀기' : '풀기 시작'}
           </button>
         </section>
 
-        {resumeLabel && (
-          <button className="ghost" onClick={() => onStart(resumeMode!)}>
-            {resumeLabel} 이어 풀기
+        {resume && (
+          <button className="ghost" onClick={() => onStart(resume)}>
+            {playTitle(resume)} 이어 하기
           </button>
         )}
 
-        <h2>유형별로 풀기</h2>
-        <ul className="type-list">
+        <h2>모드</h2>
+        <ul className="mode-grid">
+          {others.map((m) => {
+            const spec = specFor(m.id);
+            return (
+              <li key={m.id}>
+                <button disabled={!spec} onClick={() => spec && onStart(spec)}>
+                  <b>{m.label}</b>
+                  <span className="muted small">
+                    {spec ? m.description : '유형별로 3문제 이상 풀면 열려요'}
+                  </span>
+                  {bests[m.id] !== undefined && <span className="best small">최고 {bests[m.id].toLocaleString()}점</span>}
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+
+        <details className="type-pick">
+          <summary>유형 골라 {main.label}</summary>
+          <ul className="type-list">
           {types.map((t) => {
             const r = byType.get(t.id);
             const acc = r ? Math.round(((r.solved - r.wrong) / r.solved) * 100) : null;
+            const level = skillOf(skills, t.id).level;
             return (
               <li key={t.id}>
-                <button onClick={() => onStart(t.id)}>
-                  <span className="name">{t.label}</span>
+                <button onClick={() => onStart({ modeId: main.id, typeId: t.id })}>
+                  <span className="name">
+                    {t.label}
+                    <span className="stars" aria-label={`숙련 ${level}단계`}>
+                      {' '}
+                      {'★'.repeat(level)}
+                      {'☆'.repeat(3 - level)}
+                    </span>
+                  </span>
                   <span className="stat">
                     {r ? (
                       <>
@@ -121,7 +161,8 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
               </li>
             );
           })}
-        </ul>
+          </ul>
+        </details>
       </main>
 
       <footer className="home-foot">

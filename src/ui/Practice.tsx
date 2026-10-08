@@ -1,45 +1,69 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { bank, config } from '../app/engine';
+import { bank, config, modes } from '../app/engine';
 import { loadPrefs, savePrefs } from '../app/prefs';
 import { APP_VERSION } from '../app/version';
 import { typeLabel } from '../engine/config';
-import { itemKey, type Item } from '../engine/item';
+import { itemKey } from '../engine/item';
 import { questionText } from '../engine/question';
 import { pickNextItem } from '../engine/session';
 import { eqNum, formatValue } from '../engine/value';
-import { answer, CHECKPOINT_EVERY, newRun, segmentProgress, type GameEvent } from '../game/run';
+import { skillOf, updateSkill } from '../game/adapt';
+import { recordMode, type Mode } from '../game/modes';
+import { answer, CHECKPOINT_EVERY, newRun, segmentProgress, type GameEvent, type Run } from '../game/run';
 import { addAttempt, addFlag, addSession, itemSnapshot, newId } from '../store/records';
 import type { Session } from '../store/types';
 import { playEffects } from './effects';
 import { FlagSheet } from './FlagSheet';
-import { loadPractice, savePractice, type PracticeState } from './practiceState';
+import {
+  loadPractice,
+  loadSkills,
+  savePractice,
+  saveSkills,
+  type PlaySpec,
+  type PracticeState,
+  type WrongEntry,
+} from './practiceState';
 import { SequenceView, Term } from './SequenceView';
 import { Timer } from './Timer';
 
 /** 나가면서 세션 요약 화면에 넘기는 것 */
 export interface SessionSummary {
   session: Session;
-  wrong: Item[];
+  wrong: WrongEntry[];
+  title: string;
+  spec: PlaySpec;
 }
 
 interface Props {
-  /** 'all' 또는 typeId */
-  mode: string;
+  spec: PlaySpec;
   /** 푼 문제가 있으면 세션 요약과 함께 */
   onExit(summary?: SessionSummary): void;
 }
 
 const WRONG_KEEP = 30;
-const newSession = () => ({ sessionId: newId(), sessionStart: Date.now(), run: newRun(), wrong: [] as Item[] });
+const newSession = () => ({ sessionId: newId(), sessionStart: Date.now(), run: newRun(), wrong: [] as WrongEntry[] });
 
-function freshState(mode: string, prev?: PracticeState): PracticeState {
+export const modeOf = (spec: PlaySpec): Mode => modes.modes.find((m) => m.id === spec.modeId) ?? modes.modes[0];
+const isDefault = (mode: Mode) => mode.id === modes.modes[0].id;
+export const playTitle = (spec: PlaySpec) => {
+  const mode = modeOf(spec);
+  return spec.typeId ? typeLabel(config, spec.typeId) : isDefault(mode) ? '전체 무작위' : mode.label;
+};
+
+function freshState(spec: PlaySpec, prev?: PracticeState): PracticeState {
+  const mode = modeOf(spec);
   const recent = prev?.recent ?? [];
+  const skills = mode.adaptive ? loadSkills() : null;
   const item = pickNextItem(config, bank, {
-    typeId: mode === 'all' ? null : mode,
+    typeId: spec.typeId,
     recentKeys: new Set(recent),
+    typeWeights: spec.typeWeights,
+    levelOf: skills ? (t) => skillOf(skills, t).level : undefined,
+    bankRatio: mode.bankRatio,
   });
   return {
-    mode,
+    mode: recordMode(mode, isDefault(mode), spec.typeId),
+    spec,
     item,
     phase: 'answering',
     chosen: null,
@@ -52,11 +76,31 @@ function freshState(mode: string, prev?: PracticeState): PracticeState {
   };
 }
 
-export function Practice({ mode, onExit }: Props) {
-  const [state, setState] = useState<PracticeState>(() => loadPractice(mode) ?? freshState(mode));
+/** 모드가 정한 끝 조건 (문항 수·목숨·시간) */
+function isOver(mode: Mode, run: Run, sessionStart: number): boolean {
+  return (
+    (mode.items !== undefined && run.solved >= mode.items) ||
+    (mode.lives !== undefined && run.solved - run.correct >= mode.lives) ||
+    (mode.timeLimitSec !== undefined && Date.now() - sessionStart >= mode.timeLimitSec * 1000)
+  );
+}
+
+const clock = (ms: number) => {
+  const s = Math.max(0, Math.ceil(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+};
+
+export function Practice({ spec, onExit }: Props) {
+  const mode = modeOf(spec);
+  // 제한 시간이 지난 세션도 그대로 불러온다 → 아래 타이머가 바로 끝내고 기록한다
+  const [state, setState] = useState<PracticeState>(
+    () => loadPractice(recordMode(mode, isDefault(mode), spec.typeId)) ?? freshState(spec),
+  );
   const [pending, setPending] = useState<number | null>(null);
   const [flagOpen, setFlagOpen] = useState(false);
+  const [flash, setFlash] = useState<'ok' | 'ng' | null>(null);
   const [prefs, setPrefs] = useState(loadPrefs);
+  const [now, setNow] = useState(Date.now);
   const startedAt = useRef(performance.now());
   const { item, phase, run } = state;
 
@@ -68,6 +112,47 @@ export function Practice({ mode, onExit }: Props) {
     setPrefs(next);
   };
 
+  /** 세션 종료: 푼 문제가 있으면 기록하고 요약으로. 다음에 들어오면 새 세션 */
+  const finish = useCallback(
+    (s: PracticeState) => {
+      if (s.run.solved === 0) return onExit();
+      const endedAt = Date.now();
+      const session: Session = {
+        id: s.sessionId,
+        ts: s.sessionStart,
+        endedAt,
+        modeId: s.mode,
+        total: s.run.solved,
+        correct: s.run.correct,
+        score: s.run.score,
+        maxCombo: s.run.maxCombo,
+        checkpoints: s.run.checkpoints,
+        durationMs: endedAt - s.sessionStart,
+        appVersion: APP_VERSION,
+        configVersion: config.version,
+      };
+      void addSession(session);
+      // 다음 세션은 새 문항부터 (풀던 문항이면 그대로 이어서). 끝이 정해진 모드는 처음부터
+      const reset = { ...s, ...newSession(), events: [] };
+      savePractice(s.phase === 'revealed' || isOver(mode, s.run, s.sessionStart) ? freshState(spec, reset) : reset);
+      onExit({ session, wrong: s.wrong, title: playTitle(spec), spec });
+    },
+    [mode, onExit, spec],
+  );
+  const leave = useCallback(() => finish(state), [finish, state]);
+
+  // 제한 시간 모드: 남은 시간 표시, 다 되면 끝
+  const stateRef = useRef(state);
+  stateRef.current = state;
+  useEffect(() => {
+    if (!mode.timeLimitSec) return;
+    const id = window.setInterval(() => {
+      setNow(Date.now());
+      if (isOver(mode, stateRef.current.run, stateRef.current.sessionStart)) finish(stateRef.current);
+    }, 250);
+    return () => window.clearInterval(id);
+  }, [finish, mode]);
+
   const submit = useCallback(
     (index: number) => {
       if (state.phase !== 'answering') return;
@@ -78,7 +163,7 @@ export function Practice({ mode, onExit }: Props) {
       void addAttempt({
         id: attemptId,
         ts: Date.now(),
-        mode,
+        mode: state.mode,
         sessionId: state.sessionId,
         ...itemSnapshot(item),
         source: item.source,
@@ -88,52 +173,41 @@ export function Practice({ mode, onExit }: Props) {
         correct,
         elapsedMs,
       });
+      if (mode.adaptive && item.source === 'gen') {
+        const skills = loadSkills();
+        saveSkills({ ...skills, [item.typeId]: updateSkill(skillOf(skills, item.typeId), correct) });
+      }
       const result = answer(state.run, {
         correct,
         difficulty: item.difficulty,
         elapsedMs,
         limitMs: config.exam.timePerItemSec * 1000,
       });
-      playEffects(result.events, prefs);
+      // 실전(end)은 끝날 때까지 맞았는지 알려 주지 않는다
+      if (mode.feedback !== 'end') playEffects(result.events, prefs);
       setPending(null);
-      setState((s) => ({
-        ...s,
+      const answered: PracticeState = {
+        ...state,
         phase: 'revealed',
         chosen: index,
         elapsedMs,
         attemptId,
         run: result.run,
         events: result.events,
-        wrong: correct ? s.wrong : [...s.wrong, s.item].slice(-WRONG_KEEP),
-      }));
+        wrong: correct ? state.wrong : [...state.wrong, { item, attemptId }].slice(-WRONG_KEEP),
+      };
+      if (mode.feedback === 'each') return setState(answered);
+      // instant·end: 공개 화면 없이 바로 다음 문제 (또는 끝)
+      if (isOver(mode, answered.run, answered.sessionStart)) return finish(answered);
+      if (mode.feedback === 'instant') {
+        setFlash(correct ? 'ok' : 'ng');
+        window.setTimeout(() => setFlash(null), 350);
+      }
+      startedAt.current = performance.now();
+      setState(freshState(spec, answered));
     },
-    [item, mode, prefs, state.phase, state.run, state.sessionId],
+    [finish, item, mode, prefs, spec, state],
   );
-
-  // 나가기 = 세션 종료: 푼 문제가 있으면 기록하고 요약으로. 다음에 들어오면 보던 문항에서 새 세션으로 이어 간다
-  const leave = useCallback(() => {
-    if (state.run.solved === 0) return onExit();
-    const endedAt = Date.now();
-    const session: Session = {
-      id: state.sessionId,
-      ts: state.sessionStart,
-      endedAt,
-      modeId: mode,
-      total: state.run.solved,
-      correct: state.run.correct,
-      score: state.run.score,
-      maxCombo: state.run.maxCombo,
-      checkpoints: state.run.checkpoints,
-      durationMs: endedAt - state.sessionStart,
-      appVersion: APP_VERSION,
-      configVersion: config.version,
-    };
-    void addSession(session);
-    // 다음 세션은 새 문항부터 (풀던 문항이면 그대로 이어서)
-    const reset = { ...state, ...newSession(), events: [] };
-    savePractice(state.phase === 'revealed' ? freshState(mode, reset) : reset);
-    onExit({ session, wrong: state.wrong });
-  }, [mode, onExit, state]);
 
   const choose = useCallback(
     (index: number) => {
@@ -144,12 +218,14 @@ export function Practice({ mode, onExit }: Props) {
     [phase, pending, prefs.confirmBeforeSubmit, submit],
   );
 
+  const over = phase === 'revealed' && isOver(mode, run, state.sessionStart);
   const next = useCallback(() => {
+    if (over) return finish(state);
     setFlagOpen(false);
     setPending(null);
     startedAt.current = performance.now();
-    setState((s) => freshState(mode, s));
-  }, [mode]);
+    setState((s) => freshState(spec, s));
+  }, [finish, over, spec, state]);
 
   // PC 단축키: 1~5 선택, Enter/Space 제출·다음, F 플래그, Esc 나가기
   useEffect(() => {
@@ -175,22 +251,15 @@ export function Practice({ mode, onExit }: Props) {
 
   const saveFlag = async (reasons: string[], note: string) => {
     if (!state.attemptId) return;
-    await addFlag({
-      id: newId(),
-      ts: Date.now(),
-      attemptId: state.attemptId,
-      ...itemSnapshot(item),
-      reasons,
-      note,
-    });
+    await addFlag({ id: newId(), ts: Date.now(), attemptId: state.attemptId, ...itemSnapshot(item), reasons, note });
     setState((s) => ({ ...s, flagged: true }));
     setFlagOpen(false);
   };
 
   const revealed = phase === 'revealed';
   const wasCorrect = revealed && state.chosen !== null && eqNum(item.choices[state.chosen], item.answer);
-  // 공개 화면이면 방금 푼 문제까지, 아니면 지금 푸는 문제가 구간의 몇 번째인지
-  const inSegment = revealed ? segmentProgress(run) || CHECKPOINT_EVERY : segmentProgress(run) + 1;
+  const hidden = mode.feedback === 'end';
+  const remaining = mode.timeLimitSec ? mode.timeLimitSec * 1000 - (now - state.sessionStart) : null;
 
   return (
     <div className={`screen practice ${revealed ? 'revealed' : ''}`}>
@@ -199,43 +268,53 @@ export function Practice({ mode, onExit }: Props) {
           ←
         </button>
         <div className="head-title">
-          <span>{mode === 'all' ? '전체 무작위' : typeLabel(config, mode)}</span>
+          <span>{playTitle(spec)}</span>
           <span className="muted small">
-            {run.checkpoints.length + (revealed && segmentProgress(run) === 0 ? 0 : 1)}구간 · {inSegment}/{CHECKPOINT_EVERY}
+            <Progress mode={mode} run={run} revealed={revealed} />
           </span>
         </div>
-        <div className="score" aria-label={`점수 ${run.score}, ${run.solved}문제 중 ${run.correct}문제 정답`}>
-          {/* key가 바뀌면 다시 그려져 점수가 오른 순간 한 번 튄다 */}
-          <div key={run.score} className={`total ${run.score > 0 && wasCorrect ? 'pop' : ''}`}>
-            <b>{run.score.toLocaleString()}</b>
-            <span>점수</span>
+        {!hidden && (
+          <div className="score" aria-label={`점수 ${run.score}, ${run.solved}문제 중 ${run.correct}문제 정답`}>
+            {/* key가 바뀌면 다시 그려져 점수가 오른 순간 한 번 튄다 */}
+            <div key={run.score} className={`total ${run.score > 0 && (wasCorrect || flash === 'ok') ? 'pop' : ''}`}>
+              <b>{run.score.toLocaleString()}</b>
+              <span>점수</span>
+            </div>
+            {run.combo >= 2 ? (
+              <div key={`c${run.combo}`} className="combo pop">
+                <b>{run.combo}</b>
+                <span>콤보</span>
+              </div>
+            ) : (
+              <div className="hit">
+                <b>
+                  {run.correct}/{run.solved}
+                </b>
+                <span>정답</span>
+              </div>
+            )}
           </div>
-          {run.combo >= 2 ? (
-            <div key={`c${run.combo}`} className="combo pop">
-              <b>{run.combo}</b>
-              <span>콤보</span>
-            </div>
-          ) : (
-            <div className="hit">
-              <b>
-                {run.correct}/{run.solved}
-              </b>
-              <span>정답</span>
-            </div>
-          )}
-        </div>
-        <button className="icon sound" onClick={toggleSound} aria-label={prefs.sound ? '효과음 끄기' : '효과음 켜기'}>
-          {prefs.sound ? '🔊' : '🔇'}
-        </button>
-        <Timer
-          key={item.id + run.solved}
-          limitSec={config.exam.timePerItemSec}
-          running={!revealed}
-          frozenMs={revealed ? state.elapsedMs : undefined}
-        />
+        )}
+        {!hidden && (
+          <button className="icon sound" onClick={toggleSound} aria-label={prefs.sound ? '효과음 끄기' : '효과음 켜기'}>
+            {prefs.sound ? '🔊' : '🔇'}
+          </button>
+        )}
+        {remaining !== null ? (
+          <div className={`countdown ${remaining < 10_000 ? 'low' : ''}`} aria-label="남은 시간">
+            {clock(remaining)}
+          </div>
+        ) : (
+          <Timer
+            key={item.id + run.solved}
+            limitSec={config.exam.timePerItemSec}
+            running={!revealed}
+            frozenMs={revealed ? state.elapsedMs : undefined}
+          />
+        )}
       </header>
 
-      <main className="stage">
+      <main className={`stage ${flash ? `flash-${flash}` : ''}`}>
         <p className="prompt">{questionText(item.question)}</p>
         <SequenceView
           item={item}
@@ -256,9 +335,17 @@ export function Practice({ mode, onExit }: Props) {
                 {line}
               </p>
             ))}
+            <button
+              className="link small flag"
+              disabled={state.flagged}
+              onClick={() => setFlagOpen(true)}
+              title="실전과 다른 점 표시 (F)"
+            >
+              {state.flagged ? '실전과 다름 표시함' : '실전과 다른가요?'}
+            </button>
           </section>
         )}
-        {revealed && <CheckpointLine events={state.events} />}
+        {revealed && mode.items === undefined && <CheckpointLine events={state.events} />}
         {revealed && (
           <div className="reveal-actions">
             <ol className="choices compact">
@@ -272,19 +359,9 @@ export function Practice({ mode, onExit }: Props) {
                 );
               })}
             </ol>
-            <div className="next-row">
-              <button
-                className="ghost flag"
-                disabled={state.flagged}
-                onClick={() => setFlagOpen(true)}
-                title="실전과 다른 점 표시 (F)"
-              >
-                {state.flagged ? '표시함' : '실전과 다름'}
-              </button>
-              <button className="primary wide" onClick={next} autoFocus>
-                다음
-              </button>
-            </div>
+            <button className="primary wide" onClick={next} autoFocus>
+              {over ? '결과 보기' : '다음'}
+            </button>
           </div>
         )}
       </main>
@@ -319,6 +396,29 @@ export function Practice({ mode, onExit }: Props) {
         <FlagSheet reasons={config.feedback.reasons} onCancel={() => setFlagOpen(false)} onSave={saveFlag} />
       )}
     </div>
+  );
+}
+
+/** 머리말 둘째 줄: 문항 수가 정해진 모드는 n/N, 목숨 모드는 ♥, 끝없는 모드는 10문제 구간 */
+function Progress({ mode, run, revealed }: { mode: Mode; run: Run; revealed: boolean }) {
+  if (mode.items) return <>{Math.min(run.solved + (revealed ? 0 : 1), mode.items)}/{mode.items}문제</>;
+  if (mode.lives) {
+    const left = Math.max(0, mode.lives - (run.solved - run.correct));
+    return (
+      <span className="lives" aria-label={`목숨 ${left}개`}>
+        {'♥'.repeat(left)}
+        {'♡'.repeat(mode.lives - left)}
+      </span>
+    );
+  }
+  if (mode.timeLimitSec) return <>{run.solved}문제</>;
+  // 공개 화면이면 방금 푼 문제까지, 아니면 지금 푸는 문제가 구간의 몇 번째인지
+  const done = revealed && segmentProgress(run) === 0;
+  return (
+    <>
+      {run.checkpoints.length + (done ? 0 : 1)}구간 · {done ? CHECKPOINT_EVERY : segmentProgress(run) + (revealed ? 0 : 1)}/
+      {CHECKPOINT_EVERY}
+    </>
   );
 }
 

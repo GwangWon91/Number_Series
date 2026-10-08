@@ -6,6 +6,7 @@ import { parse } from 'yaml';
 import { parseBankFile, type BankEntry, type Visibility } from '../engine/bank';
 import { buildConfig, type ConfigResult } from '../engine/config';
 import { PLUGINS } from '../engine/plugins';
+import { parseModes } from '../game/modes';
 
 export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 
@@ -25,6 +26,8 @@ export function loadConfig(): ConfigResult {
   const types = yamlFiles(join(ROOT, 'config/types')).map((f) => ({ file: rel(f), data: readYaml(f) }));
   return buildConfig(exam, types, PLUGINS);
 }
+
+export const loadModes = () => parseModes(readYaml(join(ROOT, 'config/modes.yaml')));
 
 export function loadBank(visibilities: Visibility[] = ['public', 'private']): {
   entries: BankEntry[];

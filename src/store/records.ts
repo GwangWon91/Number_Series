@@ -55,6 +55,15 @@ export async function bestScore(modeId: string, exceptId: string): Promise<numbe
   return scores.length ? Math.max(...scores) : null;
 }
 
+/** 모드(Session.modeId)별 최고 점수 — 홈의 모드 카드용 */
+export async function bestScores(): Promise<Record<string, number>> {
+  const best: Record<string, number> = {};
+  for (const s of await db.sessions.toArray()) {
+    if (s.score !== undefined && s.score > (best[s.modeId] ?? -1)) best[s.modeId] = s.score;
+  }
+  return best;
+}
+
 /** 동기화되는 기록 종류 (sync.ts가 같은 목록을 돈다) */
 export type RecordKind = 'attempts' | 'flags' | 'sessions';
 const table = (kind: RecordKind) => db[kind] as unknown as typeof db.attempts;
