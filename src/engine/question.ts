@@ -1,7 +1,7 @@
 import { FAMILIES, type Family } from './families';
 import type { Analysis, Explanation } from './solver';
 import { analyze } from './solver';
-import { addV, divV, formatValue, mulV, subV, uniqueValues, valueKey, type Value } from './value';
+import { addV, divV, eqNum, formatValue, isFrac, mulV, subV, toNumber, uniqueValues, valueKey, withNotation, type Value } from './value';
 
 /**
  * 묻는 방식. 없으면 빈칸 1개(기본).
@@ -114,4 +114,50 @@ export function analyzeQuestion(
   if (!q) return analyze(seq, extra.values ?? [], families);
   if (q.kind === 'pair') return analyzePair(seq, q, extra.pairs ?? [], families);
   return analyzeNth(seq as Value[], q.n, families);
+}
+
+/**
+ * 해설 첫 줄 요약: 차이나 비율이 일정한 증가·감소 수열만 ("매번 +3", "매번 ×2", "차이가 매번 +2", "차이가 매번 ×2"). 그 밖은 null.
+ * 정답까지 채운 수열에서 유리수로 정확히 계산한다 (문항 생성과 무관 — 화면 표시용).
+ */
+export function ruleSummary(item: {
+  terms: readonly (Value | null)[];
+  answer: Value;
+  question?: Question;
+}): string | null {
+  const q = item.question;
+  const filled = !q
+    ? item.terms.map((t) => (t === null ? item.answer : t))
+    : q.kind === 'pair'
+      ? q.values
+        ? item.terms.map((t, i) => (t === null ? q.values![q.blanks.indexOf(i)] : t))
+        : null
+      : item.terms;
+  if (!filled || filled.length < 4 || filled.some((v) => v === null)) return null;
+  const v = filled as Value[];
+  // 소수로 쓴 수열이면 요약도 소수로 (0.5씩 → "+0.5")
+  const dec = v.some((x) => isFrac(x) && x.fmt === 'dec');
+  const show = (x: Value) => formatValue(dec ? withNotation(x, 'dec') : x);
+  const signed = (x: Value) => (toNumber(x) >= 0 ? `+${show(x)}` : show(x));
+  const same = (xs: readonly Value[]) => xs.every((x) => eqNum(x, xs[0]));
+
+  const d = v.slice(1).map((x, i) => subV(x, v[i]));
+  if (same(d)) return toNumber(d[0]) !== 0 ? `매번 ${signed(d[0])}` : null;
+  if (v.every((x) => toNumber(x) !== 0)) {
+    const r = v.slice(1).map((x, i) => divV(x, v[i])!);
+    const k = toNumber(r[0]);
+    if (same(r) && k !== 1) {
+      const inv = 1 / k;
+      if (k > 0 && k < 1 && Number.isInteger(inv)) return `매번 ÷${inv}`;
+      return k < 0 ? `매번 ×(${formatValue(r[0])})` : `매번 ×${formatValue(r[0])}`;
+    }
+  }
+  const dd = d.slice(1).map((x, i) => subV(x, d[i]));
+  if (same(dd) && toNumber(dd[0]) !== 0) return `차이가 매번 ${signed(dd[0])}`;
+  // 차이가 일정한 배수로 커지는 계차 (3, 6, 12, 24 …)
+  if (d.every((x) => toNumber(x) !== 0)) {
+    const rd = d.slice(1).map((x, i) => divV(x, d[i])!);
+    if (same(rd) && toNumber(rd[0]) > 1 && Number.isInteger(toNumber(rd[0]))) return `차이가 매번 ×${formatValue(rd[0])}`;
+  }
+  return null;
 }
