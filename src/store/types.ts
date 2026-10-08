@@ -59,6 +59,8 @@ export interface Session {
   correct: number;
   /** 점수·최고 콤보·10문제 구간 결과 (v0.5.0 이후 세션부터) */
   score?: number;
+  /** 점수 체계 버전 (src/game/run.ts SCORE_VERSION). 없으면 v1 — 최고 기록 비교에서 빠진다 */
+  scoreVersion?: number;
   maxCombo?: number;
   checkpoints?: { correct: number; score: number }[];
   /** 시작~종료 경과 시간 (앱을 닫았다 이어 푼 시간 포함) */

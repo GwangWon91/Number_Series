@@ -5,6 +5,26 @@ import { z } from 'zod';
  * 모드는 "몇 문제·몇 초·목숨 몇 개·정답을 언제 보여 주나·어떤 문항을 내나"의 조합이다.
  * 문항 생성 결과(seed 재현)는 바꾸지 않으므로 exam.yaml의 version과 별개로 자체 version을 둔다.
  */
+/**
+ * 점수 기준 (모드별). 없으면 점수를 매기지 않는다 (무제한 연습).
+ * 정답 = correct + difficulty×(난이도−1) + 속도 보너스 + 콤보 보너스, 오답 = wrong(0 이하). 세션 점수는 0 아래로 안 내려간다.
+ */
+export const scoringSchema = z.object({
+  correct: z.number().nonnegative(),
+  /** 난이도 1을 넘는 단계마다 더하는 점수 */
+  difficulty: z.number().nonnegative().default(0),
+  /** fullSec 안에 풀면 max, zeroSec부터 0 (그 사이 선형) */
+  speed: z
+    .object({ max: z.number().nonnegative(), fullSec: z.number().nonnegative(), zeroSec: z.number().positive() })
+    .refine((s) => s.fullSec < s.zeroSec, { message: 'fullSec < zeroSec' })
+    .optional(),
+  /** 연속 정답 2번째부터 step씩, 최대 cap */
+  combo: z.object({ step: z.number().nonnegative(), cap: z.number().nonnegative() }).optional(),
+  /** 오답 감점 (0 이하) */
+  wrong: z.number().max(0).default(0),
+});
+export type Scoring = z.infer<typeof scoringSchema>;
+
 export const modeSchema = z.object({
   id: z.string().regex(/^[a-z0-9-]+$/),
   label: z.string(),
@@ -27,8 +47,9 @@ export const modeSchema = z.object({
   bankRatio: z.number().min(0).max(1).optional(),
   /** weak: 내 기록에서 틀린 비율이 높은 유형 위주 */
   pool: z.enum(['all', 'weak']).default('all'),
-  /** 유형을 골라 풀 수 있다 */
+  /** 유형을 골라 풀 수 있다 (홈의 '유형 골라 연습' 표시 플래그) */
   typeSelect: z.boolean().default(false),
+  scoring: scoringSchema.optional(),
 });
 export type Mode = z.infer<typeof modeSchema>;
 

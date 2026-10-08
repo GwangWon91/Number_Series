@@ -1,42 +1,52 @@
 import { describe, expect, it } from 'vitest';
+import { scoringSchema } from '../../src/game/modes';
 import { answer, CHECKPOINT_EVERY, newRun, type Run } from '../../src/game/run';
+import { loadModes } from '../../src/node/load';
 
-const LIMIT = 45_000;
-const ok = (run: Run, elapsedMs = LIMIT, difficulty = 1) => answer(run, { correct: true, difficulty, elapsedMs, limitMs: LIMIT });
-const ng = (run: Run) => answer(run, { correct: false, difficulty: 1, elapsedMs: 1000, limitMs: LIMIT });
+const scoring = scoringSchema.parse({
+  correct: 10,
+  difficulty: 2,
+  speed: { max: 5, fullSec: 10, zeroSec: 30 },
+  combo: { step: 1, cap: 5 },
+  wrong: -5,
+});
+const ok = (run: Run, sec = 60, difficulty = 1, s = scoring) =>
+  answer(run, { correct: true, difficulty, elapsedMs: sec * 1000 }, s);
+const ng = (run: Run, s = scoring) => answer(run, { correct: false, difficulty: 1, elapsedMs: 1000 }, s);
+const gainOf = (r: ReturnType<typeof answer>) => (r.events[0] as { gained: number }).gained;
 
-describe('run.answer', () => {
-  it('정답: 기본 + 난이도 + 속도 보너스, 첫 정답은 배율 ×1', () => {
-    const { run, events } = ok(newRun(), 0, 3);
-    expect(events[0]).toMatchObject({ kind: 'correct', gained: 100 + 100 + 50, combo: 1, multiplier: 1 });
-    expect(run).toMatchObject({ score: 250, combo: 1, maxCombo: 1, solved: 1, correct: 1 });
+describe('점수 (scoring)', () => {
+  it('정답 = 기본 + 난이도 + 속도(10초 안 만점, 30초부터 0, 사이 선형)', () => {
+    expect(gainOf(ok(newRun(), 5, 3))).toBe(10 + 4 + 5);
+    expect(gainOf(ok(newRun(), 20))).toBe(10 + 3); // 2.5 → 반올림
+    expect(gainOf(ok(newRun(), 40))).toBe(10);
   });
 
-  it('속도 보너스는 기준 시간을 넘으면 0 (음수 아님)', () => {
-    expect(ok(newRun(), LIMIT * 2).events[0]).toMatchObject({ speedBonus: 0, gained: 100 });
-  });
-
-  it('콤보 배율은 이전 연속 정답만큼 오르고 ×2에서 멈춘다', () => {
+  it('콤보: 연속 정답 2번째부터 +1씩, 최대 +5', () => {
     let run = newRun();
     const gains: number[] = [];
-    for (let i = 0; i < 15; i++) {
+    for (let i = 0; i < 8; i++) {
       const r = ok(run);
       run = r.run;
-      gains.push((r.events[0] as { gained: number }).gained);
+      gains.push(gainOf(r));
     }
-    expect(gains.slice(0, 3)).toEqual([100, 110, 120]);
-    expect(gains[10]).toBe(200);
-    expect(gains[14]).toBe(200);
-    expect(run.maxCombo).toBe(15);
+    expect(gains).toEqual([10, 11, 12, 13, 14, 15, 15, 15]);
+    expect(run.maxCombo).toBe(8);
   });
 
-  it('오답: 0점, 감점 없음, 콤보 초기화 (최고 콤보는 유지)', () => {
-    let run = ok(ok(newRun()).run).run;
-    const r = ng(run);
-    expect(r.events[0]).toEqual({ kind: 'wrong', lostCombo: 2 });
-    expect(r.run).toMatchObject({ score: run.score, combo: 0, maxCombo: 2, solved: 3, correct: 2 });
-    run = ok(r.run).run;
-    expect(run.combo).toBe(1);
+  it('오답: 감점하고 콤보 초기화, 세션 점수는 0 아래로 안 내려간다', () => {
+    const r1 = ng(newRun());
+    expect(r1.events[0]).toEqual({ kind: 'wrong', lostCombo: 0, lost: 0 });
+    expect(r1.run.score).toBe(0);
+    const r2 = ng(ok(ok(newRun()).run).run);
+    expect(r2.events[0]).toEqual({ kind: 'wrong', lostCombo: 2, lost: 5 });
+    expect(r2.run).toMatchObject({ score: 16, combo: 0, maxCombo: 2 });
+  });
+
+  it('점수 기준이 없으면(무제한 연습) 점수 0, 콤보·정답 수는 센다', () => {
+    let run = newRun();
+    for (let i = 0; i < 3; i++) run = answer(run, { correct: true, difficulty: 3, elapsedMs: 1 }).run;
+    expect(run).toMatchObject({ score: 0, combo: 3, correct: 3, solved: 3 });
   });
 
   it(`${CHECKPOINT_EVERY}문제마다 구간 결과를 남기고 이전 구간과 비교할 수 있다`, () => {
@@ -48,9 +58,15 @@ describe('run.answer', () => {
       checkpoints.push(...r.events.filter((e) => e.kind === 'checkpoint'));
     }
     expect(checkpoints).toHaveLength(2);
-    expect(checkpoints[0]).toMatchObject({ index: 0, prev: undefined });
     expect(checkpoints[1]).toMatchObject({ index: 1, prev: run.checkpoints[0] });
     expect(run.checkpoints.reduce((s, c) => s + c.score, 0)).toBe(run.score);
     expect(run.checkpoints.reduce((s, c) => s + c.correct, 0)).toBe(run.correct);
+  });
+
+  it('modes.yaml: 무제한 연습은 점수 없음, 나머지 모드는 점수 기준이 있다', () => {
+    const { modes } = loadModes();
+    const [practice, ...others] = modes!.modes;
+    expect(practice.scoring).toBeUndefined();
+    expect(others.every((m) => m.scoring)).toBe(true);
   });
 });

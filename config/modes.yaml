@@ -1,23 +1,30 @@
 # 게임 모드. 새 모드는 항목 하나를 추가하면 된다 (코드 수정 없음, 스키마: src/game/modes.ts).
-# 첫 번째가 기본 모드(홈의 [풀기]). 문항 생성 결과는 바꾸지 않으므로 exam.yaml version과 별개로 관리한다.
+# 첫 번째가 기본 모드(홈의 [무제한 연습]). 문항 생성 결과는 바꾸지 않으므로 exam.yaml version과 별개로 관리한다.
 # 값을 바꾸면 version +1.
-version: 1
+#
+# scoring: 없으면 점수 없음.
+#   정답 = correct + difficulty×(난이도−1) + 속도(fullSec 안이면 max → zeroSec에 0) + 콤보(연속 2번째부터 step씩, 최대 cap)
+#   오답 = wrong (감점, 세션 점수는 0 아래로 안 내려감)
+version: 2
 
 modes:
   - id: practice
-    label: 연습
-    description: 끝없이 한 문제씩, 규칙과 해설을 보며
+    label: 무제한 연습
+    description: 한 문제씩, 규칙과 해설을 보며
     feedback: each
     adaptive: true          # 유형별로 잘 풀면 난이도 ↑, 자주 틀리면 ↓
-    typeSelect: true
+    typeSelect: false       # true로 바꾸면 홈에 '유형 골라 연습'이 다시 나온다
 
   - id: exam
     label: 실전
-    description: 20문항 15분, 끝날 때 채점
+    description: 20문항 15분, 끝나고 채점
     items: 20               # [확실] 실전 20문항 / 15분
     timeLimitSec: 900
     feedback: end
-    bankRatio: 0.6          # [추정] 실전 유사도를 위해 문제은행 위주. 공개 은행 규모에 맞춰 조정
+    bankRatio: 0.6          # [추정] 실전 유사도를 위해 문제은행 위주
+    scoring:                # 정답 수 중심, 100점 만점. 찍으면 손해
+      correct: 5
+      wrong: -2
 
   - id: time-attack
     label: 타임어택
@@ -25,6 +32,10 @@ modes:
     timeLimitSec: 90
     feedback: instant
     adaptive: true
+    scoring:                # 시간 자체가 속도 기준. 정확하게 이어 맞히면 크게, 연타로 찍으면 손해
+      correct: 10
+      combo: { step: 2, cap: 10 }
+      wrong: -10
 
   - id: survival
     label: 서바이벌
@@ -32,6 +43,11 @@ modes:
     lives: 3
     feedback: each
     adaptive: true
+    scoring:                # 오래 버틸수록. 오답의 벌은 목숨
+      correct: 10
+      difficulty: 3
+      speed: { max: 3, fullSec: 10, zeroSec: 30 }
+      combo: { step: 1, cap: 5 }
 
   - id: weak
     label: 약점 집중
@@ -39,3 +55,9 @@ modes:
     items: 10
     feedback: each
     pool: weak
+    scoring:                # 10문제 만점 약 200, 보통 80~120
+      correct: 10
+      difficulty: 2
+      speed: { max: 5, fullSec: 10, zeroSec: 30 }
+      combo: { step: 1, cap: 5 }
+      wrong: -5

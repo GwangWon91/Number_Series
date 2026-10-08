@@ -30,11 +30,11 @@ export function FlagSheet({ reasons, onSave, onCancel }: Props) {
           onChange={(e) => setNote(e.target.value)}
           rows={2}
         />
-        <div className="next-row">
-          <button className="ghost" onClick={onCancel}>
+        <div className="button-row">
+          <button className="button ghost" onClick={onCancel}>
             취소
           </button>
-          <button className="primary wide" disabled={!picked.length && !note.trim()} onClick={() => onSave(picked, note.trim())}>
+          <button className="button primary grow" disabled={!picked.length && !note.trim()} onClick={() => onSave(picked, note.trim())}>
             저장
           </button>
         </div>

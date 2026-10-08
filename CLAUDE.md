@@ -15,6 +15,7 @@ SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하
 | `npm run sample -- [--type <id>] [--n 60] [--compare]` | 생성 문항 HTML 리포트 (`reports/`), `--compare`면 문제은행과 나란히 + 형식 통계 |
 | `npm run review` | `validate:bank` + 은행 분석 리포트 `reports/bank-analysis.md` (집계·id만, 커밋 금지) |
 | `npm run bank:variants` | 비공개 기출 → 숫자를 바꾼 공개 변형 문항 `data/bank/public/variants.yaml` 다시 만들기 (검사 통과한 것만) |
+| `npm run screens` | 빌드 결과를 Playwright로 열어 모바일·PC × 라이트·다크 스크린샷 → `reports/screens/` (처음 한 번 `npx playwright install chromium`) |
 | `npm run ship` | 현재 브랜치를 PR → CI → 병합 → 릴리스 → Pages 배포까지 (아래 "브랜치·커밋·릴리스") |
 | `npm run calibrate` | `data/feedback/*.json`(앱에서 내보낸 기록) 집계 → 조정 후보 제안 |
 
@@ -22,7 +23,7 @@ SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하
 ```
 config/exam.yaml            공통 출제 설정 (선택지 수, 시간, 은행 비율, 난이도 비중, 검증 기준, 피드백 사유)
 config/types/<id>.yaml      유형별 설정 (비중, 근거 수준, 항 개수, 빈칸 위치, 숫자 범위, 난이도별 파라미터)
-config/modes.yaml           게임 모드 (연습·실전·타임어택·서바이벌·약점 집중). 새 모드 = 항목 하나, 자체 version
+config/modes.yaml           게임 모드 (무제한 연습·실전·타임어택·서바이벌·약점 집중)와 모드별 점수 기준(scoring). 새 모드 = 항목 하나, 자체 version
 data/bank/public/*.yaml     직접 만든·변형 문항 (앱에 포함, 공개)
 data/bank/private/*.yaml    실제 기출 복원 문항 (gitignore — 절대 커밋 금지)
 data/feedback/*.json        앱에서 내보낸 기록·피드백 (gitignore)
