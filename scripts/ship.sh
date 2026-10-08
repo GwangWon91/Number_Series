@@ -4,7 +4,7 @@
 #
 #   npm run ship
 #
-# 릴리스할 커밋(feat·fix·config·docs 등)이 없으면 병합까지만 하고 끝난다.
+# 릴리스할 커밋(feat·fix 등)이 없으면 병합까지만 하고 끝난다.
 set -euo pipefail
 
 say() { printf '\n▶ %s\n' "$*"; }
@@ -20,7 +20,8 @@ wait_checks() {
     [[ $(gh pr view "${pr}" --json statusCheckRollup -q '.statusCheckRollup | length') -gt 0 ]] && break
     sleep 5
   done
-  gh pr checks "${pr}" --watch --fail-fast
+  gh pr checks "${pr}" --watch --fail-fast >/dev/null || { gh pr checks "${pr}"; exit 1; }
+  gh pr checks "${pr}"
 }
 
 # 특정 커밋에서 돈 워크플로 실행이 끝날 때까지 기다린다 (실패면 종료)
@@ -63,10 +64,12 @@ if [[ -z $rp ]]; then
   exit 0
 fi
 
-# 기본 토큰(GITHUB_TOKEN)이 갱신한 릴리스 PR에는 CI가 자동으로 안 돌 수 있다 → 직접 실행
+# 기본 토큰(GITHUB_TOKEN)이 갱신한 릴리스 PR에는 CI가 안 돈다. workflow_dispatch로 돌린 체크는
+# 필수 체크로 인정되지 않으므로, 내 계정으로 닫았다 다시 열어 pull_request 이벤트로 CI를 붙인다.
 if [[ $(gh pr view "${rp}" --json statusCheckRollup -q '.statusCheckRollup | length') -eq 0 ]]; then
-  say "릴리스 PR #${rp}에 CI 직접 실행"
-  gh workflow run ci.yml --ref "$(gh pr view "${rp}" --json headRefName -q .headRefName)"
+  say "릴리스 PR #${rp} 다시 열어 CI 실행"
+  gh pr close "${rp}" >/dev/null
+  gh pr reopen "${rp}" >/dev/null
 fi
 say "릴리스 PR #$rp CI 대기"
 wait_checks "${rp}"
