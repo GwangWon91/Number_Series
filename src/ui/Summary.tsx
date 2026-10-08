@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { config } from '../app/engine';
-import { typeLabel } from '../engine/config';
 import { questionText } from '../engine/question';
-import { bestScore } from '../store/records';
-import type { SessionSummary } from './Practice';
+import { addFlag, bestScore, itemSnapshot, newId } from '../store/records';
+import { FlagSheet } from './FlagSheet';
+import { modeOf, type SessionSummary } from './Practice';
+import type { WrongEntry } from './practiceState';
 import { SequenceView } from './SequenceView';
 
 interface Props {
@@ -18,7 +19,10 @@ const clock = (ms: number) => {
 };
 
 /** 세션 요약: 점수·최고 기록 비교·구간별 결과·틀린 문제 다시 보기 → 계속 풀기 */
-export function Summary({ summary: { session, wrong }, onContinue, onHome }: Props) {
+export function Summary({ summary: { session, wrong, title, spec }, onContinue, onHome }: Props) {
+  const mode = modeOf(spec);
+  const [flagging, setFlagging] = useState<WrongEntry | null>(null);
+  const [flagged, setFlagged] = useState<ReadonlySet<string>>(new Set());
   // undefined = 불러오는 중, null = 이전 기록 없음
   const [best, setBest] = useState<number | null | undefined>(undefined);
   useEffect(() => {
@@ -32,7 +36,7 @@ export function Summary({ summary: { session, wrong }, onContinue, onHome }: Pro
   return (
     <div className="screen summary">
       <main className="summary-main">
-        <p className="muted">{session.modeId === 'all' ? '전체 무작위' : typeLabel(config, session.modeId)} 세션 끝</p>
+        <p className="muted">{title} 끝</p>
         <p className="big-score">
           {score.toLocaleString()}
           <span>점</span>
@@ -73,15 +77,18 @@ export function Summary({ summary: { session, wrong }, onContinue, onHome }: Pro
         {wrong.length > 0 && (
           <section className="review">
             <h2>틀린 문제 다시 보기</h2>
-            {wrong.map((item, i) => (
-              <article key={i}>
-                <p className="prompt">{questionText(item.question)}</p>
-                <SequenceView item={item} revealed correct groupSeparator={item.groupSize !== undefined} />
-                {item.explain.map((line, j) => (
+            {wrong.map((w) => (
+              <article key={w.attemptId}>
+                <p className="prompt">{questionText(w.item.question)}</p>
+                <SequenceView item={w.item} revealed correct groupSeparator={w.item.groupSize !== undefined} />
+                {w.item.explain.map((line, j) => (
                   <p key={j} className={j === 0 ? 'rule-name' : 'rule-line'}>
                     {line}
                   </p>
                 ))}
+                <button className="link small flag" disabled={flagged.has(w.attemptId)} onClick={() => setFlagging(w)}>
+                  {flagged.has(w.attemptId) ? '실전과 다름 표시함' : '실전과 다른가요?'}
+                </button>
               </article>
             ))}
           </section>
@@ -90,12 +97,24 @@ export function Summary({ summary: { session, wrong }, onContinue, onHome }: Pro
 
       <footer className="dock summary-actions">
         <button className="primary wide" onClick={onContinue} autoFocus>
-          계속 풀기
+          {mode.items || mode.timeLimitSec || mode.lives ? '다시 하기' : '계속 풀기'}
         </button>
         <button className="ghost" onClick={onHome}>
           홈
         </button>
       </footer>
+
+      {flagging && (
+        <FlagSheet
+          reasons={config.feedback.reasons}
+          onCancel={() => setFlagging(null)}
+          onSave={async (reasons, note) => {
+            await addFlag({ id: newId(), ts: Date.now(), attemptId: flagging.attemptId, ...itemSnapshot(flagging.item), reasons, note });
+            setFlagged((s) => new Set(s).add(flagging.attemptId));
+            setFlagging(null);
+          }}
+        />
+      )}
     </div>
   );
 }

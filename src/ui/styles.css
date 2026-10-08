@@ -919,3 +919,94 @@ input[type='password'] {
   bottom: 0;
   background: var(--bg);
 }
+
+/* ───── 홈: 모드 카드·유형 고르기 ───── */
+.mode-grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.mode-grid button {
+  width: 100%;
+  height: 100%;
+  min-height: 84px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  text-align: left;
+  line-height: 1.35;
+}
+.mode-grid b {
+  font-size: 16px;
+}
+.best {
+  color: var(--best);
+  font-weight: 700;
+}
+.type-pick {
+  margin-top: 8px;
+}
+.type-pick summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 700;
+  padding: 12px 4px;
+  min-height: 44px;
+}
+.stars {
+  color: var(--best);
+  font-size: 12px;
+  letter-spacing: 1px;
+  white-space: nowrap;
+}
+
+/* ───── 풀이: 모드별 머리말 ───── */
+.countdown {
+  min-width: 52px;
+  text-align: right;
+  font-size: 18px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.countdown.low {
+  color: var(--ng);
+}
+.lives {
+  color: var(--ng);
+  letter-spacing: 2px;
+}
+/* 타임어택: 답하자마자 다음 문제로 넘어가며 판정을 잠깐 비춘다 */
+.stage.flash-ok {
+  animation: flash-ok 0.35s ease-out;
+}
+.stage.flash-ng {
+  animation: flash-ng 0.35s ease-out;
+}
+@keyframes flash-ok {
+  from {
+    background: var(--ok-bg);
+  }
+}
+@keyframes flash-ng {
+  from {
+    background: var(--ng-bg);
+  }
+}
+button.link.flag {
+  align-self: flex-start;
+  min-height: 32px;
+  margin-top: 6px;
+  color: var(--muted);
+  text-decoration: underline;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stage.flash-ok,
+  .stage.flash-ng {
+    animation: none;
+  }
+}
