@@ -47,6 +47,14 @@ export async function addSession(s: Session): Promise<void> {
   notify();
 }
 
+/** 같은 모드의 이전 세션 최고 점수 (없으면 null) */
+export async function bestScore(modeId: string, exceptId: string): Promise<number | null> {
+  const scores = (await db.sessions.toArray())
+    .filter((s) => s.modeId === modeId && s.id !== exceptId && s.score !== undefined)
+    .map((s) => s.score!);
+  return scores.length ? Math.max(...scores) : null;
+}
+
 /** 동기화되는 기록 종류 (sync.ts가 같은 목록을 돈다) */
 export type RecordKind = 'attempts' | 'flags' | 'sessions';
 const table = (kind: RecordKind) => db[kind] as unknown as typeof db.attempts;

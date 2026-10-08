@@ -8,7 +8,7 @@ interface Props {
   frozenMs?: number;
 }
 
-/** 경과 시간 + 기준 시간 대비 진행 막대. 기준을 넘으면 색이 바뀐다 (카운트다운은 아님). */
+/** 경과 시간 + 속도 보너스 게이지: 기준 시간 동안 줄어들어 0이 되면 보너스 없음 (시간 제한은 아님). */
 export function Timer({ limitSec, running, frozenMs }: Props) {
   const start = useRef(performance.now());
   const [now, setNow] = useState(0);
@@ -20,13 +20,12 @@ export function Timer({ limitSec, running, frozenMs }: Props) {
   }, [running]);
 
   const ms = frozenMs ?? now;
-  const ratio = Math.min(1, ms / (limitSec * 1000));
-  const over = ms > limitSec * 1000;
+  const left = Math.max(0, 1 - ms / (limitSec * 1000));
   return (
-    <div className={`timer ${over ? 'over' : ''}`} aria-label={`경과 ${Math.floor(ms / 1000)}초`}>
+    <div className="timer" aria-label={`경과 ${Math.floor(ms / 1000)}초`} title="막대가 남아 있을 때 맞히면 속도 보너스">
       <span className="secs">{Math.floor(ms / 1000)}초</span>
       <span className="track">
-        <span className="fill" style={{ transform: `scaleX(${ratio})` }} />
+        <span className="fill" style={{ transform: `scaleX(${left})` }} />
       </span>
     </div>
   );

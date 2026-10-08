@@ -70,6 +70,25 @@ export function Settings({ onBack }: { onBack(): void }) {
         </section>
 
         <section>
+          <h2>효과</h2>
+          <label className="row">
+            <input type="checkbox" checked={prefs.sound} onChange={(e) => updatePrefs({ ...prefs, sound: e.target.checked })} />
+            <span>효과음</span>
+          </label>
+          <label className="row">
+            <input
+              type="checkbox"
+              checked={prefs.haptics}
+              onChange={(e) => updatePrefs({ ...prefs, haptics: e.target.checked })}
+            />
+            <span>
+              진동
+              <span className="muted small block">지원하는 기기에서만 (iPhone은 지원하지 않음)</span>
+            </span>
+          </label>
+        </section>
+
+        <section>
           <h2>화면</h2>
           <div className="segmented" role="group" aria-label="화면 밝기">
             {THEME_OPTIONS.map(([value, label]) => (

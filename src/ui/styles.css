@@ -18,6 +18,8 @@
   --ng: light-dark(#c63030, #ff7d7d);
   --ng-bg: light-dark(#fbe8e8, #452628);
   --warn: light-dark(#a06000, #f0a640);
+  --combo: light-dark(#6d28d9, #c4b5fd); /* 콤보·연속 정답 */
+  --best: light-dark(#8a5a00, #f5c451); /* 최고 기록 */
   --scrim: rgb(0 0 0 / 0.4);
   --radius: 12px;
   --tap: 52px;
@@ -394,7 +396,7 @@ button.start {
 /* 진행 점수: 헤더에서 가장 잘 보이는 숫자 */
 .score {
   display: flex;
-  gap: 14px;
+  gap: 10px;
   font-variant-numeric: tabular-nums;
 }
 .score div {
@@ -409,6 +411,15 @@ button.start {
 }
 .score .hit b {
   color: var(--ok);
+  font-size: 16px;
+  line-height: 20px;
+}
+.score .combo b {
+  color: var(--combo);
+}
+button.icon.sound {
+  width: 36px;
+  font-size: 17px;
 }
 .score span {
   font-size: 11px;
@@ -422,8 +433,34 @@ button.start {
     transform: scale(1.35);
   }
 }
+/* 정답 공개 줄의 +점수: 아래에서 떠오른다 */
+.gain {
+  margin-left: 8px;
+  font-weight: 800;
+  color: var(--ok);
+  font-variant-numeric: tabular-nums;
+  display: inline-block;
+  animation: rise 0.4s ease-out;
+}
+.gain .combo-tag {
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--combo);
+}
+.gain .combo-tag.big {
+  font-size: 15px;
+}
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+/* 모든 게임 효과 애니메이션은 '동작 줄이기'를 따른다 */
 @media (prefers-reduced-motion: reduce) {
-  .score .pop b {
+  .score .pop b,
+  .gain,
+  .checkpoint {
     animation: none;
   }
 }
@@ -433,7 +470,7 @@ button.start {
   flex-direction: column;
   align-items: flex-end;
   gap: 4px;
-  width: 64px;
+  width: 44px;
   font-variant-numeric: tabular-nums;
 }
 .timer .secs {
@@ -454,12 +491,6 @@ button.start {
   background: var(--accent);
   transform-origin: left;
   transition: transform 0.25s linear;
-}
-.timer.over .secs {
-  color: var(--warn);
-}
-.timer.over .fill {
-  background: var(--warn);
 }
 
 /* ───── 풀이 ───── */
@@ -791,4 +822,100 @@ input[type='password'] {
   color: var(--accent);
   box-shadow: inset 0 0 0 1px var(--accent);
   font-weight: 600;
+}
+
+/* ───── 구간 요약 (10문제마다, 흐름을 막지 않음) ───── */
+.checkpoint {
+  margin: 0;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--combo);
+  font-size: 15px;
+  animation: rise 0.4s ease-out;
+}
+.checkpoint .up {
+  color: var(--ok);
+  font-weight: 600;
+}
+.checkpoint .down {
+  color: var(--muted);
+}
+
+/* ───── 세션 요약 ───── */
+.summary-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 32px;
+  text-align: center;
+}
+.summary-main > p {
+  margin: 0;
+}
+.big-score {
+  font-size: 56px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.big-score span {
+  font-size: 20px;
+  margin-left: 4px;
+  color: var(--muted);
+}
+.summary-main .best {
+  color: var(--best);
+  font-weight: 800;
+  font-size: 18px;
+}
+.segments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px 14px;
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+.review {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 12px;
+}
+.review h2 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 8px 4px 0;
+}
+.review article {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  font-size: 15px;
+}
+.review article p {
+  margin: 0;
+}
+.review .rule-name {
+  font-weight: 600;
+  margin-top: 8px;
+}
+.review .rule-line {
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: 14px;
+}
+.summary-actions {
+  flex-direction: row;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
 }
