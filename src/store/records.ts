@@ -47,6 +47,14 @@ export async function addSession(s: Session): Promise<void> {
   notify();
 }
 
+/** 성장 지표 계산용 전체 기록 (개인 기록이라 수천 건 수준 — 메모리에서 센다) */
+export async function history(): Promise<{ attempts: Attempt[]; sessions: Session[] }> {
+  return {
+    attempts: (await db.attempts.orderBy('ts').toArray()).map(strip<Attempt>),
+    sessions: (await db.sessions.orderBy('ts').toArray()).map(strip<Session>),
+  };
+}
+
 /** 같은 모드의 이전 세션 최고 점수 (없으면 null) */
 export async function bestScore(modeId: string, exceptId: string): Promise<number | null> {
   const scores = (await db.sessions.toArray())

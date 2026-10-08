@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { config } from '../app/engine';
+import { loadGameUi, saveGameUi } from '../app/prefs';
+import { ACHIEVEMENTS, unlockedIds, type Achievement } from '../game/progress';
 import { questionText } from '../engine/question';
-import { addFlag, bestScore, itemSnapshot, newId } from '../store/records';
+import { addFlag, bestScore, history, itemSnapshot, newId } from '../store/records';
 import { FlagSheet } from './FlagSheet';
 import { modeOf, type SessionSummary } from './Practice';
-import type { WrongEntry } from './practiceState';
+import { loadSkills, type WrongEntry } from './practiceState';
 import { SequenceView } from './SequenceView';
 
 interface Props {
@@ -29,6 +31,24 @@ export function Summary({ summary: { session, wrong, title, spec }, onContinue, 
     bestScore(session.modeId, session.id).then(setBest, () => setBest(null));
   }, [session.id, session.modeId]);
 
+  // 이번 세션으로 새로 딴 업적 (한 번만 축하)
+  const [fresh, setFresh] = useState<Achievement[]>([]);
+  useEffect(() => {
+    history().then(
+      (h) => {
+        const sessions = h.sessions.some((s) => s.id === session.id) ? h.sessions : [...h.sessions, session];
+        const typeIds = config.types.filter((t) => t.enabled).map((t) => t.id);
+        const got = unlockedIds({ attempts: h.attempts, sessions }, { skills: loadSkills(), typeIds });
+        const ui = loadGameUi();
+        const news = ACHIEVEMENTS.filter((a) => got.has(a.id) && !ui.seenAchievements.includes(a.id));
+        if (!news.length) return;
+        saveGameUi({ ...ui, seenAchievements: [...ui.seenAchievements, ...news.map((a) => a.id)] });
+        setFresh(news);
+      },
+      () => undefined,
+    );
+  }, [session]);
+
   const score = session.score ?? 0;
   const isBest = best !== undefined && score > 0 && (best === null || score > best);
   const accuracy = Math.round((session.correct / session.total) * 100);
@@ -45,6 +65,17 @@ export function Summary({ summary: { session, wrong, title, spec }, onContinue, 
           <p className="best">{best === null ? '첫 기록!' : `최고 기록! (이전 ${best.toLocaleString()}점)`}</p>
         ) : (
           best != null && <p className="muted small">최고 기록 {best.toLocaleString()}점</p>
+        )}
+
+        {fresh.length > 0 && (
+          <ul className="unlocked" aria-live="polite">
+            {fresh.map((a) => (
+              <li key={a.id}>
+                <b>업적 달성 · {a.label}</b>
+                <span className="muted small"> {a.description}</span>
+              </li>
+            ))}
+          </ul>
         )}
 
         <div className="totals">
