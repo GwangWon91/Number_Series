@@ -1,12 +1,18 @@
 import { Component, useState, type ReactNode } from 'react';
 import { Home } from './Home';
-import { Practice } from './Practice';
+import { Practice, type SessionSummary } from './Practice';
 import { clearPractice } from './practiceState';
 import { Records } from './Records';
 import { Settings } from './Settings';
+import { Summary } from './Summary';
 
 /** 화면이 몇 개뿐이라 라우터 없이 상태로 전환한다 (GitHub Pages 새로고침 404 문제도 없음) */
-type Screen = { name: 'home' } | { name: 'practice'; mode: string } | { name: 'settings' } | { name: 'records' };
+type Screen =
+  | { name: 'home' }
+  | { name: 'practice'; mode: string }
+  | { name: 'summary'; summary: SessionSummary }
+  | { name: 'settings' }
+  | { name: 'records' };
 
 /** 렌더 중 오류(문항 생성 실패, 깨진 저장값 등) → 흰 화면 대신 안내와 복구 버튼 */
 class ErrorBoundary extends Component<{ children: ReactNode }, { error: Error | null }> {
@@ -51,7 +57,17 @@ function Screens() {
 
   switch (screen.name) {
     case 'practice':
-      return <Practice key={screen.mode} mode={screen.mode} onExit={home} />;
+      return (
+        <Practice
+          key={screen.mode}
+          mode={screen.mode}
+          onExit={(summary) => (summary ? setScreen({ name: 'summary', summary }) : home())}
+        />
+      );
+    case 'summary':
+      return (
+        <Summary summary={screen.summary} onContinue={() => start(screen.summary.session.modeId)} onHome={home} />
+      );
     case 'settings':
       return <Settings onBack={home} />;
     case 'records':

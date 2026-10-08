@@ -57,6 +57,10 @@ export interface Session {
   modeId: string;
   total: number;
   correct: number;
+  /** 점수·최고 콤보·10문제 구간 결과 (v0.5.0 이후 세션부터) */
+  score?: number;
+  maxCombo?: number;
+  checkpoints?: { correct: number; score: number }[];
   /** 시작~종료 경과 시간 (앱을 닫았다 이어 푼 시간 포함) */
   durationMs: number;
   appVersion: string;
