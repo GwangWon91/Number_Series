@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.1](https://github.com/GwangWon91/Number_Series/compare/v0.12.0...v0.12.1) (2026-10-08)
+
+
+### 버그 수정
+
+* **engine:** 유리수 n번째 항을 다른 규칙 값으로 이어 쓰던 문제 ([ba8c66e](https://github.com/GwangWon91/Number_Series/commit/ba8c66ecebc8dfac5e2fd233074a5ba1ecd9be2d))
+
+
+### 출제 설정
+
+* 기출 유형 비중에 맞춤, 유리수 생성기 규칙 확장 (v4) ([7c86271](https://github.com/GwangWon91/Number_Series/commit/7c86271952c7e1ddae8b81631bb5011230cf2492))
+
 ## [0.12.0](https://github.com/GwangWon91/Number_Series/compare/v0.11.0...v0.12.0) (2026-10-08)
 
 
