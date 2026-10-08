@@ -5,8 +5,9 @@
  * 문항 본문은 쓰지 않는다(집계와 id만). 그래도 기출 집계라 공개 저장소에 올리지 않는다 (reports/는 gitignore).
  * private은 CI에 없으므로 로컬 전용이다.
  */
-import { writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { parse } from 'yaml';
 import { parseArgs } from 'node:util';
 import { bankToItem, checkBankEntry } from '../src/engine/bank';
 import { valueKey } from '../src/engine/value';
@@ -15,6 +16,10 @@ import { loadBank, requireConfig, ROOT } from '../src/node/load';
 const { values: args } = parseArgs({ options: { stdout: { type: 'boolean', default: false } } });
 const config = requireConfig();
 const { entries, errors } = loadBank();
+// 유형별 근거 문항 id는 공개 config에 두지 않고 비공개 파일에 둔다 (data/bank/private/meta/evidence.yaml)
+const evidenceFile = join(ROOT, 'data/bank/private/meta/evidence.yaml');
+const privateEvidence: Record<string, string[]> = existsSync(evidenceFile) ? (parse(readFileSync(evidenceFile, 'utf8')) ?? {}) : {};
+const evidenceOf = (t: (typeof config.types)[number]) => [...t.evidence, ...(privateEvidence[t.id] ?? [])];
 
 const count = <T>(xs: T[], key: (x: T) => string) => {
   const m = new Map<string, number>();
@@ -73,7 +78,7 @@ out.push(
   table(['유형', '은행', '은행 %', '설정 weight %', '근거 수준', '설정 evidence id 수'], typeIds.map((id) => {
     const t = config.types.find((x) => x.id === id);
     const n = byType.get(id) ?? 0;
-    return [id, n, `${((n / (rows.length || 1)) * 100).toFixed(0)}`, t?.enabled ? `${((t.weight / totalW) * 100).toFixed(0)}` : '-', t?.confidence ?? '(설정 없음)', t?.evidence.length ?? '-'];
+    return [id, n, `${((n / (rows.length || 1)) * 100).toFixed(0)}`, t?.enabled ? `${((t.weight / totalW) * 100).toFixed(0)}` : '-', t?.confidence ?? '(설정 없음)', (t ? evidenceOf(t).length : '-')];
   })),
   '',
   '## 점검 대상',
@@ -88,9 +93,9 @@ out.push(
   '',
   '## 설정 근거 커버리지',
   `- 기출 근거 없는 활성 유형(confidence: estimated): ${config.types.filter((t) => t.enabled && t.confidence === 'estimated').map((t) => t.id).join(', ') || '없음'}`,
-  `- 설정 evidence가 은행에 없는 id(오타·삭제): ${[...new Set(config.types.flatMap((t) => t.evidence))].filter((id) => !bankIds.has(id)).join(', ') || '없음'}`,
+  `- 설정 evidence가 은행에 없는 id(오타·삭제): ${[...new Set(config.types.flatMap(evidenceOf))].filter((id) => !bankIds.has(id)).join(', ') || '없음'}`,
   `- 은행에 있지만 어떤 유형 evidence에도 안 쓰인 문항: ${(() => {
-    const used = new Set(config.types.flatMap((t) => t.evidence));
+    const used = new Set(config.types.flatMap(evidenceOf));
     return ids(rows.filter((r) => r.e.visibility === 'private' && !used.has(r.e.id)));
   })()}`,
   '',

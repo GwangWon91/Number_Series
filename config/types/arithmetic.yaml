@@ -3,7 +3,6 @@ label: 등차수열
 enabled: true
 weight: 4
 confidence: estimated
-evidence: []
 note: 단독 출제는 드물 것으로 추정. 너무 쉬워 비중 낮게 시작.
 length: [6, 7]
 blank: { last: 0.6, middle: 0.4 }

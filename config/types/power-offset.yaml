@@ -3,7 +3,6 @@ label: 제곱수·세제곱수 ± 상수
 enabled: true
 weight: 5
 confidence: estimated
-evidence: []
 length: [5, 7]
 blank: { last: 0.7, middle: 0.3 }
 numbers: { min: -99, max: 999 }

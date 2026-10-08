@@ -3,7 +3,6 @@ label: 등비수열
 enabled: true
 weight: 4
 confidence: estimated
-evidence: []
 length: [6, 7]           # 5항이면 "×r, +k 번갈아"로도 읽혀 모호해짐 (validate 결과)
 blank: { last: 0.6, middle: 0.4 }
 numbers: { min: -2999, max: 2999 }

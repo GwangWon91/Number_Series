@@ -25,7 +25,7 @@
    - 경고 `등록된 규칙으로 정답을 설명하지 못함` → 새 규칙·유형 후보
    - 경고 `다른 해석 [...]` / `여유 항 미만` → 모호하거나 항이 적은 문항 (실전에도 있다는 증거일 수 있음)
 4. **분석** `npm run review`: `reports/bank-analysis.md`를 갱신한다 (집계·id만, **커밋하지 않음**). 이전 결과와 비교하려면 실행 전에 파일을 복사해 둔다. 회차×형식 분포, 유형별 은행 비중 vs 설정 비중, 미분류·모호·중복 후보, 근거 없는 유형.
-5. **설정 반영**: `config/types/*.yaml`·`config/exam.yaml`을 고치고 `confidence: evidence`, `evidence: [문항 id]`를 채운다. `exam.yaml`의 `version` +1과 `changelog`, `docs/skct-format.md`의 확실/추정/모름 표를 같이 갱신한다. 한 회차(20문항)만으로는 `estimated`로 두고 근거 출처 수를 적는다.
+5. **설정 반영**: `config/types/*.yaml`·`config/exam.yaml`을 고치고 `confidence: evidence`로 표시한다. 근거 문항 id는 공개 config가 아니라 `data/bank/private/meta/evidence.yaml`(유형 id → 문항 id 목록)에 적는다. `exam.yaml`의 `version` +1과 `changelog`, `docs/skct-format.md`의 확실/추정/모름 표를 같이 갱신한다. 한 회차(20문항)만으로는 `estimated`로 두고 근거 출처 수를 적는다.
 6. **공개 변형**: `npm run bank:variants`로 `variants.yaml`을 다시 만든다 (원래 규칙이 유지되고 다른 해석이 없는 것만 자동으로 남는다). 자동 변형이 안 되는 문항을 손으로 만들 때는 `source.kind: variant`, `publishable: true`로 `original.yaml` 등에 추가한다. 원문 그대로는 금지.
 
 ## 3. 품질 게이트와 점검 주기
@@ -43,17 +43,17 @@ CI는 private이 없어서 public 은행만 검사한다. private 검사는 로�
 ## 4. 새 문제를 추가하려면 (요청 방법)
 ### 줄 것 (아는 만큼만)
 - **문제**: 이미지(스크린샷)나 텍스트 메모. 수열, 선택지, 정답. 빈칸 2개(A·B)나 n번째 항 형식이면 그 사실
-- **출처/회차**: 예) `링커리어 2026H2-3`, `본인 응시 복원`, `교재 ○○`
+- **출처/회차**: 예) `<커뮤니티> <회차>`, `본인 응시 복원`, `교재 ○○`
 - 있으면: 정답률(정오표), 규칙 메모, 체감 난이도, 표기 특이점(약분 안 한 분수, 소수 혼용 등)
 
 ### 요청 문구 예
 | 하고 싶은 일 | 이렇게 말한다 |
 |---|---|
-| 기출 추가 | "이 캡처 20문항을 `2026H2-3` 링커리어 기출로 private 은행에 추가해줘" |
+| 기출 추가 | "이 캡처 20문항을 `<회차>` `<출처>` 기출로 private 은행에 추가해줘" |
 | 추가 + 분석 | "추가하고 `npm run review` 결과로 설정 보정 후보까지 알려줘" |
 | 설정 반영 | "새로 들어온 근거로 `config/types`와 `exam.yaml`을 보정하고 version/changelog/skct-format 갱신해줘" |
 | 현황 확인 | "은행 분석 리포트 다시 돌려서 근거 없는 유형과 미분류 문항 알려줘" |
-| 공개 문제 만들기 | "`bank:variants` 다시 돌려줘" / 자동 변형이 안 된 문항은 "`lk-2026h2-2-085`를 손으로 변형해서 public에 추가해줘" |
+| 공개 문제 만들기 | "`bank:variants` 다시 돌려줘" / 자동 변형이 안 된 문항은 "`<문항 id>`를 손으로 변형해서 public에 추가해줘" |
 | 새 유형 | "미분류 문항 `○○`들을 새 유형으로 추가해줘" (절차: `docs/adding-a-type.md`) |
 | 피드백 반영 | "`data/feedback/`에 기록 넣었으니 calibrate 돌려서 조정안 알려줘" |
 
@@ -64,4 +64,5 @@ CI는 private이 없어서 public 은행만 검사한다. private 검사는 로�
 ### 지켜야 할 것
 - private·`data/feedback/`·`reports/` 내용은 커밋하지 않는다 (`git status`로 확인).
 - 추정을 사실처럼 쓰지 않는다. 근거 수준(`confidence`, [확실]/[추정]/[모름])을 표시한다.
-- 문항 id는 전체 은행에서 유일해야 한다 (예: `lk-2026h2-3-081`, 직접 만든 공개 문항 `pub-0xx`, 자동 변형 `var-<원문 id>-<변환>`).
+- 문항 id는 전체 은행에서 유일해야 한다 (예: 기출 `<출처>-<회차>-<번호>`, 직접 만든 공개 문항 `pub-0xx`, 자동 변형 `var-<해시>`).
+- 공개 파일(config·docs·public 은행·테스트)에는 출처·회차·기출 문항 id·기출에서 센 수치를 적지 않는다. 설정의 근거 문항 id는 `data/bank/private/meta/evidence.yaml`에 둔다.

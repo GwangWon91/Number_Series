@@ -49,7 +49,7 @@ scripts/                    validate / sample / calibrate / make-icons
 
 ### A. 출제 파라미터 조정 (가장 흔한 작업)
 1. `config/types/<id>.yaml` 또는 `config/exam.yaml` 수정. 근거는 YAML 주석/`note`에 남긴다.
-2. 근거가 생긴 유형은 `confidence: evidence`, `evidence: [은행 문항 id]`.
+2. 근거가 생긴 유형은 `confidence: evidence`. 근거 문항 id는 공개 config가 아니라 `data/bank/private/meta/evidence.yaml`에 적는다.
 3. `config/exam.yaml`의 `version` +1, `changelog`에 날짜·이유 추가.
 4. `npm run validate && npm test` 통과 확인. 성공률·중복률 실패 시 범위를 조정 (항 개수를 줄이면 모호 문항이 늘어난다).
 5. `docs/skct-format.md`의 확실/추정/모름 표 갱신.
@@ -71,6 +71,7 @@ scripts/                    validate / sample / calibrate / make-icons
 ## 규칙
 - `data/bank/private/`, `data/feedback/`, `reports/`의 내용은 **절대 커밋하지 않는다** (기출 저작권·개인 기록). `git status`로 확인.
 - 설정을 바꾸면 반드시 `version` +1과 `changelog`. 출제 결과가 바뀌면 이전 플래그의 재현 기준이 달라지기 때문.
+- 공개 파일(config·docs·public 은행·테스트·주석)에는 기출의 출처·회차·문항 id·문항 내용·기출에서 센 수치를 적지 않는다. 근거는 `[추정: 비공개 기출 분석]`처럼만 표시하고 수치는 `reports/`(로컬)에서 본다.
 - 추정값에는 근거 수준을 표시한다 (`confidence`, YAML 주석의 [확실]/[추정]/[모름]). 추정을 사실처럼 쓰지 않는다.
 - 엔진(`src/engine`)은 DOM·Node API를 쓰지 않는다. 브라우저 전용은 `src/app`·`src/ui`·`src/store`, Node 전용은 `src/node`·`scripts`.
 - 커밋 전: `npm run validate && npm test && npm run typecheck`.

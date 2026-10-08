@@ -193,7 +193,7 @@ function opsForResidue(s: readonly number[], r: number, k: number): Op[] | null 
 }
 
 /**
- * k가지 연산을 차례로 반복 (k ≥ 3). 예: ×3, −2, ÷2, +5 반복 (실전 2026H2-1 94번, 소수는 통분 후).
+ * k가지 연산을 차례로 반복 (k ≥ 3). 예: ×3, −2, ÷2, +5 반복 (소수는 통분 후).
  * 각 연산이 최소 두 번씩 확인되도록 길이 ≥ 2k+1. 두 연산 번갈아는 alternatingOpsRule.
  */
 export function opCycleRule(k: number): IntRule {
@@ -227,7 +227,7 @@ export function opCycleRule(k: number): IntRule {
   };
 }
 
-/** 부호가 번갈아 바뀌는 연속 제곱수: +1, −4, +9, −16 … (계차에 씀, 실전 2026H2-2 97번) */
+/** 부호가 번갈아 바뀌는 연속 제곱수: +1, −4, +9, −16 … (계차에 씀) */
 export const altSquaresRule: IntRule = {
   id: 'alt-squares',
   label: '부호가 번갈아 바뀌는 제곱수',
