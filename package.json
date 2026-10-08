@@ -13,7 +13,8 @@
     "validate:bank": "tsx scripts/validate.ts --bank-only",
     "sample": "tsx scripts/sample.ts",
     "calibrate": "tsx scripts/calibrate.ts",
-    "pool:pull": "tsx scripts/pool-pull.ts"
+    "pool:pull": "tsx scripts/pool-pull.ts",
+    "ship": "bash scripts/ship.sh"
   },
   "dependencies": {
     "dexie": "^4.4.6",
