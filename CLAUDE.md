@@ -50,13 +50,14 @@ scripts/                    validate / sample / calibrate / make-icons
 
 ### A. 출제 파라미터 조정 (가장 흔한 작업)
 1. `config/types/<id>.yaml` 또는 `config/exam.yaml` 수정. 근거는 YAML 주석/`note`에 남긴다.
-2. 근거가 생긴 유형은 `confidence: evidence`. 근거 문항 id는 공개 config가 아니라 `data/bank/private/meta/evidence.yaml`에 적는다.
+2. 근거가 생긴 유형은 `confidence: evidence`. 근거 문항은 비공개 기출의 `typeId`로 정해진다 (공개 config에 id를 적지 않는다).
 3. `config/exam.yaml`의 `version` +1, `changelog`에 날짜·이유 추가.
 4. `npm run validate && npm test` 통과 확인. 성공률·중복률 실패 시 범위를 조정 (항 개수를 줄이면 모호 문항이 늘어난다).
 5. `docs/skct-format.md`의 확실/추정/모름 표 갱신.
 
 ### B. 기출 복원 문항 추가
 1. 사용자가 준 메모를 `data/bank/private/<회차>.yaml`로 변환 (형식: `data/bank/private/README.md`). `publishable: false`.
+   **`typeId`는 필수**: 설정에 있는 유형 id, 맞는 유형이 없으면 후보 id(케밥). 유형은 기출 → 변형 → 앱 기록까지 이 값으로 이어진다.
 2. `npm run validate:bank` — 판별 실패·모호 경고는 새 유형/규칙 후보로 보고한다.
 3. `npm run sample -- --compare`로 생성 문항과 형식 통계 비교 → A로 보정.
 4. 공개 은행 변형 문항은 `npm run bank:variants`로 다시 만든다 (`variants.yaml`, 직접 수정 금지). 손으로 만들 때는 숫자를 바꾼 **변형 문항**을 `source.kind: variant`, `publishable: true`로 (원문 금지).
@@ -68,6 +69,14 @@ scripts/                    validate / sample / calibrate / make-icons
 4. `config/types/<id>.yaml` 작성 (`confidence: estimated`로 시작).
 5. `npm run validate -- --type <id>` → `npm run sample -- --type <id>`로 눈 검토 → `npm test`.
 자세한 예: `docs/adding-a-type.md`
+
+### D. 출제 유형 검토 (주기적, 수동)
+새 회차를 넣을 때마다 (필수), 그 밖에 월 1회 또는 "출제 유형 검토" 요청 시.
+1. `npm run review` → `reports/bank-analysis.md`: 기출 유형·묻는 방식 비중 vs 설정의 **점검** 행, 후보 유형, typeId 없는 기출, 모호 문항.
+2. `npm run sample -- --compare`로 생성 문항과 기출 형식을 눈으로 비교.
+3. 판단: 설정 보정(A) / 새 유형(C, 후보 유형은 생성기가 생겨야 변형에 들어간다) / 유지(이유 기록). 설정 변경은 사용자 승인 후.
+4. 비공개 기록 `data/bank/private/meta/review-log.md`에 한 줄: 날짜 · 포함 회차 · 점검 유형 · 결정 · config version.
+5. 공개 변경이 있으면 `npm run bank:variants` → 커밋 → `npm run ship`.
 
 ## 규칙
 - `data/bank/private/`, `data/feedback/`, `reports/`의 내용은 **절대 커밋하지 않는다** (기출 저작권·개인 기록). `git status`로 확인.
