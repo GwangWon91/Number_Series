@@ -13,6 +13,7 @@ SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하
 | `npm test` | 엔진 단위 테스트 |
 | `npm run typecheck` / `npm run build` | 타입 검사 / 배포 빌드 |
 | `npm run sample -- [--type <id>] [--n 60] [--compare]` | 생성 문항 HTML 리포트 (`reports/`), `--compare`면 문제은행과 나란히 + 형식 통계 |
+| `npm run bank:variants` | 비공개 기출 → 숫자를 바꾼 공개 변형 문항 `data/bank/public/variants.yaml` 다시 만들기 (검사 통과한 것만) |
 | `npm run ship` | 현재 브랜치를 PR → CI → 병합 → 릴리스 → Pages 배포까지 (아래 "브랜치·커밋·릴리스") |
 | `npm run calibrate` | `data/feedback/*.json`(앱에서 내보낸 기록) 집계 → 조정 후보 제안 |
 
@@ -20,6 +21,7 @@ SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하
 ```
 config/exam.yaml            공통 출제 설정 (선택지 수, 시간, 은행 비율, 난이도 비중, 검증 기준, 피드백 사유)
 config/types/<id>.yaml      유형별 설정 (비중, 근거 수준, 항 개수, 빈칸 위치, 숫자 범위, 난이도별 파라미터)
+config/modes.yaml           게임 모드 (연습·실전·타임어택·서바이벌·약점 집중). 새 모드 = 항목 하나, 자체 version
 data/bank/public/*.yaml     직접 만든·변형 문항 (앱에 포함, 공개)
 data/bank/private/*.yaml    실제 기출 복원 문항 (gitignore — 절대 커밋 금지)
 data/feedback/*.json        앱에서 내보낸 기록·피드백 (gitignore)
@@ -29,6 +31,7 @@ src/engine/                 UI와 무관한 순수 TS (브라우저·스크립�
   solver.ts                 정답 유일성 검사 (다른 규칙으로 다른 답이 나오면 모호)
   compose.ts                생성 파이프라인 (범위·빈칸·자기일관성·모호성·오답 선택지)
   bank.ts / session.ts      문제은행 / 다음 문항 선택
+src/game/                   게임 규칙 (순수 TS): run(점수·콤보·구간) · adapt(적응형 난이도·약점) · modes(모드 스키마)
 src/app/                    브라우저 로더 (YAML을 빌드 시 번들), 기기별 설정
 src/store/                  기록 저장 (IndexedDB, append-only) + Firebase 동기화
 src/ui/                     React 화면 (홈 / 풀이 / 설정)
@@ -54,7 +57,7 @@ scripts/                    validate / sample / calibrate / make-icons
 1. 사용자가 준 메모를 `data/bank/private/<회차>.yaml`로 변환 (형식: `data/bank/private/README.md`). `publishable: false`.
 2. `npm run validate:bank` — 판별 실패·모호 경고는 새 유형/규칙 후보로 보고한다.
 3. `npm run sample -- --compare`로 생성 문항과 형식 통계 비교 → A로 보정.
-4. 공개 은행에 넣고 싶으면 숫자를 바꾼 **변형 문항**을 `data/bank/public/`에 `source.kind: variant`, `publishable: true`로 추가 (원문 금지).
+4. 공개 은행 변형 문항은 `npm run bank:variants`로 다시 만든다 (`variants.yaml`, 직접 수정 금지). 손으로 만들 때는 숫자를 바꾼 **변형 문항**을 `source.kind: variant`, `publishable: true`로 (원문 금지).
 
 ### C. 새 유형 추가
 1. 필요한 규칙이 `src/engine/families/`에 없으면 `rules.ts`에 `IntRule` 추가(또는 `combinators.ts`로 조합) 후 `families/index.ts`의 `FAMILIES`에 등록. 단위 테스트(`tests/engine/families.test.ts`)에 예시 수열 추가.
