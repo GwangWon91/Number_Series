@@ -52,6 +52,8 @@ export type Prefs = z.infer<typeof prefsSchema>;
 const gameUiSchema = z.object({
   seenAchievements: z.array(z.string()).catch([]),
   onboarded: z.boolean().catch(false),
+  /** 기록 화면에서 마지막으로 본 탭 */
+  recordsTab: z.enum(['growth', 'type', 'wrong', 'achievements']).catch('growth'),
 });
 export type GameUi = z.infer<typeof gameUiSchema>;
 export const loadGameUi = (): GameUi => gameUiSchema.parse(readJson<object>('game-ui', {}));

@@ -148,9 +148,18 @@ try {
       // 5. 기록 (가짜 기록 추가)
       await seedHistory(page);
       await page.click('[aria-label="기록 보기"]');
-      await page.waitForSelector('.type-bars');
-      await sleep(500);
-      await shot('12-records', true);
+      await page.waitForSelector('.tabs');
+      for (const [i, name] of ['성장', '유형', '오답', '업적'].entries()) {
+        await page.click(`[role="tab"]:has-text("${name}")`);
+        await sleep(400);
+        await shot(`12-records-${i + 1}-${name}`, true);
+      }
+      // 오답 탭을 내려도 탭 바가 위에 붙어 있는지
+      await page.click('[role="tab"]:has-text("오답")');
+      await sleep(400);
+      await page.mouse.wheel(0, 1500);
+      await sleep(300);
+      await shot('12-records-5-오답-스크롤');
 
       // 6. 설정 (초기화 확인 상태)
       await page.click('[aria-label="홈으로"]');

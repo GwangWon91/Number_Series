@@ -1,6 +1,7 @@
 import { Star } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type KeyboardEvent } from 'react';
 import { bank, config } from '../app/engine';
+import { loadGameUi, saveGameUi, type GameUi } from '../app/prefs';
 import { generateItem } from '../engine/compose';
 import { typeLabel } from '../engine/config';
 import { itemKey, type Item } from '../engine/item';
@@ -231,8 +232,32 @@ function Growth({ weeks }: { weeks: WeekStat[] }) {
   );
 }
 
+type Tab = GameUi['recordsTab'];
+const TABS: readonly (readonly [Tab, string])[] = [
+  ['growth', '성장'],
+  ['type', '유형'],
+  ['wrong', '오답'],
+  ['achievements', '업적'],
+];
+/** '최고 연속'을 누적 숫자에 보일지 (지금은 숨김, 계산은 유지) */
+const SHOW_MAX_COMBO = false;
+
 export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }) {
   const [sum, setSum] = useState<RecordSummary | null>(null);
+  const [tab, setTabState] = useState<Tab>(() => loadGameUi().recordsTab);
+  const setTab = (t: Tab) => {
+    setTabState(t);
+    saveGameUi({ ...loadGameUi(), recordsTab: t });
+  };
+  // ←/→로 탭 이동, 이동한 탭에 초점
+  const onTabKey = (e: KeyboardEvent) => {
+    const step = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0;
+    if (!step) return;
+    e.preventDefault();
+    const i = (TABS.findIndex(([t]) => t === tab) + step + TABS.length) % TABS.length;
+    setTab(TABS[i][0]);
+    document.getElementById(`tab-${TABS[i][0]}`)?.focus();
+  };
   const [weeks, setWeeks] = useState<WeekStat[]>([]);
   const [got, setGot] = useState<Set<string>>(new Set());
   const [maxCombo, setMaxCombo] = useState(0);
@@ -267,7 +292,7 @@ export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }
 
         {sum && sum.total > 0 && (
           <>
-            <div className="totals">
+            <div className={`totals ${SHOW_MAX_COMBO ? '' : 'two'}`}>
               <div>
                 <b>{sum.total.toLocaleString()}</b>
                 <span>푼 문제</span>
@@ -276,49 +301,76 @@ export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }
                 <b>{pct({ solved: sum.total, wrong: sum.wrong })}%</b>
                 <span>정답률</span>
               </div>
-              <div>
-                <b>{maxCombo}</b>
-                <span>최고 연속</span>
-              </div>
+              {SHOW_MAX_COMBO && (
+                <div>
+                  <b>{maxCombo}</b>
+                  <span>최고 연속</span>
+                </div>
+              )}
             </div>
 
-            <section>
-              <h2 className="section-title">
-                유형별 정답률 <small>낮은 순 — 여기부터 연습하면 빨리 늘어요</small>
-              </h2>
-              <TypeBars rows={sum.byType} level={(id) => skillOf(skills, id).level} />
-            </section>
+            <div className="segmented tabs" role="tablist" aria-label="기록 보기" onKeyDown={onTabKey}>
+              {TABS.map(([t, label]) => (
+                <button
+                  key={t}
+                  id={`tab-${t}`}
+                  role="tab"
+                  aria-selected={tab === t}
+                  aria-controls={`panel-${t}`}
+                  tabIndex={tab === t ? 0 : -1}
+                  onClick={() => setTab(t)}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
 
-            <section>
-              <h2 className="section-title">틀린 문제 다시 보기</h2>
-              <WrongReview />
-            </section>
-
-            <section>
-              <h2 className="section-title">주별 정답률</h2>
-              {weeks.length > 0 && <Growth weeks={weeks} />}
-            </section>
-
-            <section>
-              <h2 className="section-title">
-                업적 <small>{got.size}/{ACHIEVEMENTS.length}</small>
-              </h2>
-              <ul className="achievements">
-                {ACHIEVEMENTS.map((a) => (
-                  <li key={a.id} className={got.has(a.id) ? 'on' : ''}>
-                    <b>
-                      <Star aria-hidden className={got.has(a.id) ? 'on' : ''} /> {a.label}
-                    </b>
-                    <span>{a.description}</span>
-                  </li>
-                ))}
-              </ul>
-            </section>
-
-            <section>
-              <h2 className="section-title">묻는 방식별</h2>
-              <Tally rows={sum.byKind} label={(k) => KIND_LABEL[k] ?? k} />
-            </section>
+            {/* 선택한 탭만 그린다 (오답 탭의 문항 복원은 열 때만) */}
+            <div className="tab-panel" role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+              {tab === 'growth' && (
+                <>
+                  <section>
+                    <h2 className="section-title">주별 정답률</h2>
+                    {weeks.length > 0 && <Growth weeks={weeks} />}
+                  </section>
+                  <section>
+                    <h2 className="section-title">묻는 방식별</h2>
+                    <Tally rows={sum.byKind} label={(k) => KIND_LABEL[k] ?? k} />
+                  </section>
+                </>
+              )}
+              {tab === 'type' && (
+                <section>
+                  <h2 className="section-title">
+                    유형별 정답률 <small>낮은 순 — 여기부터 연습하면 빨리 늘어요</small>
+                  </h2>
+                  <TypeBars rows={sum.byType} level={(id) => skillOf(skills, id).level} />
+                </section>
+              )}
+              {tab === 'wrong' && (
+                <section>
+                  <h2 className="section-title">틀린 문제 다시 보기</h2>
+                  <WrongReview />
+                </section>
+              )}
+              {tab === 'achievements' && (
+                <section>
+                  <h2 className="section-title">
+                    업적 <small>{got.size}/{ACHIEVEMENTS.length}</small>
+                  </h2>
+                  <ul className="achievements">
+                    {ACHIEVEMENTS.map((a) => (
+                      <li key={a.id} className={got.has(a.id) ? 'on' : ''}>
+                        <b>
+                          <Star aria-hidden className={got.has(a.id) ? 'on' : ''} /> {a.label}
+                        </b>
+                        <span>{a.description}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+            </div>
 
             <p className="hint">이 기기에 저장된 기록 기준이에요.</p>
           </>
