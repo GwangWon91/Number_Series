@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.7.1](https://github.com/GwangWon91/Number_Series/compare/v0.7.0...v0.7.1) (2026-10-08)
+
+
+### 문서
+
+* 진행 현황과 남은 작업(5단계 보류·실기기 확인·알려진 한계) 정리 ([5f01928](https://github.com/GwangWon91/Number_Series/commit/5f01928116e94ad08096a9d03b15a809b48ac316))
+* 진행 현황과 남은 작업(5단계 보류·실기기 확인·알려진 한계) 정리 ([73c0b13](https://github.com/GwangWon91/Number_Series/commit/73c0b13486cca02d38ae18b0f2d777d1f2471106))
+
 ## [0.7.0](https://github.com/GwangWon91/Number_Series/compare/v0.6.0...v0.7.0) (2026-10-08)
 
 
