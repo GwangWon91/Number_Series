@@ -1,16 +1,17 @@
 import { z } from 'zod';
 import { definePlugin } from '../plugin';
 import { allInts, mulV, parseValue, rational, type Value } from '../value';
-import { simpleParams, simpleSeq, weights } from './shared';
+import { fromDiffs, simpleParams, simpleSeq, weights } from './shared';
 
 /**
  * 유리수 수열: 정수 규칙 수열을 L로 나눈 것 (1/3, 1/2, 5/6, 4/3, 2 = 6분의 2, 3, 5, 8, 12),
  * 또는 공비가 분수인 등비수열 (8/27, 4/9, 2/3, 1, 3/2). 화면 표기(분수·소수·대분수)는 type의 display.notation.
+ * 정수 규칙: 등차 · 계차 등차 · 앞 두 항의 합 · 계차 등비(차이 ×r) · 2단계 계차 등비(차이의 차이 ×r) · 두 연산 번갈아(×r, +d)
  */
 export default definePlugin({
   id: 'rational',
   params: z.object({
-    kinds: weights(['arithmetic', 'diffArithmetic', 'fib', 'geometric'] as const),
+    kinds: weights(['arithmetic', 'diffArithmetic', 'fib', 'geometric', 'diffGeometric', 'secondDiffGeometric', 'alternatingOps'] as const),
     /** 통분 분모 L 후보 (소수 표기를 쓰려면 2·4·5·10 계열) */
     scales: z.array(z.number().int().min(2)).min(1),
     /** ×L 한 정수열의 파라미터 */
@@ -42,6 +43,21 @@ export default definePlugin({
       ints = [a, b];
       while (ints.length < length) ints.push(ints[ints.length - 1] + ints[ints.length - 2]);
       if (a <= 0 || b <= 0) return null;
+    } else if (kind === 'diffGeometric' || kind === 'secondDiffGeometric') {
+      // 차이(또는 차이의 차이)가 ×r: 차이 d, dr, dr² … (2단계면 그 누적을 차이로)
+      const r = rng.range(params.int.ratio);
+      const d = rng.nonZero(params.int.diff);
+      if (Math.abs(r) < 2 || d === 0) return null;
+      let diffs = Array.from({ length: length - 1 }, (_, i) => d * r ** i);
+      if (kind === 'secondDiffGeometric') diffs = fromDiffs(rng.nonZero(params.int.diff), diffs.slice(0, -1));
+      ints = fromDiffs(rng.range(params.int.start), diffs);
+    } else if (kind === 'alternatingOps') {
+      // ×r, +d 를 번갈아 (d는 음수도: ×3, −3)
+      const r = rng.range(params.int.ratio);
+      const d = rng.nonZero(params.int.diff) * (rng.chance(0.5) ? -1 : 1);
+      if (r < 2 || d === 0) return null;
+      ints = [rng.range(params.int.start)];
+      while (ints.length < length) ints.push(ints.length % 2 ? ints[ints.length - 1] * r : ints[ints.length - 1] + d);
     } else {
       ints = simpleSeq(rng, kind, params.int, length);
     }

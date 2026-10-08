@@ -1,7 +1,7 @@
 id: linear-recurrence
 label: 앞 항에 연산 적용 (×a+b, 번갈아)
 enabled: true
-weight: 14
+weight: 0.25  # [추정: 비공개 기출 분석] 기출에 거의 없음 — 다양성용으로 작게 남김 (전 유형 weight 합 100)
 confidence: estimated
 length: [6, 7]
 blank: { last: 0.7, middle: 0.3 }

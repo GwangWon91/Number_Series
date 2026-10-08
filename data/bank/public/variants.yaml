@@ -285,6 +285,48 @@
     kind: variant
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
+- id: var-1vyj52z
+  terms:
+    - 10/4
+    - "1.250"
+    - "0.6250"
+    - 10/32
+  choices:
+    - 10/128
+    - 2/64
+    - 10/64
+    - 2/256
+    - 10/256
+  answer: 10/256
+  nth: 7
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
+  difficulty: 2
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
+- id: var-1vyj530
+  terms:
+    - 15/4
+    - "1.875"
+    - "0.9375"
+    - 15/32
+  choices:
+    - 15/128
+    - 3/256
+    - 15/256
+    - 15/64
+    - 3/64
+  answer: 15/256
+  nth: 7
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
+  difficulty: 2
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
 - id: var-vf03aj
   terms:
     - 11/3
@@ -727,6 +769,30 @@
     kind: variant
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
+- id: var-8pm0kh
+  terms:
+    - "9.6"
+    - "14.4"
+    - A
+    - "32.4"
+    - "48.6"
+    - B
+    - "109.35"
+  choices:
+    - "90.9"
+    - "89.1"
+    - "94.5"
+    - "85.5"
+    - "93.6"
+  answer: 189/2
+  op: +
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
+  difficulty: 3
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
 - id: var-1p34hvu
   terms:
     - 2/4
@@ -862,6 +928,32 @@
     - "50.8"
     - "76.2"
   answer: "76.2"
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
+  difficulty: 3
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
+- id: var-8pmlbx
+  terms:
+    - "3.6"
+    - "10.8"
+    - "4.8"
+    - "2.4"
+    - "17.4"
+    - "52.2"
+    - "46.2"
+    - "23.1"
+    - "38.1"
+    - null
+  choices:
+    - "120.6"
+    - "76.2"
+    - "132.3"
+    - "53.1"
+    - "114.3"
+  answer: "114.3"
   typeId: rational
   rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 3

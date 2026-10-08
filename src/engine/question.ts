@@ -88,10 +88,17 @@ function analyzeNth(seq: readonly Value[], n: number, families: readonly Family[
     const shownFit = f.fit(seq, null);
     if (!shownFit) continue;
     const ext = seq.slice();
+    let redundancy = shownFit.redundancy;
     while (ext.length < n) {
-      const next = f.candidates([...ext, null], ext.length).find((c) => f.fit([...ext, c], null));
+      // 같은 규칙으로 이어 쓰면 여유 항이 줄지 않는다. 줄면 다른(더 복잡한) 규칙으로 맞춘 값이라 버린다
+      let fit = -Infinity;
+      const next = f.candidates([...ext, null], ext.length).find((c) => {
+        fit = f.fit([...ext, c], null)?.redundancy ?? -Infinity;
+        return fit >= redundancy;
+      });
       if (next === undefined) break;
       ext.push(next);
+      redundancy = fit;
     }
     if (ext.length < n) continue;
     explanations.push({
