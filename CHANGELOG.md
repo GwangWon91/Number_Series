@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.8.1](https://github.com/GwangWon91/Number_Series/compare/v0.8.0...v0.8.1) (2026-10-08)
+
+
+### 버그 수정
+
+* **bank:** 공개 변형 문항에서 원문 id·회차 제거 ([849bfdc](https://github.com/GwangWon91/Number_Series/commit/849bfdc107a9396c7bc17ee2f7613641395cb0d5))
+
 ## [0.8.0](https://github.com/GwangWon91/Number_Series/compare/v0.7.1...v0.8.0) (2026-10-08)
 
 
