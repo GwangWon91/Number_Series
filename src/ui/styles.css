@@ -372,10 +372,27 @@ code {
   justify-content: center;
   gap: 2px;
 }
-.segmented button[aria-pressed='true'] {
+.segmented button[aria-pressed='true'],
+.segmented button[aria-selected='true'] {
   background: var(--surface);
   color: var(--fg);
   font-weight: 600;
+}
+/* 기록 화면 탭: 스크롤해도 위에 붙어 있다 */
+.tabs {
+  grid-template-columns: repeat(4, 1fr);
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  box-shadow: 0 0 0 var(--space-2) var(--bg); /* 붙었을 때 아래 내용이 비치지 않게 둘레를 바탕색으로 */
+}
+.tabs button {
+  font-size: var(--text-sm);
+}
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
 }
 /* 숙련 별·목숨 하트 */
 .stars {
@@ -420,6 +437,9 @@ code {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   padding: var(--space-4) 0;
+}
+.totals.two {
+  grid-template-columns: repeat(2, 1fr);
 }
 .totals div {
   display: flex;
@@ -958,6 +978,9 @@ code {
 
 /* ───────────── 기록 ───────────── */
 /* 유형별 정답률 가로 막대: 이름 / 막대 + 값(막대 끝) */
+.type-bars {
+  margin: 0;
+}
 .type-bars ul {
   display: flex;
   flex-direction: column;
