@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0](https://github.com/GwangWon91/Number_Series/compare/v0.7.1...v0.8.0) (2026-10-08)
+
+
+### 새 기능
+
+* **scripts:** 문제은행 분석 리포트 npm run analyze / review (PR [#6](https://github.com/GwangWon91/Number_Series/issues/6) 이전) ([7dafb7b](https://github.com/GwangWon91/Number_Series/commit/7dafb7be68b61ec1ec7c2867144afb87d3b2544b))
+* **scripts:** 문제은행 분석 리포트 npm run analyze / review (PR [#6](https://github.com/GwangWon91/Number_Series/issues/6) 이전) ([939060a](https://github.com/GwangWon91/Number_Series/commit/939060aeccd3b51c329e8063a0f3a5fee5fa9db5))
+
 ## [0.7.1](https://github.com/GwangWon91/Number_Series/compare/v0.7.0...v0.7.1) (2026-10-08)
 
 
