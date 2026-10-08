@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.0](https://github.com/GwangWon91/Number_Series/compare/v0.8.1...v0.9.0) (2026-10-08)
+
+
+### 새 기능
+
+* **engine:** 해설 첫 줄 규칙 요약 ruleSummary ([5128b6d](https://github.com/GwangWon91/Number_Series/commit/5128b6df8808f0ea5193f9c74d56ed7474c54c2c))
+* **ui:** 미니멀 클린 리디자인, 모드별 점수 기준, 기록 화면 개편 ([03ce76c](https://github.com/GwangWon91/Number_Series/commit/03ce76c6f7b6755a87797c8bb08a014880b88508))
+
 ## [0.8.1](https://github.com/GwangWon91/Number_Series/compare/v0.8.0...v0.8.1) (2026-10-08)
 
 
