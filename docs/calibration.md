@@ -21,7 +21,7 @@ npm run validate:bank
 npm run review     # validate:bank + analyze
 ```
 `reports/bank-analysis.md`가 갱신된다 (집계·id만이지만 기출 집계라 **커밋하지 않는다**). 이전 결과와 비교하려면 실행 전에 파일을 복사해 둔다.
-- 회차 × 형식(blank1/pair/nth) 분포, 유형별 은행 비중 vs 설정 `weight`
+- 회차 × 형식(blank1/pair/nth) 분포, 기출 유형·묻는 방식 비중 vs 설정 `weight`·`exam.questions.kinds` (차이가 크면 점검)
 - 미분류·여유 항 부족·모호 문항, 중복 후보 (→ 새 규칙·유형 후보)
 - `confidence: estimated`로 남은 활성 유형, 어떤 유형 `evidence`에도 안 쓰인 은행 문항 (→ 4단계에서 근거 연결)
 - private은 CI에 없으므로 로컬에서만 실행한다. 원본 캡처·전사는 `data/bank/private/captures/<출처>/`에 두고 id와 파일명을 맞춘다.
@@ -43,7 +43,7 @@ npm run sample -- --compare --n 40
 | 선택지 간격·형태가 다름 | `exam.distractors`, `exam.choiceOrder`, `exam.choices` |
 | 난이도 체감이 다름 | `exam.difficultyMix`, 난이도별 파라미터 |
 
-근거가 생긴 유형은 `confidence: evidence`, `evidence: [문항 id]`로 표시하고,
+근거가 생긴 유형은 `confidence: evidence`로 표시하고 (근거 문항은 비공개 기출의 `typeId`),
 `exam.yaml`의 `version` +1, `changelog`에 이유를 남긴다. `docs/skct-format.md` 표도 갱신한다.
 
 ## 5. 검증

@@ -20,13 +20,13 @@
 원본(이미지/메모) → 전사 → private 은행 → 검사 → 분석 → 설정 반영 → (선택) 변형 문항을 public으로
 ```
 1. **전사**: 이미지는 읽어서 수열·선택지·정답을 옮기고, 오독이 없는지 사람이 확인한다. 정답은 정오표와 맞춘다.
-2. **등록**: `data/bank/private/<회차>-<출처>.yaml`에 넣는다 (형식은 `data/bank/private/README.md`). `publishable: false`.
+2. **등록**: `data/bank/private/<회차>-<출처>.yaml`에 넣는다 (형식은 `data/bank/private/README.md`). `publishable: false`. `typeId`는 필수 — 설정에 있는 유형 id, 없으면 후보 id. 빠지면 `validate:bank`가 경고한다.
 3. **검사** `npm run validate:bank`: 빈칸 수, 정답이 선택지에 있는지, solver가 규칙으로 정답을 설명하는지.
    - 경고 `등록된 규칙으로 정답을 설명하지 못함` → 새 규칙·유형 후보
    - 경고 `다른 해석 [...]` / `여유 항 미만` → 모호하거나 항이 적은 문항 (실전에도 있다는 증거일 수 있음)
-4. **분석** `npm run review`: `reports/bank-analysis.md`를 갱신한다 (집계·id만, **커밋하지 않음**). 이전 결과와 비교하려면 실행 전에 파일을 복사해 둔다. 회차×형식 분포, 유형별 은행 비중 vs 설정 비중, 미분류·모호·중복 후보, 근거 없는 유형.
-5. **설정 반영**: `config/types/*.yaml`·`config/exam.yaml`을 고치고 `confidence: evidence`로 표시한다. 근거 문항 id는 공개 config가 아니라 `data/bank/private/meta/evidence.yaml`(유형 id → 문항 id 목록)에 적는다. `exam.yaml`의 `version` +1과 `changelog`, `docs/skct-format.md`의 확실/추정/모름 표를 같이 갱신한다. 한 회차(20문항)만으로는 `estimated`로 두고 근거 출처 수를 적는다.
-6. **공개 변형**: `npm run bank:variants`로 `variants.yaml`을 다시 만든다 (원래 규칙이 유지되고 다른 해석이 없는 것만 자동으로 남는다). 자동 변형이 안 되는 문항을 손으로 만들 때는 `source.kind: variant`, `publishable: true`로 `original.yaml` 등에 추가한다. 원문 그대로는 금지.
+4. **분석** `npm run review`: `reports/bank-analysis.md`를 갱신한다 (집계·id만, **커밋하지 않음**). 이전 결과와 비교하려면 실행 전에 파일을 복사해 둔다. 회차×형식 분포, 기출 유형·묻는 방식 비중 vs 설정 비중(차이가 크면 점검 표시), 후보 유형, 미분류·모호·중복 후보, 근거 없는 유형.
+5. **설정 반영**: `config/types/*.yaml`·`config/exam.yaml`을 고치고 `confidence: evidence`로 표시한다. 근거 문항은 비공개 기출의 `typeId`로 정해진다 (공개 config에 id를 적지 않는다). `exam.yaml`의 `version` +1과 `changelog`, `docs/skct-format.md`의 확실/추정/모름 표를 같이 갱신한다. 한 회차(20문항)만으로는 `estimated`로 두고 근거 출처 수를 적는다.
+6. **공개 변형**: `npm run bank:variants`로 `variants.yaml`을 다시 만든다 (원래 규칙이 유지되고 다른 해석이 없는 것만 자동으로 남는다). 변형은 원문의 `typeId`를 물려받고, typeId가 없거나 후보 유형인 원문은 건너뛴다. 자동 변형이 안 되는 문항을 손으로 만들 때는 `source.kind: variant`, `publishable: true`로 `original.yaml` 등에 추가한다. 원문 그대로는 금지.
 
 ## 3. 품질 게이트와 점검 주기
 | 명령 | 언제 | 보는 것 |
@@ -35,6 +35,7 @@
 | `npm run review` | 새 회차를 넣은 직후, 그리고 설정을 바꾼 직후 | 검사 + `reports/bank-analysis.md` 갱신 (커밋 안 함) |
 | `npm run bank:variants` | 새 회차를 넣은 뒤 | 공개 변형 문항 다시 만들기 → `validate:bank` |
 | `npm run validate && npm test && npm run typecheck` | 커밋 전 | 생성기·설정·엔진 전체 |
+| 출제 유형 검토 (CLAUDE.md 체크리스트 D) | 새 회차를 넣은 뒤, 그 밖에 월 1회 | 기출 vs 설정 비중의 점검 행 → 보정·새 유형·유지 결정, 비공개 `meta/review-log.md`에 기록 |
 | `npm run calibrate` | 풀이 기록을 `data/feedback/`에 넣은 뒤 | 유형별 정답률·시간·"실전과 다름" 집계, 조정 후보 |
 
 CI는 private이 없어서 public 은행만 검사한다. private 검사는 로컬 전용이다.
@@ -65,4 +66,4 @@ CI는 private이 없어서 public 은행만 검사한다. private 검사는 로�
 - private·`data/feedback/`·`reports/` 내용은 커밋하지 않는다 (`git status`로 확인).
 - 추정을 사실처럼 쓰지 않는다. 근거 수준(`confidence`, [확실]/[추정]/[모름])을 표시한다.
 - 문항 id는 전체 은행에서 유일해야 한다 (예: 기출 `<출처>-<회차>-<번호>`, 직접 만든 공개 문항 `pub-0xx`, 자동 변형 `var-<해시>`).
-- 공개 파일(config·docs·public 은행·테스트)에는 출처·회차·기출 문항 id·기출에서 센 수치를 적지 않는다. 설정의 근거 문항 id는 `data/bank/private/meta/evidence.yaml`에 둔다.
+- 공개 파일(config·docs·public 은행·테스트)에는 출처·회차·기출 문항 id·기출에서 센 수치를 적지 않는다. 설정의 근거 문항은 비공개 기출의 `typeId`로만 연결한다.
