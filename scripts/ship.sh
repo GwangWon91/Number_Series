@@ -17,10 +17,10 @@ branch=$(git branch --show-current)
 wait_checks() {
   local pr=$1
   for _ in $(seq 60); do
-    [[ $(gh pr view "$pr" --json statusCheckRollup -q '.statusCheckRollup | length') -gt 0 ]] && break
+    [[ $(gh pr view "${pr}" --json statusCheckRollup -q '.statusCheckRollup | length') -gt 0 ]] && break
     sleep 5
   done
-  gh pr checks "$pr" --watch --fail-fast
+  gh pr checks "${pr}" --watch --fail-fast
 }
 
 # 특정 커밋에서 돈 워크플로 실행이 끝날 때까지 기다린다 (실패면 종료)
@@ -47,10 +47,10 @@ if [[ -z $pr ]]; then
 fi
 
 say "PR #$pr CI 대기"
-wait_checks "$pr"
+wait_checks "${pr}"
 
 say "PR #$pr 병합"
-gh pr merge "$pr" --merge --delete-branch
+gh pr merge "${pr}" --merge --delete-branch
 git checkout main
 git pull --ff-only
 
@@ -64,15 +64,15 @@ if [[ -z $rp ]]; then
 fi
 
 # 기본 토큰(GITHUB_TOKEN)이 갱신한 릴리스 PR에는 CI가 자동으로 안 돌 수 있다 → 직접 실행
-if [[ $(gh pr view "$rp" --json statusCheckRollup -q '.statusCheckRollup | length') -eq 0 ]]; then
-  say "릴리스 PR #$rp에 CI 직접 실행"
-  gh workflow run ci.yml --ref "$(gh pr view "$rp" --json headRefName -q .headRefName)"
+if [[ $(gh pr view "${rp}" --json statusCheckRollup -q '.statusCheckRollup | length') -eq 0 ]]; then
+  say "릴리스 PR #${rp}에 CI 직접 실행"
+  gh workflow run ci.yml --ref "$(gh pr view "${rp}" --json headRefName -q .headRefName)"
 fi
 say "릴리스 PR #$rp CI 대기"
-wait_checks "$rp"
+wait_checks "${rp}"
 
 say "릴리스 PR #$rp 병합 → 태그·Release·배포"
-gh pr merge "$rp" --merge
+gh pr merge "${rp}" --merge
 git pull --ff-only
 wait_run release.yml "$(git rev-parse HEAD)"
 
