@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.11.0](https://github.com/GwangWon91/Number_Series/compare/v0.10.0...v0.11.0) (2026-10-08)
+
+
+### 새 기능
+
+* **ui:** 기록 화면을 성장·유형·오답·업적 탭으로 ([1c937cb](https://github.com/GwangWon91/Number_Series/commit/1c937cbd04e959267859a5af775bfef2195f5726))
+
 ## [0.10.0](https://github.com/GwangWon91/Number_Series/compare/v0.9.0...v0.10.0) (2026-10-08)
 
 
