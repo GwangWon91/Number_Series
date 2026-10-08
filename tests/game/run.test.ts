@@ -68,5 +68,11 @@ describe('점수 (scoring)', () => {
     const [practice, ...others] = modes!.modes;
     expect(practice.scoring).toBeUndefined();
     expect(others.every((m) => m.scoring)).toBe(true);
+    // 실전: 정답 1점, 20점 만점, 오답 감점 없음
+    const exam = others.find((m) => m.id === 'exam')!;
+    let run = newRun();
+    for (let i = 0; i < 20; i++) run = answer(run, { correct: i % 2 === 0, difficulty: 3, elapsedMs: 1000 }, exam.scoring).run;
+    expect(run.score).toBe(10);
+    expect(exam.items! * exam.scoring!.correct).toBe(20);
   });
 });

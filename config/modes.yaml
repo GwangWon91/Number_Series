@@ -5,7 +5,7 @@
 # scoring: 없으면 점수 없음.
 #   정답 = correct + difficulty×(난이도−1) + 속도(fullSec 안이면 max → zeroSec에 0) + 콤보(연속 2번째부터 step씩, 최대 cap)
 #   오답 = wrong (감점, 세션 점수는 0 아래로 안 내려감)
-version: 2
+version: 3
 
 modes:
   - id: practice
@@ -22,9 +22,8 @@ modes:
     timeLimitSec: 900
     feedback: end
     bankRatio: 0.6          # [추정] 실전 유사도를 위해 문제은행 위주
-    scoring:                # 정답 수 중심, 100점 만점. 찍으면 손해
-      correct: 5
-      wrong: -2
+    scoring:                # 정답 1개 = 1점, 20점 만점, 오답 감점 없음 (실전 채점처럼)
+      correct: 1
 
   - id: time-attack
     label: 타임어택
