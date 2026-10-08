@@ -1,6 +1,6 @@
 # 기출 유형 변형 문항 (공개). npm run bank:variants 로 다시 만든다 — 직접 고치지 말 것 (scripts/make-variants.ts).
 # 비공개 기출의 숫자를 배율·이동으로 바꾸고, 같은 규칙으로 정답이 하나로 정해지는 것만 남겼다.
-- id: var-lk-2026h1-3-081-n1d1
+- id: var-uwwsp0
   terms:
     - 4/5
     - 8/10
@@ -19,10 +19,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-081-n2d3
+- id: var-uwwtfr
   terms:
     - 5/7
     - 9/12
@@ -41,10 +40,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-082-k1c3
+- id: var-uxeoaz
   terms:
     - A
     - "6.4"
@@ -65,10 +63,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-082-k1c5
+- id: var-uxeob1
   terms:
     - A
     - "8.4"
@@ -89,10 +86,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-083-k1c3
+- id: var-uxygwc
   terms:
     - "5.2"
     - 6 3/10
@@ -111,10 +107,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-083-k1c5
+- id: var-uxygwe
   terms:
     - "7.2"
     - 8 3/10
@@ -133,10 +128,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-084-k1c3
+- id: var-uyi9hp
   terms:
     - 4 1/4
     - 4 2/7
@@ -154,10 +148,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-084-k1c5
+- id: var-uyi9hr
   terms:
     - 6 1/4
     - 6 2/7
@@ -175,10 +168,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-088-k1c3
+- id: var-v0pfv5
   terms:
     - "5.5"
     - "6.5"
@@ -197,10 +189,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-088-k1c5
+- id: var-v0pfv7
   terms:
     - "7.5"
     - "8.5"
@@ -219,10 +210,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-089-k1c3
+- id: var-v198gi
   terms:
     - 7/2
     - 10/3
@@ -241,10 +231,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-089-k1c5
+- id: var-v198gk
   terms:
     - 11/2
     - 16/3
@@ -263,10 +252,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-090-k2
+- id: var-1vyj3ll
   terms:
     - 14/16
     - "1.4"
@@ -284,10 +272,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-095-k1c3
+- id: var-vg3oh9
   terms:
     - 8
     - 11
@@ -309,10 +296,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-095-k1c5
+- id: var-vg3ohb
   terms:
     - 10
     - 13
@@ -334,10 +320,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-096-k2
+- id: var-1vyj81r
   terms:
     - 20
     - 20
@@ -359,10 +344,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-096-k3
+- id: var-1vyj81s
   terms:
     - 30
     - 30
@@ -384,10 +368,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-097-k1c3
+- id: var-vh79nz
   terms:
     - 963
     - 961
@@ -407,10 +390,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-097-k1c5
+- id: var-vh79o1
   terms:
     - 965
     - 963
@@ -430,10 +412,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-098-k2
+- id: var-1vyj9j5
   terms:
     - 14
     - 28
@@ -455,10 +436,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-098-k3
+- id: var-1vyj9j6
   terms:
     - 21
     - 42
@@ -480,10 +460,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-099-k1c3
+- id: var-viauup
   terms:
     - 27
     - 30
@@ -503,10 +482,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h1-3-099-k1c5
+- id: var-viauur
   terms:
     - 29
     - 32
@@ -526,10 +504,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H1-3
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-084-k2
+- id: var-8plycd
   terms:
     - 16/27
     - 8/9
@@ -550,10 +527,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-084-k3
+- id: var-8plyce
   terms:
     - 24/27
     - 12/9
@@ -574,10 +550,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-085-n1d1
+- id: var-1p1h43r
   terms:
     - 12/7
     - 19/11
@@ -597,10 +572,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-085-n2d3
+- id: var-1p1h4ui
   terms:
     - 13/9
     - 20/13
@@ -620,10 +594,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-086-k1c3
+- id: var-1p1yzpq
   terms:
     - "3.4"
     - "3.9"
@@ -644,10 +617,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-086-k1c5
+- id: var-1p1yzps
   terms:
     - "5.4"
     - "5.9"
@@ -668,10 +640,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-087-k2
+- id: var-8pm0kg
   terms:
     - "6.4"
     - "9.6"
@@ -692,10 +663,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-087-k3
+- id: var-8pm0kh
   terms:
     - "9.6"
     - "14.4"
@@ -716,10 +686,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-088-n1d1
+- id: var-1p34hvu
   terms:
     - 2/4
     - 2/9
@@ -739,10 +708,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-088-n2d3
+- id: var-1p34iml
   terms:
     - 3/6
     - 3/11
@@ -762,10 +730,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-089-k2
+- id: var-8pm21u
   terms:
     - 2/5
     - 6/9
@@ -783,10 +750,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-089-k3
+- id: var-8pm21v
   terms:
     - 3/5
     - 9/9
@@ -804,10 +770,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-091-k1c3
+- id: var-1pg9n54
   terms:
     - 7/2
     - 15/4
@@ -829,10 +794,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-091-k1c5
+- id: var-1pg9n56
   terms:
     - 11/2
     - 23/4
@@ -854,10 +818,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-092-k2
+- id: var-8pmjui
   terms:
     - 2/3
     - 2 4/5
@@ -876,10 +839,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-094-k2
+- id: var-8pmlbw
   terms:
     - "2.4"
     - "7.2"
@@ -902,10 +864,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-094-k3
+- id: var-8pmlbx
   terms:
     - "3.6"
     - "10.8"
@@ -928,10 +889,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-095-k1c3
+- id: var-1pigtik
   terms:
     - 9
     - 13
@@ -953,10 +913,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-095-k1c5
+- id: var-1pigtim
   terms:
     - 11
     - 15
@@ -978,10 +937,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-096-k1c3
+- id: var-1pj0m3x
   terms:
     - 17
     - 20
@@ -1001,10 +959,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-096-k1c5
+- id: var-1pj0m3z
   terms:
     - 19
     - 22
@@ -1024,10 +981,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-097-k2
+- id: var-8pmnjz
   terms:
     - 14
     - 10
@@ -1049,10 +1005,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-097-k3
+- id: var-8pmnk0
   terms:
     - 21
     - 15
@@ -1074,10 +1029,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-098-k2
+- id: var-8pmoao
   terms:
     - 8
     - 18
@@ -1099,10 +1053,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-098-k3
+- id: var-8pmoap
   terms:
     - 12
     - 27
@@ -1124,10 +1077,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-099-k1c3
+- id: var-1pknzw0
   terms:
     - 14
     - 18
@@ -1147,10 +1099,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-1-099-k1c5
+- id: var-1pknzw2
   terms:
     - 16
     - 20
@@ -1170,10 +1121,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-1
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-081-n1d1
+- id: var-v35wxw
   terms:
     - 3/10
     - 6/17
@@ -1193,10 +1143,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-081-n2d3
+- id: var-v35xon
   terms:
     - 4/12
     - 7/19
@@ -1216,10 +1165,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-082-k1c3
+- id: var-v3nsjv
   terms:
     - "67.05"
     - "35.18"
@@ -1239,10 +1187,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-082-k1c5
+- id: var-v3nsjx
   terms:
     - "69.05"
     - "37.18"
@@ -1262,10 +1209,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-084-k2
+- id: var-ne08ke
   terms:
     - 18/2
     - 8
@@ -1287,10 +1233,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-084-k3
+- id: var-ne08kf
   terms:
     - 27/2
     - 12
@@ -1312,10 +1257,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-085-n1d2
+- id: var-v5d3bd
   terms:
     - 2/6
     - 2/8
@@ -1338,10 +1282,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-085-k1c3
+- id: var-v5b6by
   terms:
     - 13/4
     - 19/6
@@ -1364,10 +1307,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-086-k1c3
+- id: var-v5uyxb
   terms:
     - 103
     - 105
@@ -1387,10 +1329,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-086-k1c5
+- id: var-v5uyxd
   terms:
     - 105
     - 107
@@ -1410,10 +1351,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-088-n1d1
+- id: var-v70h3f
   terms:
     - 2/5
     - 2/8
@@ -1434,10 +1374,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-088-n2d3
+- id: var-v70hu6
   terms:
     - 3/7
     - 3/10
@@ -1458,10 +1397,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-089-k2
+- id: var-ne0c9v
   terms:
     - 6
     - 16
@@ -1483,10 +1421,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-089-k3
+- id: var-ne0c9w
   terms:
     - 9
     - 24
@@ -1508,10 +1445,9 @@
   difficulty: 1
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-090-k1c3
+- id: var-vjltrc
   terms:
     - 10/3
     - 7/2
@@ -1531,10 +1467,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-090-k1c5
+- id: var-vjltre
   terms:
     - 16/3
     - 11/2
@@ -1554,10 +1489,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-091-k1c3
+- id: var-vk5mcp
   terms:
     - 4 1/4
     - 5
@@ -1576,10 +1510,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-091-k1c5
+- id: var-vk5mcr
   terms:
     - 6 1/4
     - 7
@@ -1598,10 +1531,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-092-k2
+- id: var-ne0u2j
   terms:
     - 4
     - 6
@@ -1625,10 +1557,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-092-k3
+- id: var-ne0u2k
   terms:
     - 6
     - 9
@@ -1652,10 +1583,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-093-k2
+- id: var-ne0ut8
   terms:
     - 4
     - 12
@@ -1679,10 +1609,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-093-k3
+- id: var-ne0ut9
   terms:
     - 6
     - 18
@@ -1706,10 +1635,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-096-k2
+- id: var-ne0x1b
   terms:
     - 10/3
     - 20/7
@@ -1727,10 +1655,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-096-k3
+- id: var-ne0x1c
   terms:
     - 15/3
     - 30/7
@@ -1748,10 +1675,9 @@
   difficulty: 2
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-097-k1c3
+- id: var-vngdwv
   terms:
     - 53
     - 54
@@ -1771,10 +1697,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-097-k1c5
+- id: var-vngdwx
   terms:
     - 55
     - 56
@@ -1794,10 +1719,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-098-k1c3
+- id: var-vo06i8
   terms:
     - "3.7"
     - "4.1"
@@ -1817,10 +1741,9 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-lk-2026h2-2-098-k1c5
+- id: var-vo06ia
   terms:
     - "5.7"
     - "6.1"
@@ -1840,6 +1763,5 @@
   difficulty: 3
   source:
     kind: variant
-    round: 2026H2-2
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
