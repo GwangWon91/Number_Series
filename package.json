@@ -14,6 +14,7 @@
     "sample": "tsx scripts/sample.ts",
     "calibrate": "tsx scripts/calibrate.ts",
     "pool:pull": "tsx scripts/pool-pull.ts",
+    "bank:variants": "tsx scripts/make-variants.ts",
     "ship": "bash scripts/ship.sh"
   },
   "dependencies": {
