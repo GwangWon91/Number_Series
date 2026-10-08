@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { ruleSummary } from '../../src/engine/question';
-import { parseValue } from '../../src/engine/value';
+import { analyzeQuestion, ruleSummary } from '../../src/engine/question';
+import { judge } from '../../src/engine/solver';
+import { parseValue, valueKey } from '../../src/engine/value';
 
 const blank = (terms: (number | string | null)[], answer: number | string) => ({
   terms: terms.map((t) => (t === null ? null : parseValue(t))),
@@ -33,5 +34,19 @@ describe('ruleSummary (해설 첫 줄)', () => {
     const q = { kind: 'pair' as const, op: '+' as const, blanks: [2, 4] as [number, number] };
     expect(ruleSummary({ terms, answer: 16, question: { ...q, values: [6, 10] } })).toBe('매번 +2');
     expect(ruleSummary({ terms, answer: 16, question: q })).toBeNull();
+  });
+});
+
+describe('n번째 항 (유리수 이어 쓰기)', () => {
+  // 통분한 정수열이 정수가 아닌 다음 항(3 → 1.5)으로 가도 같은 규칙으로 이어 쓰고, 다른 규칙 값이 끼어들지 않는다
+  const nth = (terms: (number | string)[], n: number) => {
+    const v = judge(analyzeQuestion(terms.map(parseValue), { kind: 'nth', n }), parseValue(0), 0, 1);
+    return [...new Set([...v.supporting, ...v.alternatives].map((e) => valueKey(e.value)))];
+  };
+  it('÷2 등비: 6, 3, 1.5, 3/4 → 7번째 3/32 하나만', () => {
+    expect(nth([6, 3, '1.5', '3/4'], 7)).toEqual([valueKey(parseValue('3/32'))]);
+  });
+  it('차이가 ÷2: 7/4, 3/2, 11/8, 21/16 → 6번째 81/64 하나만', () => {
+    expect(nth(['7/4', '3/2', '11/8', '21/16'], 6)).toEqual([valueKey(parseValue('81/64'))]);
   });
 });

@@ -299,6 +299,8 @@ export function fractionFamily(subRules: readonly IntRule[]): Family {
 // ───────────────────────── 유리수 (통분 후 정수 규칙) ─────────────────────────
 
 const MAX_LCD = 1000;
+/** 유리수 빈칸 후보를 구할 때 통분 배율 L에 더 곱해 보는 수 */
+const CANDIDATE_SCALES = [1, 2, 3, 5];
 const gcdInt = (x: number, y: number): number => (y === 0 ? x : gcdInt(y, x % y));
 const lcm = (a: number, b: number) => (a / gcdInt(a, b)) * b;
 
@@ -344,11 +346,20 @@ export function rationalFamily(bases: readonly Family[]): Family {
       if (allInts(known)) return [];
       const L = commonDen(known);
       if (!L) return [];
-      const scaled = seq.map((v) => (v === null ? null : scaleTo(v, L)));
-      return bases
-        .flatMap((f) => f.candidates(scaled, blank))
-        .filter((c): c is number => typeof c === 'number')
-        .map((c) => rational(c, L));
+      // 다음 항이 더 잘게 나뉠 수 있으므로(5 → 2.5) 배율을 키워서도 묻는다. 보이는 항을 잘 설명하는 규칙의
+      // 후보가 앞서게 한다 (n번째 항을 이어 쓸 때 첫 후보를 쓰므로, 다른 규칙 값이 끼어들지 않게)
+      // (빈칸이 끝일 때만: 앞쪽 항만으로 규칙을 맞춰 본다)
+      const prefix = blank === seq.length - 1 ? known.map((v) => scaleTo(v, L)) : null;
+      const fitOf = (f: Family) => (prefix && f.fit(prefix, null)?.redundancy) ?? -Infinity;
+      const ranked = bases.map((f) => [f, fitOf(f)] as const).sort((a, b) => b[1] - a[1]).map(([f]) => f);
+      return ranked.flatMap((f) =>
+        CANDIDATE_SCALES.flatMap((m) =>
+          f
+            .candidates(seq.map((v) => (v === null ? null : scaleTo(v, L * m))), blank)
+            .filter((c): c is number => typeof c === 'number')
+            .map((c) => rational(c, L * m)),
+        ),
+      );
     },
   };
 }
