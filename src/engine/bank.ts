@@ -127,6 +127,9 @@ export function checkBankEntry(entry: BankEntry, config: EngineConfig): BankChec
   if (entry.typeId && !config.types.some((t) => t.id === entry.typeId)) {
     warnings.push(`${where}: 알 수 없는 typeId "${entry.typeId}" — 새 유형 후보`);
   }
+  if (entry.visibility === 'private' && !entry.typeId) {
+    warnings.push(`${where}: typeId 없음 — 유형을 적어야 변형·기록에 유형이 남음`);
+  }
   if (errors.length) return { errors, warnings, families: [] };
 
   const type = config.types.find((t) => t.id === entry.typeId);

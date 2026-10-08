@@ -59,7 +59,8 @@
     - "64.2"
   answer: 186/5
   op: +
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -82,7 +83,8 @@
     - "41.2"
   answer: 206/5
   op: +
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -103,7 +105,8 @@
     - 39 1/5
     - 39 2/7
   answer: 39 3/10
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -124,7 +127,8 @@
     - 41 1/5
     - 41 1/4
   answer: 41 3/10
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -144,7 +148,8 @@
     - 4 5/16
     - 4 5/17
   answer: 4 5/16
-  rule: 규칙을 찾아보세요
+  typeId: fraction
+  rule: 분수 수열
   difficulty: 1
   source:
     kind: variant
@@ -164,7 +169,8 @@
     - 6 5/16
     - 6 3/8
   answer: 6 5/16
-  rule: 규칙을 찾아보세요
+  typeId: fraction
+  rule: 분수 수열
   difficulty: 1
   source:
     kind: variant
@@ -185,7 +191,8 @@
     - 28
     - "27.5"
   answer: 28
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -206,7 +213,8 @@
     - "31.5"
     - 30
   answer: 30
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -227,7 +235,8 @@
     - 6
     - 19/3
   answer: 37/6
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -248,7 +257,8 @@
     - 47/6
     - 49/6
   answer: 49/6
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -268,7 +278,54 @@
     - 2 108/125
     - 6 166/271
   answer: 5 459/625
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
+  difficulty: 3
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
+- id: var-vf03aj
+  terms:
+    - 11/3
+    - 13/3
+    - 25/6
+    - 14/3
+    - 14/3
+    - 5
+  choices:
+    - 33/6
+    - 6
+    - 17/3
+    - 16/3
+    - 31/6
+  answer: 17/3
+  nth: 9
+  typeId: interleaved
+  rule: 홀짝 교대 수열
+  difficulty: 3
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
+- id: var-vf03al
+  terms:
+    - 17/3
+    - 19/3
+    - 37/6
+    - 20/3
+    - 20/3
+    - 7
+  choices:
+    - 8
+    - 22/3
+    - 23/3
+    - 43/6
+    - 45/6
+  answer: 23/3
+  nth: 9
+  typeId: interleaved
+  rule: 홀짝 교대 수열
   difficulty: 3
   source:
     kind: variant
@@ -523,7 +580,8 @@
     - 4/9
   answer: 2/3
   op: /
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -546,7 +604,8 @@
     - 3/2
   answer: 2/3
   op: /
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -613,7 +672,8 @@
     - "18.6"
     - "17.2"
   answer: "17.9"
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -636,7 +696,8 @@
     - "18.5"
     - "20.6"
   answer: "19.9"
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -659,30 +720,8 @@
     - "63.0"
   answer: 63
   op: +
-  rule: 규칙을 찾아보세요
-  difficulty: 3
-  source:
-    kind: variant
-    note: 기출 유형 변형 (숫자 변경)
-  publishable: true
-- id: var-8pm0kh
-  terms:
-    - "9.6"
-    - "14.4"
-    - A
-    - "32.4"
-    - "48.6"
-    - B
-    - "109.35"
-  choices:
-    - "90.9"
-    - "89.1"
-    - "94.5"
-    - "85.5"
-    - "93.6"
-  answer: 189/2
-  op: +
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 3
   source:
     kind: variant
@@ -732,46 +771,6 @@
     kind: variant
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-8pm21u
-  terms:
-    - 2/5
-    - 6/9
-    - 18/13
-    - 54/17
-  choices:
-    - 1458/25
-    - 1458/29
-    - 486/25
-    - 486/29
-    - 162/25
-  answer: 1458/29
-  nth: 7
-  rule: 규칙을 찾아보세요
-  difficulty: 1
-  source:
-    kind: variant
-    note: 기출 유형 변형 (숫자 변경)
-  publishable: true
-- id: var-8pm21v
-  terms:
-    - 3/5
-    - 9/9
-    - 27/13
-    - 81/17
-  choices:
-    - 2187/29
-    - 729/25
-    - 2187/25
-    - 243/25
-    - 729/29
-  answer: 2187/29
-  nth: 7
-  rule: 규칙을 찾아보세요
-  difficulty: 1
-  source:
-    kind: variant
-    note: 기출 유형 변형 (숫자 변경)
-  publishable: true
 - id: var-1pg9n54
   terms:
     - 7/2
@@ -790,7 +789,8 @@
     - 29/6
   answer: 29/6
   nth: 9
-  rule: 규칙을 찾아보세요
+  typeId: interleaved
+  rule: 홀짝 교대 수열
   difficulty: 3
   source:
     kind: variant
@@ -814,7 +814,8 @@
     - 20/3
   answer: 41/6
   nth: 9
-  rule: 규칙을 찾아보세요
+  typeId: interleaved
+  rule: 홀짝 교대 수열
   difficulty: 3
   source:
     kind: variant
@@ -835,7 +836,8 @@
     - 5 1/13
     - 4 10/13
   answer: 4 10/13
-  rule: 규칙을 찾아보세요
+  typeId: fraction
+  rule: 분수 수열
   difficulty: 1
   source:
     kind: variant
@@ -860,32 +862,8 @@
     - "50.8"
     - "76.2"
   answer: "76.2"
-  rule: 규칙을 찾아보세요
-  difficulty: 3
-  source:
-    kind: variant
-    note: 기출 유형 변형 (숫자 변경)
-  publishable: true
-- id: var-8pmlbx
-  terms:
-    - "3.6"
-    - "10.8"
-    - "4.8"
-    - "2.4"
-    - "17.4"
-    - "52.2"
-    - "46.2"
-    - "23.1"
-    - "38.1"
-    - null
-  choices:
-    - "120.6"
-    - "76.2"
-    - "132.3"
-    - "53.1"
-    - "114.3"
-  answer: "114.3"
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 3
   source:
     kind: variant
@@ -1049,7 +1027,8 @@
     - 254
   answer: 368
   op: +
-  rule: 규칙을 찾아보세요
+  typeId: fibonacci-like
+  rule: 앞 항들의 합·곱 (피보나치형)
   difficulty: 1
   source:
     kind: variant
@@ -1073,7 +1052,8 @@
     - 552
   answer: 552
   op: +
-  rule: 규칙을 찾아보세요
+  typeId: fibonacci-like
+  rule: 앞 항들의 합·곱 (피보나치형)
   difficulty: 1
   source:
     kind: variant
@@ -1183,7 +1163,8 @@
     - "6.70"
     - "5.70"
   answer: "5.70"
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -1205,7 +1186,8 @@
     - "7.57"
     - "7.83"
   answer: "7.70"
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -1229,7 +1211,8 @@
     - 5/2
   answer: 5/3
   op: /
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -1253,7 +1236,8 @@
     - 4/3
   answer: 5/3
   op: /
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 1
   source:
     kind: variant
@@ -1463,7 +1447,8 @@
     - 35/6
     - 13/2
   answer: 35/6
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -1485,7 +1470,8 @@
     - 49/6
     - 17/2
   answer: 47/6
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -1506,7 +1492,8 @@
     - 8 1/2
   answer: 8 3/4
   nth: 7
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -1527,7 +1514,8 @@
     - 10
   answer: 10 3/4
   nth: 7
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -1605,7 +1593,8 @@
     - 4896
   answer: 14688
   op: ×
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
@@ -1631,91 +1620,112 @@
     - 11016
   answer: 33048
   op: ×
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 2
   source:
     kind: variant
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-ne0x1b
+- id: var-ne0vjx
   terms:
-    - 10/3
-    - 20/7
-    - 40/11
-    - 80/15
-  choices:
-    - 1280/27
-    - 640/27
-    - 640/31
-    - 2560/35
-    - 1280/31
-  answer: 1280/31
-  nth: 8
-  rule: 규칙을 찾아보세요
-  difficulty: 2
-  source:
-    kind: variant
-    note: 기출 유형 변형 (숫자 변경)
-  publishable: true
-- id: var-ne0x1c
-  terms:
-    - 15/3
-    - 30/7
-    - 60/11
-    - 120/15
-  choices:
-    - 960/31
-    - 3840/35
-    - 1920/31
-    - 960/27
-    - 1920/27
-  answer: 1920/31
-  nth: 8
-  rule: 규칙을 찾아보세요
-  difficulty: 2
-  source:
-    kind: variant
-    note: 기출 유형 변형 (숫자 변경)
-  publishable: true
-- id: var-vngdwv
-  terms:
-    - 53
-    - 54
-    - 50
-    - 59
-    - 43
-    - 68
+    - "1.0"
+    - "4.0"
+    - "3.0"
+    - "2.4"
+    - "6.0"
+    - "3.6"
+    - "1.4"
     - null
+    - "4.6"
   choices:
-    - 27
-    - 39
-    - 32
-    - 104
-    - 44
-  answer: 32
-  rule: 규칙을 찾아보세요
+    - "8.2"
+    - "6.0"
+    - "6.4"
+    - "3.2"
+    - "5.6"
+  answer: "6.0"
+  typeId: grouped
+  rule: 군수열 (3개씩 묶음)
+  difficulty: 2
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
+- id: var-ne0vjy
+  terms:
+    - "1.5"
+    - "6.0"
+    - "4.5"
+    - "3.6"
+    - "9.0"
+    - "5.4"
+    - "2.1"
+    - null
+    - "6.9"
+  choices:
+    - "12.3"
+    - "8.4"
+    - "9.6"
+    - "9.0"
+    - "4.8"
+  answer: "9.0"
+  typeId: grouped
+  rule: 군수열 (3개씩 묶음)
+  difficulty: 2
+  source:
+    kind: variant
+    note: 기출 유형 변형 (숫자 변경)
+  publishable: true
+- id: var-ne0wam
+  terms:
+    - 6
+    - 8
+    - 10
+    - 24
+    - 16
+    - A
+    - 26
+    - 56
+    - B
+    - 72
+  choices:
+    - 98
+    - 66
+    - 88
+    - 82
+    - 68
+  answer: 82
+  op: +
+  typeId: interleaved
+  rule: 홀짝 교대 수열
   difficulty: 3
   source:
     kind: variant
     note: 기출 유형 변형 (숫자 변경)
   publishable: true
-- id: var-vngdwx
+- id: var-ne0wan
   terms:
-    - 55
-    - 56
-    - 52
-    - 61
-    - 45
-    - 70
-    - null
+    - 9
+    - 12
+    - 15
+    - 36
+    - 24
+    - A
+    - 39
+    - 84
+    - B
+    - 108
   choices:
-    - 106
-    - 46
-    - 29
-    - 41
-    - 34
-  answer: 34
-  rule: 규칙을 찾아보세요
+    - 99
+    - 102
+    - 123
+    - 147
+    - 132
+  answer: 123
+  op: +
+  typeId: interleaved
+  rule: 홀짝 교대 수열
   difficulty: 3
   source:
     kind: variant
@@ -1737,7 +1747,8 @@
     - "20.5"
   answer: "22.9"
   nth: 8
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 3
   source:
     kind: variant
@@ -1759,7 +1770,8 @@
     - "22.5"
   answer: "24.9"
   nth: 8
-  rule: 규칙을 찾아보세요
+  typeId: rational
+  rule: 유리수 수열 (분수·소수·대분수)
   difficulty: 3
   source:
     kind: variant

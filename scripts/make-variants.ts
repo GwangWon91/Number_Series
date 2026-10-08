@@ -6,9 +6,10 @@
  * 각 문항에 숫자 변환(분수의 분자·분모 이동, 값 x → k·x + c)을 적용하고, 다음을 모두 만족하는 것만 남긴다 (문항당 최대 2개):
  *  - 원래 문항을 설명하던 규칙 계열이 모두 그대로 성립하고, 다른 값을 내는 해석이 없다 (checkBankEntry 경고 0)
  *    (등비수열에 상수를 더하면 ×r+c 규칙이 되므로 탈락 — 유형 이름이 해설 첫 줄로 쓰이기 때문)
- *  - 숫자가 유형의 범위 안 (음수 없던 문항은 음수 없음, 진분수 문항은 진분수)
+ *  - 숫자가 유형의 범위 안 (원문이 이미 범위 밖이면 원문 크기 수준), 음수 없던 문항은 음수 없음, 진분수 문항은 진분수
  * 선택지도 같은 변환을 받으므로 오답의 성격(근처 값·흔한 실수)이 유지된다.
  * A·B 문항은 연산에 따라 정답·선택지가 변하는 방식이 달라서 덧셈·뺄셈은 배율·이동, 곱셈·나눗셈은 배율만 쓴다.
+ * 원문의 typeId(설정에 있는 유형)를 그대로 물려받는다. typeId가 없거나 후보 유형인 원문은 건너뛴다.
  * 원문은 공개하지 않는다: 숫자가 모두 바뀌고, 선택지 순서를 섞고, 규칙 설명은 유형 이름으로, id는 해시로, 회차는 적지 않는다.
  */
 import { writeFileSync } from 'node:fs';
@@ -94,7 +95,7 @@ function variant(e: BankEntry, t: Transform, families: readonly string[]): BankE
     terms,
     answer,
     choices: new Rng(hash(e.id + t.tag)).shuffle([...choices]),
-    rule: e.typeId ? typeLabel(config, e.typeId) : '규칙을 찾아보세요',
+    rule: typeLabel(config, e.typeId!),
     source: { kind: 'variant', note: '기출 유형 변형 (숫자 변경)' },
     publishable: true,
     visibility: 'public',
@@ -106,8 +107,12 @@ function variant(e: BankEntry, t: Transform, families: readonly string[]): BankE
   if (shown.every((x, i) => x === original[i])) return null; // 변환이 아무것도 안 바꿈 (분수 아닌 문항의 분자·분모 이동)
   if (original.every((x) => toNumber(x) >= 0) && shown.some((x) => toNumber(x) < 0)) return null;
   if (original.every(proper) && !shown.every(proper)) return null; // 진분수 문항은 진분수로
-  const type = e.typeId ? getType(config, e.typeId) : null;
-  if (!shown.every((x) => (type ? inNumberRange(x, type) : Math.abs(toNumber(x)) <= 999))) return null;
+  // 유형 범위 안이던 문항은 범위 안으로. 실전 문항이 이미 범위 밖이면(분자 1000 이상 등) 크기만 원문 수준으로
+  const type = getType(config, e.typeId!);
+  const fits = (xs: Value[]) => xs.every((x) => inNumberRange(x, type));
+  if (fits(original) && !fits(shown)) return null;
+  const size = (xs: Value[]) => Math.max(...xs.map((x) => Math.abs(toNumber(x))));
+  if (size(shown) > Math.max(999, size(original))) return null;
 
   const check = checkBankEntry(v, config);
   if (check.errors.length || check.warnings.length) return null;
@@ -119,6 +124,15 @@ const hash = (s: string) => [...s].reduce((h, ch) => (h * 31 + ch.charCodeAt(0))
 const out: BankEntry[] = [];
 const skipped: string[] = [];
 for (const e of entries) {
+  // 유형을 물려받지 못하는 변형은 만들지 않는다 (앱 기록의 유형별 정답률이 solver 계열 id로 갈라지므로)
+  if (!e.typeId) {
+    skipped.push(`${e.id}: 유형 미확정 (typeId 없음)`);
+    continue;
+  }
+  if (!config.types.some((t) => t.id === e.typeId)) {
+    skipped.push(`${e.id}: 생성기 없는 후보 유형 "${e.typeId}"`);
+    continue;
+  }
   const base = checkBankEntry(e, config);
   if (base.errors.length || !base.families.length) {
     skipped.push(`${e.id}: 원문이 규칙으로 설명되지 않음`);
@@ -142,7 +156,7 @@ const yaml = out.map((v) => ({
   choices: v.choices.map(raw),
   answer: raw(v.answer),
   ...(v.question?.kind === 'pair' ? { op: v.question.op } : v.question?.kind === 'nth' ? { nth: v.question.n } : {}),
-  ...(v.typeId ? { typeId: v.typeId } : {}),
+  typeId: v.typeId,
   rule: v.rule,
   ...(v.difficulty ? { difficulty: v.difficulty } : {}),
   source: v.source,

@@ -14,7 +14,7 @@
   terms: [3, 7, 15, 31, null, 127]   # 빈칸은 null (정확히 1개), 분수는 "3/4"
   choices: [61, 62, 63, 64, 65]      # 실전 선택지 그대로 (기억나는 만큼)
   answer: 63
-  typeId: linear-recurrence     # 모르면 생략 → solver가 판별 시도
+  typeId: linear-recurrence     # 필수. 설정(config/types)의 유형 id, 맞는 게 없으면 새 후보 id
   rule: "×2+1"                  # 사람이 이해한 규칙
   difficulty: 1                 # 체감 1~3 (선택)
   source: { kind: recall, round: 2025H2, note: "본인 응시 복원" }   # recall|community|book|original|variant
