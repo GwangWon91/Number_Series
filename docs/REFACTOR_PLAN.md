@@ -477,6 +477,13 @@ B10(은행 확충, 콘텐츠) ─▶ 실전 모드 은행 비율 상향 (4단계
 - **커밋**: `feat(scripts): 집단 통계 집계` · `feat(scripts): calibrate 집단 통계 제안` · `config: 집단 통계 반영 보정 (vN)`
 
 ### 6단계 — 장기 동기 + 다듬기
+- **진행 기록 (2026-10-08 완료)**
+  - 업적 10개: 첫 세션, 무실수 10, 10·25콤보, 실전 15+, 번개, 끈기, 유형 정복, 고른 실력, 약점 극복. 저장하지 않고 기록에서 계산한다 (`src/game/progress.ts`). 이미 축하한 것만 localStorage `game-ui`에 남긴다.
+  - 성장 그래프는 최근 8주 주별 정답률이다. 인라인 SVG에 계열 하나, 범례 없음, 점에 마우스를 올리면 정보가 나오고, 표로 보기를 제공한다. 차트 색 `--chart`는 dataviz 검증기로 라이트·다크 모두 통과했다.
+  - 기록 화면은 '틀린 문제'가 아니라 정답률·숙련 ★·업적 중심이다.
+  - 첫 방문 안내: 기록이 없으면 홈에 예시 1문제 (건너뛰기 가능).
+  - 최소 글자 13px (그래프 축 글자만 12). 새 애니메이션은 모두 '동작 줄이기'를 따른다.
+  - 확인하지 못한 것: iOS VoiceOver로 한 구간 진행 (기기 필요).
 - **항목**: D8, D9, D10, D11, D12(전체), C3 재측정, 문서
 - **파일**: 신규 `src/game/achievements.ts`, `src/ui/Growth.tsx`. 변경 `src/ui/Home.tsx`, `src/ui/Records.tsx`, `src/store/records.ts`(주간 집계), `styles.css`, `CLAUDE.md`(구조 표에 `src/game/`, `config/modes.yaml`, `data/crowd/`(gitignore)), `README.md`
 - **완료 기준**

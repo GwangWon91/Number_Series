@@ -31,7 +31,7 @@ src/engine/                 UI와 무관한 순수 TS (브라우저·스크립�
   solver.ts                 정답 유일성 검사 (다른 규칙으로 다른 답이 나오면 모호)
   compose.ts                생성 파이프라인 (범위·빈칸·자기일관성·모호성·오답 선택지)
   bank.ts / session.ts      문제은행 / 다음 문항 선택
-src/game/                   게임 규칙 (순수 TS): run(점수·콤보·구간) · adapt(적응형 난이도·약점) · modes(모드 스키마)
+src/game/                   게임 규칙 (순수 TS): run(점수·콤보·구간) · adapt(적응형 난이도·약점) · modes(모드 스키마) · progress(업적·주별 정답률, 기록에서 계산)
 src/app/                    브라우저 로더 (YAML을 빌드 시 번들), 기기별 설정
 src/store/                  기록 저장 (IndexedDB, append-only) + Firebase 동기화
 src/ui/                     React 화면 (홈 / 풀이 / 설정)

@@ -20,6 +20,7 @@
   --warn: light-dark(#a06000, #f0a640);
   --combo: light-dark(#6d28d9, #c4b5fd); /* 콤보·연속 정답 */
   --best: light-dark(#8a5a00, #f5c451); /* 최고 기록 */
+  --chart: light-dark(#2f5bea, #6489f0); /* 그래프 선 (dataviz 검증: 밝기 범위·대비 통과) */
   --scrim: rgb(0 0 0 / 0.4);
   --radius: 12px;
   --tap: 52px;
@@ -199,7 +200,7 @@ code {
   width: auto;
   padding: 0 6px;
   background: none;
-  font-size: 12px;
+  font-size: 13px;
   line-height: 22px;
   color: var(--muted);
 }
@@ -341,26 +342,26 @@ button.start {
   color: var(--muted);
 }
 .tally .count b {
-  color: var(--ng);
+  color: var(--fg);
   font-weight: 700;
 }
+/* 회색 바탕 위에 맞힌 비율만큼 초록 */
 .tally .bar {
   grid-column: 1 / -1;
   height: 6px;
   border-radius: 3px;
-  background: var(--ok);
+  background: var(--surface-2);
   overflow: hidden;
-  display: flex;
-  justify-content: flex-end;
 }
 .tally .bar span {
   display: block;
   height: 100%;
-  background: var(--ng);
+  border-radius: 3px;
+  background: var(--ok);
 }
 .tally .avg {
   grid-column: 1 / -1;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--muted);
 }
 .empty {
@@ -422,7 +423,7 @@ button.icon.sound {
   font-size: 17px;
 }
 .score span {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--muted);
 }
 .score .pop b {
@@ -960,7 +961,7 @@ input[type='password'] {
 }
 .stars {
   color: var(--best);
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 1px;
   white-space: nowrap;
 }
@@ -1007,6 +1008,152 @@ button.link.flag {
 @media (prefers-reduced-motion: reduce) {
   .stage.flash-ok,
   .stage.flash-ng {
+    animation: none;
+  }
+}
+
+/* ───── 기록: 성장 그래프·업적 ───── */
+.growth {
+  margin: 0;
+}
+.growth svg {
+  width: 100%;
+  max-width: 400px; /* 넓은 화면에서 늘어나면 글자도 커진다 */
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  overflow: visible;
+}
+.growth .grid {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.growth .tick {
+  fill: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+.growth .line {
+  fill: none;
+  stroke: var(--chart);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+.growth .dot {
+  fill: var(--chart);
+  stroke: var(--bg);
+  stroke-width: 2;
+}
+.growth .hit {
+  fill: transparent;
+}
+.growth .pt:hover .dot {
+  r: 6;
+}
+.growth .end-label {
+  fill: var(--fg);
+  font-size: 13px;
+  font-weight: 700;
+}
+.growth details {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+.growth summary {
+  cursor: pointer;
+  min-height: 32px;
+}
+.growth table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+.growth th,
+.growth td {
+  text-align: right;
+  padding: 4px 6px;
+  border-bottom: 1px solid var(--line);
+}
+.growth th:first-child,
+.growth td:first-child {
+  text-align: left;
+}
+.achievements {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+.achievements li {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.achievements li b {
+  font-size: 14px;
+}
+.achievements li.on {
+  border-color: var(--best);
+  color: var(--fg);
+}
+.achievements li.on b {
+  color: var(--best);
+}
+.unlocked {
+  list-style: none;
+  margin: 4px auto;
+  padding: 10px 14px;
+  border: 1px solid var(--best);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: rise 0.4s ease-out;
+}
+.unlocked b {
+  color: var(--best);
+}
+
+/* ───── 홈: 첫 방문 안내 ───── */
+.intro {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: 18px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.intro h2 {
+  margin: 0;
+  font-size: 17px;
+}
+.intro p {
+  margin: 0;
+}
+.intro .sequence {
+  font-size: 26px;
+}
+.intro .choices {
+  flex-direction: row;
+}
+.intro .choices li {
+  flex: 1;
+}
+.intro .choices button {
+  width: 100%;
+}
+@media (prefers-reduced-motion: reduce) {
+  .unlocked {
     animation: none;
   }
 }

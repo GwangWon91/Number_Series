@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { config, modes } from '../app/engine';
-import { applyTheme, loadPrefs, savePrefs, THEME_OPTIONS, type Theme } from '../app/prefs';
+import { applyTheme, loadGameUi, loadPrefs, saveGameUi, savePrefs, THEME_OPTIONS, type Theme } from '../app/prefs';
 import { skillOf, weakWeights } from '../game/adapt';
 import { bestScores, recordSummary, type RecordSummary } from '../store/records';
 import { playTitle } from './Practice';
@@ -14,6 +14,9 @@ interface Props {
 
 /** 오늘의 수열에 보여 줄 최대 칸 수 (넘으면 앞쪽을 "+N"으로 줄인다) */
 const STRIP_MAX = 34;
+
+/** 첫 방문 안내의 예시 문제 */
+const INTRO = { terms: [3, 6, 12, 24], answer: 48, choices: [36, 42, 48], rule: '앞 수에 ×2씩' };
 
 /** 텍스트 표시 문자(\uFE0E)로 이모지 렌더링을 막는다 */
 const THEME_ICON: Record<Theme, string> = { system: '◐', light: '☀\uFE0E', dark: '☾' };
@@ -29,6 +32,8 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
     setTheme(next);
   };
   const [bests, setBests] = useState<Record<string, number>>({});
+  const [ui, setUi] = useState(loadGameUi);
+  const [introPick, setIntroPick] = useState<number | null>(null);
   const saved = savedPractice();
   // 출제 비중이 큰 유형부터
   const types = config.types.filter((t) => t.enabled).sort((a, b) => b.weight - a.weight);
@@ -48,6 +53,13 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
   const weak = weakWeights(sum?.byType ?? [], new Set(types.map((t) => t.id)));
   // 기본 모드의 전체 무작위가 아닌 진행 중 세션만 따로 '이어 하기'
   const resume = saved && saved.mode !== 'all' ? saved.spec : null;
+  const showIntro = !ui.onboarded && sum !== null && sum.total === 0;
+  const endIntro = (start: boolean) => {
+    const next = { ...ui, onboarded: true };
+    saveGameUi(next);
+    setUi(next);
+    if (start) onStart({ modeId: main.id, typeId: null });
+  };
   const specFor = (modeId: string): PlaySpec | null => {
     const m = modes.modes.find((x) => x.id === modeId)!;
     if (m.pool !== 'weak') return { modeId, typeId: null };
@@ -69,6 +81,44 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
       </header>
 
       <main className="home-main">
+        {showIntro && (
+          <section className="intro" aria-label="처음 오셨나요">
+            <h2>규칙을 찾아 빈칸을 채우는 숫자 퍼즐</h2>
+            <p className="muted small">수열의 규칙을 찾아 ?에 들어갈 수를 고르세요. 연속으로 맞히면 콤보가 쌓여요.</p>
+            <div className="sequence" role="text">
+              {INTRO.terms.map((t) => (
+                <span key={t} className="term">
+                  {t}
+                </span>
+              ))}
+              <span className={`term blank ${introPick === null ? '' : introPick === INTRO.answer ? 'ok' : 'ng'}`}>
+                {introPick === null ? '?' : INTRO.answer}
+              </span>
+            </div>
+            {introPick === null ? (
+              <ol className="choices">
+                {INTRO.choices.map((c) => (
+                  <li key={c}>
+                    <button onClick={() => setIntroPick(c)}>{c}</button>
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p aria-live="polite">
+                <b>{introPick === INTRO.answer ? '맞았어요!' : `아쉬워요. 정답은 ${INTRO.answer}`}</b> {INTRO.rule} 커져요.
+              </p>
+            )}
+            <div className="next-row">
+              <button className="ghost" onClick={() => endIntro(false)}>
+                건너뛰기
+              </button>
+              <button className="primary wide" onClick={() => endIntro(true)}>
+                시작하기
+              </button>
+            </div>
+          </section>
+        )}
+
         <section className="today" aria-label="오늘 푼 문제">
           <p className="today-line">
             {today.length > 0 ? (

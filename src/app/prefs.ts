@@ -50,6 +50,15 @@ const prefsSchema = z.object({
 });
 export type Prefs = z.infer<typeof prefsSchema>;
 
+/** 화면 진행 표시용 값 (기기별): 이미 축하한 업적, 첫 방문 안내를 봤는지 */
+const gameUiSchema = z.object({
+  seenAchievements: z.array(z.string()).catch([]),
+  onboarded: z.boolean().catch(false),
+});
+export type GameUi = z.infer<typeof gameUiSchema>;
+export const loadGameUi = (): GameUi => gameUiSchema.parse(readJson<object>('game-ui', {}));
+export const saveGameUi = (g: GameUi) => writeJson('game-ui', g);
+
 const PREFS_KEY = 'prefs';
 export const loadPrefs = (): Prefs => prefsSchema.parse(readJson<object>(PREFS_KEY, {}));
 export const savePrefs = (p: Prefs) => writeJson(PREFS_KEY, p);
