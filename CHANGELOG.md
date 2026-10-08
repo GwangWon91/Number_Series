@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.4.0](https://github.com/GwangWon91/Number_Series/compare/v0.3.0...v0.4.0) (2026-10-08)
+
+
+### 새 기능
+
+* **store:** 풀이 세션 기록 ([da18700](https://github.com/GwangWon91/Number_Series/commit/da187000098294244ea74ac124876b2f171876cf))
+
+
+### 버그 수정
+
+* **store:** 손상된 설정 값은 필드별 기본값으로, 저장소 보존 요청 ([8969724](https://github.com/GwangWon91/Number_Series/commit/8969724e2f1d9630799807acd48241cf1e1cefc6))
+
 ## [0.3.0](https://github.com/GwangWon91/Number_Series/compare/v0.2.0...v0.3.0) (2026-10-08)
 
 
