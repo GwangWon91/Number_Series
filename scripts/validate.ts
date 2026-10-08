@@ -16,7 +16,7 @@ import { itemKey, type Item } from '../src/engine/item';
 import { analyzeQuestion } from '../src/engine/question';
 import { judge } from '../src/engine/solver';
 import { eqNum, valueKey } from '../src/engine/value';
-import { loadBank, requireConfig } from '../src/node/load';
+import { loadBank, loadModes, requireConfig } from '../src/node/load';
 
 const { values: args } = parseArgs({
   options: {
@@ -139,6 +139,9 @@ function validateBank(config: EngineConfig) {
 
 const config = requireConfig();
 const started = Date.now();
+const modes = loadModes();
+modes.errors.forEach(fail);
+if (modes.modes) console.log(`■ 모드: ${modes.modes.modes.map((m) => m.id).join(', ')} (modes v${modes.modes.version})`);
 if (!args['bank-only']) validateTypes(config);
 validateBank(config);
 

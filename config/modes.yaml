@@ -1,0 +1,41 @@
+# 게임 모드. 새 모드는 항목 하나를 추가하면 된다 (코드 수정 없음, 스키마: src/game/modes.ts).
+# 첫 번째가 기본 모드(홈의 [풀기]). 문항 생성 결과는 바꾸지 않으므로 exam.yaml version과 별개로 관리한다.
+# 값을 바꾸면 version +1.
+version: 1
+
+modes:
+  - id: practice
+    label: 연습
+    description: 끝없이 한 문제씩, 규칙과 해설을 보며
+    feedback: each
+    adaptive: true          # 유형별로 잘 풀면 난이도 ↑, 자주 틀리면 ↓
+    typeSelect: true
+
+  - id: exam
+    label: 실전
+    description: 20문항 15분, 끝날 때 채점
+    items: 20               # [확실] 실전 20문항 / 15분
+    timeLimitSec: 900
+    feedback: end
+    bankRatio: 0.6          # [추정] 실전 유사도를 위해 문제은행 위주. 공개 은행 규모에 맞춰 조정
+
+  - id: time-attack
+    label: 타임어택
+    description: 90초 동안 최대한 많이
+    timeLimitSec: 90
+    feedback: instant
+    adaptive: true
+
+  - id: survival
+    label: 서바이벌
+    description: 목숨 3개, 틀릴 때마다 하나씩
+    lives: 3
+    feedback: each
+    adaptive: true
+
+  - id: weak
+    label: 약점 집중
+    description: 많이 틀린 유형만 10문제
+    items: 10
+    feedback: each
+    pool: weak
