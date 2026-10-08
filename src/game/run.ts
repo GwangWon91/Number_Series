@@ -2,18 +2,14 @@
  * 풀이 세션의 점수·콤보·구간 계산 (순수 함수, DOM 없음).
  * 화면은 answer()가 돌려주는 events만 보고 효과(소리·진동·애니메이션)를 낸다.
  *
- * 점수는 정확도가 대부분이고 속도는 상한 있는 보너스다 (원칙: 보상은 실력 향상으로 이어져야 한다).
- *   정답 = (기본 100 + 난이도 보너스 50×(난이도−1) + 속도 보너스 최대 50) × 콤보 배율(1 + 0.1×이전 콤보, 최대 ×2)
- *   오답 = 0점, 콤보 초기화 (감점 없음)
- * ponytail: 수치는 상수. 모드별로 달라져야 하면 config/modes.yaml로 옮긴다 (4단계).
+ * 점수 기준은 모드마다 config/modes.yaml의 scoring. 없으면(무제한 연습) 점수 0 —
+ * 콤보·구간은 그대로 센다 (효과음·업적·구간 요약용).
  */
+import type { Scoring } from './modes';
 
 export const CHECKPOINT_EVERY = 10;
-const BASE = 100;
-const DIFFICULTY_BONUS = 50;
-const SPEED_BONUS = 50;
-const COMBO_STEP = 0.1;
-const COMBO_CAP = 10;
+/** 점수 체계 버전. 최고 기록은 같은 버전끼리만 비교한다 (v1: v0.8 이전의 큰 점수) */
+export const SCORE_VERSION = 2;
 
 /** 10문제 구간 하나의 결과 */
 export interface Checkpoint {
@@ -33,8 +29,8 @@ export interface Run {
 }
 
 export type GameEvent =
-  | { kind: 'correct'; gained: number; combo: number; multiplier: number; speedBonus: number }
-  | { kind: 'wrong'; lostCombo: number }
+  | { kind: 'correct'; gained: number; combo: number; speedBonus: number; comboBonus: number }
+  | { kind: 'wrong'; lostCombo: number; lost: number }
   | { kind: 'checkpoint'; index: number; segment: Checkpoint; prev?: Checkpoint };
 
 export const newRun = (): Run => ({ score: 0, combo: 0, maxCombo: 0, solved: 0, correct: 0, checkpoints: [] });
@@ -43,26 +39,34 @@ export interface AnswerInput {
   correct: boolean;
   difficulty: number;
   elapsedMs: number;
-  /** 속도 보너스가 0이 되는 시간 (실전 문항당 시간) */
-  limitMs: number;
 }
 
 const sum = (xs: readonly Checkpoint[], key: keyof Checkpoint) => xs.reduce((s, c) => s + c[key], 0);
+const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
 
-export function answer(run: Run, a: AnswerInput): { run: Run; events: GameEvent[] } {
+export function answer(run: Run, a: AnswerInput, scoring?: Scoring): { run: Run; events: GameEvent[] } {
   const events: GameEvent[] = [];
   let { score, combo, maxCombo, correct } = run;
   if (a.correct) {
-    const multiplier = 1 + COMBO_STEP * Math.min(combo, COMBO_CAP);
-    const speedBonus = Math.round(SPEED_BONUS * Math.max(0, 1 - a.elapsedMs / a.limitMs));
-    const gained = Math.round((BASE + DIFFICULTY_BONUS * (a.difficulty - 1) + speedBonus) * multiplier);
-    score += gained;
     combo += 1;
     correct += 1;
     maxCombo = Math.max(maxCombo, combo);
-    events.push({ kind: 'correct', gained, combo, multiplier, speedBonus });
+    let speedBonus = 0;
+    let comboBonus = 0;
+    let gained = 0;
+    if (scoring) {
+      const sec = a.elapsedMs / 1000;
+      const sp = scoring.speed;
+      speedBonus = sp ? Math.round(sp.max * clamp01((sp.zeroSec - sec) / (sp.zeroSec - sp.fullSec))) : 0;
+      comboBonus = scoring.combo ? Math.min((combo - 1) * scoring.combo.step, scoring.combo.cap) : 0;
+      gained = scoring.correct + scoring.difficulty * (a.difficulty - 1) + speedBonus + comboBonus;
+    }
+    score += gained;
+    events.push({ kind: 'correct', gained, combo, speedBonus, comboBonus });
   } else {
-    events.push({ kind: 'wrong', lostCombo: combo });
+    const next = Math.max(0, score + (scoring?.wrong ?? 0));
+    events.push({ kind: 'wrong', lostCombo: combo, lost: score - next });
+    score = next;
     combo = 0;
   }
   const solved = run.solved + 1;

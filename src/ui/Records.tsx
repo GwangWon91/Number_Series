@@ -1,10 +1,17 @@
+import { Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { config } from '../app/engine';
+import { bank, config } from '../app/engine';
+import { generateItem } from '../engine/compose';
 import { typeLabel } from '../engine/config';
+import { itemKey, type Item } from '../engine/item';
+import { questionText } from '../engine/question';
 import { skillOf } from '../game/adapt';
 import { ACHIEVEMENTS, unlockedIds, weekly, type WeekStat } from '../game/progress';
-import { history, recordSummary, type RecordSummary, type TallyRow } from '../store/records';
+import { history, recentWrong, recordSummary, type RecordSummary, type TallyRow } from '../store/records';
+import type { Attempt } from '../store/types';
+import { ExplainLines, Stars, TopBar } from './parts';
 import { loadSkills } from './practiceState';
+import { SequenceView, Term } from './SequenceView';
 
 const KIND_LABEL: Record<string, string> = { blank: '빈칸 1개', pair: 'A, B 두 빈칸', nth: 'n번째 수 묻기' };
 
@@ -18,13 +25,7 @@ function Tally({ rows, label, level }: { rows: TallyRow[]; label: (key: string) 
         <li key={r.key}>
           <span className="name">
             {label(r.key)}
-            {level && (
-              <span className="stars" aria-label={`숙련 ${level(r.key)}단계`}>
-                {' '}
-                {'★'.repeat(level(r.key))}
-                {'☆'.repeat(3 - level(r.key))}
-              </span>
-            )}
+            {level && <Stars level={level(r.key)} />}
           </span>
           <span className="count">
             정답률 <b>{pct(r)}%</b> · {r.solved}문제
@@ -36,6 +37,108 @@ function Tally({ rows, label, level }: { rows: TallyRow[]; label: (key: string) 
         </li>
       ))}
     </ul>
+  );
+}
+
+/**
+ * 유형별 정답률 가로 막대 (계열 1개 → 범례 없음). 정답률 낮은 유형부터, 막대 끝에 값.
+ * 마우스를 올리면 문제 수·평균 시간, 표로 보기 제공.
+ */
+function TypeBars({ rows, level }: { rows: TallyRow[]; level: (key: string) => number }) {
+  return (
+    <figure className="type-bars">
+      <ul>
+        {rows.map((r) => (
+          <li key={r.key} title={`${typeLabel(config, r.key)}: 정답률 ${pct(r)}% · ${r.solved}문제 · 평균 ${Math.round(r.avgMs / 1000)}초`}>
+            <span className="type-name">
+              {typeLabel(config, r.key)}
+              <Stars level={level(r.key)} />
+            </span>
+            <span className="bar-track" aria-hidden>
+              <span className="bar-fill" style={{ width: `${Math.max(pct(r), 2)}%` }} />
+            </span>
+            <span className="bar-value">{pct(r)}%</span>
+          </li>
+        ))}
+      </ul>
+      <details>
+        <summary>표로 보기</summary>
+        <table>
+          <thead>
+            <tr>
+              <th>유형</th>
+              <th>정답률</th>
+              <th>문제</th>
+              <th>평균 시간</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((r) => (
+              <tr key={r.key}>
+                <td>{typeLabel(config, r.key)}</td>
+                <td>{pct(r)}%</td>
+                <td>{r.solved}</td>
+                <td>{Math.round(r.avgMs / 1000)}초</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </details>
+    </figure>
+  );
+}
+
+/**
+ * 틀린 풀이에서 원래 문항을 되살린다 (해설을 보이려고). 은행 문항은 bankId로,
+ * 생성 문항은 같은 출제 설정 버전일 때 seed로 다시 만들어 보이는 수열이 같을 때만.
+ */
+function restore(a: Attempt): Item | null {
+  if (a.source === 'bank') return bank.find((b) => b.bankId === a.bankId) ?? null;
+  if (a.seed === undefined || a.configVersion !== config.version) return null;
+  const want = itemKey(a);
+  // 출제 때 유형·난이도를 직접 정했는지에 따라 같은 seed라도 문항이 달라서 세 경우를 시도
+  for (const spec of [{ typeId: a.typeId, difficulty: a.difficulty }, { typeId: a.typeId }, {}]) {
+    const it = generateItem(config, { seed: a.seed, ...spec }).item;
+    if (it && itemKey(it) === want) return it;
+  }
+  return null;
+}
+
+/** 최근 틀린 문제: 수열·정답·내 답, 되살릴 수 있으면 해설까지 */
+function WrongReview() {
+  const [limit, setLimit] = useState(10);
+  const [rows, setRows] = useState<{ a: Attempt; item: Item | null }[] | null>(null);
+  useEffect(() => {
+    recentWrong(limit + 1).then((xs) => setRows(xs.map((a) => ({ a, item: restore(a) }))), () => setRows([]));
+  }, [limit]);
+  if (!rows) return null;
+  if (!rows.length) return <p className="hint">아직 틀린 문제가 없어요.</p>;
+  return (
+    <div className="review">
+      {rows.slice(0, limit).map(({ a, item }) => {
+        const view = item ?? ({ ...a, explain: [], blankIndex: 0 } as unknown as Item);
+        return (
+          <article key={a.id} className="card">
+            <p className="prompt">{questionText(a.question)}</p>
+            <SequenceView item={view} revealed correct groupSeparator={view.groupSize !== undefined} />
+            <p className="verdict">
+              정답 <b><Term v={a.answer} /></b>
+              <span className="muted">
+                {' '}
+                · 내 답 <Term v={a.chosen} /> · {md(a.ts)}
+              </span>
+            </p>
+            {/* 되살리지 못한 문항도 증가·감소 규칙 요약은 기록만으로 보인다 */}
+            <ExplainLines item={item ?? { ...a, explain: [] }} />
+          </article>
+        );
+      })}
+      {rows.length > limit && (
+        <button className="button ghost" onClick={() => setLimit((n) => n + 10)}>
+          더 보기
+        </button>
+      )}
+    </div>
   );
 }
 
@@ -150,21 +253,14 @@ export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }
 
   return (
     <div className="screen records">
-      <header className="bar-head">
-        <button className="icon" onClick={onBack} aria-label="홈으로">
-          ←
-        </button>
-        <div className="head-title">
-          <span>기록</span>
-        </div>
-      </header>
+      <TopBar title="기록" onBack={onBack} backLabel="홈으로" />
 
-      <main className="records-main">
+      <main className="stack">
         {sum && sum.total === 0 && (
           <div className="empty">
-            <p className="muted">아직 푼 문제가 없어요. 풀기 시작하면 정답률이 오르는 모습과 업적이 여기에 쌓여요.</p>
-            <button className="primary" onClick={onStart}>
-              풀기 시작
+            <p className="muted">아직 푼 문제가 없어요. 풀기 시작하면 정답률과 업적이 여기에 쌓여요.</p>
+            <button className="button primary" onClick={onStart}>
+              무제한 연습 시작
             </button>
           </div>
         )}
@@ -182,36 +278,49 @@ export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }
               </div>
               <div>
                 <b>{maxCombo}</b>
-                <span>최고 콤보</span>
+                <span>최고 연속</span>
               </div>
             </div>
 
-            <h2>주별 정답률</h2>
-            {weeks.length > 0 && <Growth weeks={weeks} />}
+            <section>
+              <h2 className="section-title">
+                유형별 정답률 <small>낮은 순 — 여기부터 연습하면 빨리 늘어요</small>
+              </h2>
+              <TypeBars rows={sum.byType} level={(id) => skillOf(skills, id).level} />
+            </section>
 
-            <h2>
-              업적 <small>{got.size}/{ACHIEVEMENTS.length}</small>
-            </h2>
-            <ul className="achievements">
-              {ACHIEVEMENTS.map((a) => (
-                <li key={a.id} className={got.has(a.id) ? 'on' : ''}>
-                  <b>
-                    {got.has(a.id) ? '★' : '☆'} {a.label}
-                  </b>
-                  <span>{a.description}</span>
-                </li>
-              ))}
-            </ul>
+            <section>
+              <h2 className="section-title">틀린 문제 다시 보기</h2>
+              <WrongReview />
+            </section>
 
-            <h2>
-              유형별<small>정답률 낮은 순 — 여기부터 연습하면 빨리 늘어요</small>
-            </h2>
-            <Tally rows={sum.byType} label={(id) => typeLabel(config, id)} level={(id) => skillOf(skills, id).level} />
+            <section>
+              <h2 className="section-title">주별 정답률</h2>
+              {weeks.length > 0 && <Growth weeks={weeks} />}
+            </section>
 
-            <h2>묻는 방식별</h2>
-            <Tally rows={sum.byKind} label={(k) => KIND_LABEL[k] ?? k} />
+            <section>
+              <h2 className="section-title">
+                업적 <small>{got.size}/{ACHIEVEMENTS.length}</small>
+              </h2>
+              <ul className="achievements">
+                {ACHIEVEMENTS.map((a) => (
+                  <li key={a.id} className={got.has(a.id) ? 'on' : ''}>
+                    <b>
+                      <Star aria-hidden className={got.has(a.id) ? 'on' : ''} /> {a.label}
+                    </b>
+                    <span>{a.description}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
 
-            <p className="muted small">이 기기에 저장된 기록 기준이에요. 동기화하면 다른 기기 기록도 합쳐져요.</p>
+            <section>
+              <h2 className="section-title">묻는 방식별</h2>
+              <Tally rows={sum.byKind} label={(k) => KIND_LABEL[k] ?? k} />
+            </section>
+
+            <p className="hint">이 기기에 저장된 기록 기준이에요.</p>
           </>
         )}
       </main>

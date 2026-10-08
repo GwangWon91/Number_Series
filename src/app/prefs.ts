@@ -40,8 +40,6 @@ export const THEME_OPTIONS: readonly (readonly [Theme, string])[] = [
 
 /** 필드마다 기본값으로 대체 → 손상·이전 버전 값이 섞여도 버전 번호·마이그레이션 없이 읽힌다 (형식이 호환 안 되게 바뀌면 그때 버전 필드) */
 const prefsSchema = z.object({
-  /** true면 선택 후 한 번 더 눌러야 제출 (흔들리는 차 안 오탭 방지) */
-  confirmBeforeSubmit: z.boolean().catch(false),
   theme: z.enum(['system', 'light', 'dark']).catch('system'),
   /** 정답·오답 효과음 (기본 켜짐) */
   sound: z.boolean().catch(true),

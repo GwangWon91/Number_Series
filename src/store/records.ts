@@ -1,3 +1,4 @@
+import { removeKey } from '../app/prefs';
 import type { Item } from '../engine/item';
 import { db, type Stored } from './db';
 import type { Attempt, ExportFile, Flag, Session } from './types';
@@ -55,21 +56,26 @@ export async function history(): Promise<{ attempts: Attempt[]; sessions: Sessio
   };
 }
 
-/** 같은 모드의 이전 세션 최고 점수 (없으면 null) */
-export async function bestScore(modeId: string, exceptId: string): Promise<number | null> {
+/** 같은 모드·같은 점수 체계의 이전 세션 최고 점수 (없으면 null) */
+export async function bestScore(modeId: string, exceptId: string, scoreVersion: number): Promise<number | null> {
   const scores = (await db.sessions.toArray())
-    .filter((s) => s.modeId === modeId && s.id !== exceptId && s.score !== undefined)
+    .filter((s) => s.modeId === modeId && s.id !== exceptId && s.score !== undefined && s.scoreVersion === scoreVersion)
     .map((s) => s.score!);
   return scores.length ? Math.max(...scores) : null;
 }
 
-/** 모드(Session.modeId)별 최고 점수 — 홈의 모드 카드용 */
-export async function bestScores(): Promise<Record<string, number>> {
-  const best: Record<string, number> = {};
-  for (const s of await db.sessions.toArray()) {
-    if (s.score !== undefined && s.score > (best[s.modeId] ?? -1)) best[s.modeId] = s.score;
-  }
-  return best;
+/** 최근 틀린 풀이 (기록 화면의 다시보기) */
+export async function recentWrong(limit: number): Promise<Attempt[]> {
+  return (await db.attempts.orderBy('ts').reverse().filter((a) => !a.correct).limit(limit).toArray()).map(strip<Attempt>);
+}
+
+/** 기록 초기화: 이 기기의 풀이·표시·세션 기록과 진행 상태. 설정(테마·효과)은 남긴다 */
+export async function clearAll(): Promise<void> {
+  await db.transaction('rw', db.attempts, db.flags, db.sessions, async () => {
+    await Promise.all([db.attempts.clear(), db.flags.clear(), db.sessions.clear()]);
+  });
+  for (const key of ['practice', 'skills', 'game-ui']) removeKey(key);
+  notify();
 }
 
 /** 동기화되는 기록 종류 (sync.ts가 같은 목록을 돈다) */

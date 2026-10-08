@@ -71,7 +71,7 @@ function Screens() {
         <Summary summary={screen.summary} onContinue={() => start(screen.summary.spec)} onHome={home} />
       );
     case 'settings':
-      return <Settings onBack={home} />;
+      return <Settings onBack={home} onReset={home} />;
     case 'records':
       return <Records onBack={home} onStart={() => start({ modeId: modes.modes[0].id, typeId: null })} />;
     default:
