@@ -75,7 +75,7 @@ out.push(
 );
 const exam = rows.filter((r) => r.e.visibility === 'private');
 const pct = (n: number, d: number) => (n / (d || 1)) * 100;
-const drift = (a: number, b: number) => `${(a - b).toFixed(0)}${Math.abs(a - b) >= DRIFT_PP ? ' **점검**' : ''}`;
+const drift = (a: number, b: number) => `${Math.round(a - b) || 0}${Math.abs(a - b) >= DRIFT_PP ? ' **점검**' : ''}`;
 const isType = (id: string) => config.types.some((t) => t.id === id);
 const typeIds = [...new Set([...config.types.map((t) => t.id), ...exam.map((r) => r.typeId)])];
 const totalW = config.types.filter((t) => t.enabled).reduce((s, t) => s + t.weight, 0) || 1;
