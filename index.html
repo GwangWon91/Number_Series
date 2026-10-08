@@ -10,6 +10,13 @@
     <link rel="icon" type="image/svg+xml" href="icon.svg" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <title>수열추리 연습</title>
+    <!-- 첫 그리기 전에 저장된 테마 적용 (번들 실행 후 바꾸면 반대 테마가 잠깐 보인다). 키·값은 src/app/prefs.ts -->
+    <script>
+      try {
+        var t = JSON.parse(localStorage.getItem('prefs') || '{}').theme;
+        if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <div id="root"></div>
