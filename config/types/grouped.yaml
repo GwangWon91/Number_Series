@@ -1,7 +1,7 @@
 id: grouped
 label: 군수열 (3개씩 묶음)
 enabled: true
-weight: 9
+weight: 5  # [추정: 비공개 기출 분석] 기출 유형 비중에 맞춤 (전 유형 weight 합 100)
 confidence: evidence
 note: 실전에서 묶음 구분이 화면에 보이는지는 [모름] → display.groupSeparator로 조정.
 length: [9, 12]           # 실제 항 개수는 groups × 3

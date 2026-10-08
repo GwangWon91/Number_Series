@@ -1,14 +1,12 @@
 id: rational
 label: 유리수 수열 (분수·소수·대분수)
 enabled: true
-# [추정: 비공개 기출 분석] 정수 유형·분자분모 분리(fraction)·유리수의 실전 비율에 맞춰 비중을 정했다 (근거 수치는 reports/bank-analysis.md, 로컬)
-#        → 정수 유형 비중 합(95)과 같은 비율이 되도록 fraction 58, rational 139
-weight: 139
+weight: 42  # [추정: 비공개 기출 분석] 기출 유형 비중에 맞춤 (전 유형 weight 합 100)
 confidence: evidence
-note: 정수 규칙 수열을 L로 나누거나(통분 규칙), 공비가 분수인 등비수열. 표기는 display.notation.
+note: 정수 규칙 수열(등차·계차·합·차이 ×r·2단계 계차·두 연산 번갈아)을 L로 나누거나(통분 규칙), 공비가 분수인 등비수열. 표기는 display.notation.
 length: [6, 8]
 blank: { last: 0.5, middle: 0.5 }   # [추정: 비공개 기출 분석]
-numbers: { min: 0, max: 999 }        # [추정: 비공개 기출 분석] 음수 없음
+numbers: { min: 0, max: 4000 }       # [추정: 비공개 기출 분석] 음수 없음. 약분한 분자·분모 기준 (소수 두 자리·×2.5 등비면 1000을 넘는다)
 display:
   # [추정: 비공개 기출 분석] 소수 > 분수 > 대분수 순, 한 수열에 표기를 섞기도 한다
   #        생성 문항과 비교해 소수·대분수 비율을 실전에 맞게 dec 0.45 → 0.65
@@ -16,17 +14,18 @@ display:
   mixNotation: 0.15
 difficulty:
   "1":
-    kinds: { arithmetic: 0.4, fib: 0.3, geometric: 0.3, diffArithmetic: 0 }
+    # [추정: 비공개 기출 분석] 등비(분수·소수 공비) > 앞 두 항의 합 > 등차 > 계차 등비·2단계 계차 > 계차 등차·두 연산 번갈아
+    kinds: { arithmetic: 0.3, fib: 0.3, geometric: 0.35, diffArithmetic: 0, diffGeometric: 0.05 }
     scales: [2, 4, 10]
     int: { start: [1, 9], diff: [1, 5], ratio: [2, 2], step: [1, 1] }
     ratios: ["1/2", "3/2", "2/3"]
   "2":
-    kinds: { arithmetic: 0.25, fib: 0.3, geometric: 0.25, diffArithmetic: 0.2 }
+    kinds: { arithmetic: 0.15, fib: 0.25, geometric: 0.35, diffArithmetic: 0.1, diffGeometric: 0.1, secondDiffGeometric: 0.05 }
     scales: [2, 3, 4, 6, 10]
     int: { start: [1, 15], diff: [1, 7], ratio: [2, 3], step: [1, 2] }
-    ratios: ["1/2", "3/2", "2/3", "1/3"]
+    ratios: ["1/2", "3/2", "2/3", "1/3", "5/2"]
   "3":
-    kinds: { arithmetic: 0.2, fib: 0.25, geometric: 0.25, diffArithmetic: 0.3 }
+    kinds: { arithmetic: 0.05, fib: 0.15, geometric: 0.3, diffArithmetic: 0.1, diffGeometric: 0.1, secondDiffGeometric: 0.15, alternatingOps: 0.15 }
     scales: [3, 4, 6, 10, 100]
     int: { start: [1, 30], diff: [1, 12], ratio: [2, 3], step: [1, 3] }
-    ratios: ["3/2", "2/3", "4/3", "3/4"]
+    ratios: ["3/2", "2/3", "4/3", "3/4", "5/2", "8/5"]   # [추정: 비공개 기출 분석] ×2.5, ×1.6 소수 공비

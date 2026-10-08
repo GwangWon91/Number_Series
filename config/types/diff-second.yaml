@@ -1,7 +1,7 @@
 id: diff-second
 label: 2단계 계차
 enabled: true
-weight: 5
+weight: 0.25  # [추정: 비공개 기출 분석] 기출에 거의 없음 — 다양성용으로 작게 남김 (전 유형 weight 합 100)
 confidence: estimated
 note: 차이의 차이까지 봐야 하는 고난도 유형으로 추정.
 length: [7, 8]

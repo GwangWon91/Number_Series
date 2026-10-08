@@ -1,7 +1,7 @@
 id: fraction
 label: 분수 수열
 enabled: true
-weight: 45                # [추정: 비공개 기출 분석] rational.yaml 비중 주석 참고. 생성 문항과 비교 후 58 → 45
+weight: 18  # [추정: 비공개 기출 분석] 기출 유형 비중에 맞춤 (전 유형 weight 합 100)
 confidence: evidence
 length: [5, 7]
 blank: { last: 0.4, middle: 0.6 }   # [추정: 비공개 기출 분석] 분수는 중간 빈칸이 많다 (0.8/0.2 → 0.4/0.6)

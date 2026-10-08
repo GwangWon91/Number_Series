@@ -1,10 +1,10 @@
 id: interleaved
 label: 홀짝 교대 수열
 enabled: true
-weight: 14
+weight: 15  # [추정: 비공개 기출 분석] 기출 유형 비중에 맞춤 (전 유형 weight 합 100)
 confidence: evidence
 note: 부분 수열마다 확인 항이 필요해 길이가 길다.
-length: [9, 10]
+length: [8, 10]                     # [추정: 비공개 기출 분석] 실전은 8항이 많다 (9~10 → 8~10)
 blank: { last: 0.7, middle: 0.3 }
 minRedundancy: 1
 numbers: { min: -99, max: 999 }

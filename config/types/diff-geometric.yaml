@@ -1,7 +1,7 @@
 id: diff-geometric
 label: 계차수열 (차이가 등비)
 enabled: true
-weight: 10
+weight: 5  # [추정: 비공개 기출 분석] 기출 유형 비중에 맞춤 (전 유형 weight 합 100)
 confidence: evidence
 length: [6, 8]
 blank: { last: 0.7, middle: 0.3 }
