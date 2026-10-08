@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { config } from '../app/engine';
+import { typeLabel } from '../engine/config';
 import { recordSummary, type RecordSummary, type TallyRow } from '../store/records';
 
 const KIND_LABEL: Record<string, string> = { blank: '빈칸 1개', pair: 'A, B 두 빈칸', nth: 'n번째 수 묻기' };
@@ -29,8 +30,6 @@ export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }
   useEffect(() => {
     recordSummary().then(setSum, () => setSum(null));
   }, []);
-
-  const typeLabel = (id: string) => config.types.find((t) => t.id === id)?.label ?? id;
 
   return (
     <div className="screen records">
@@ -73,7 +72,7 @@ export function Records({ onBack, onStart }: { onBack(): void; onStart(): void }
             <h2>
               유형별<small>틀린 비율이 높은 순</small>
             </h2>
-            <Tally rows={sum.byType} label={typeLabel} />
+            <Tally rows={sum.byType} label={(id) => typeLabel(config, id)} />
 
             <h2>묻는 방식별</h2>
             <Tally rows={sum.byKind} label={(k) => KIND_LABEL[k] ?? k} />

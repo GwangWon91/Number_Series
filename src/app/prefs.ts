@@ -29,6 +29,13 @@ export function removeKey(key: string): void {
 
 export type Theme = 'system' | 'light' | 'dark';
 
+/** 설정 화면 3단 선택과 홈의 순환 버튼이 같은 순서·이름을 쓴다 */
+export const THEME_OPTIONS: readonly (readonly [Theme, string])[] = [
+  ['system', '기기 설정 따름'],
+  ['light', '밝게'],
+  ['dark', '어둡게'],
+];
+
 export interface Prefs {
   /** true면 선택 후 한 번 더 눌러야 제출 (흔들리는 차 안 오탭 방지) */
   confirmBeforeSubmit: boolean;
@@ -39,6 +46,7 @@ const PREFS_KEY = 'prefs';
 export const loadPrefs = (): Prefs => readJson<Prefs>(PREFS_KEY, { confirmBeforeSubmit: false, theme: 'system' });
 export const savePrefs = (p: Prefs) => writeJson(PREFS_KEY, p);
 
+/** styles.css --bg와 같은 값 (meta theme-color는 CSS 변수를 못 읽는다) */
 const THEME_COLOR = { light: '#f3f5f8', dark: '#1d2026' } as const;
 
 /** <html data-theme>와 브라우저 상단 색(theme-color)을 맞춘다. system이면 OS 설정을 따른다. */

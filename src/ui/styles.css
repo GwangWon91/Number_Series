@@ -1,60 +1,33 @@
 /* 미니멀 UI: 문제에만 집중. 모바일 세로 한 손 조작 우선, PC는 가운데 좁은 열. */
 
 /* 색: 차가운 회색 바탕 + "빈칸 상자"의 파랑이 유일한 강조색. 정답·오답만 초록·빨강. */
+/* light-dark(라이트, 다크): 기기 설정(color-scheme)을 따르고, 설정에서 강제하면 data-theme가 color-scheme을 고정한다.
+   다크는 #111이 너무 깊어서 한 단계 밝은 슬레이트. 라이트 피드백 색(ok·ng·warn)은 배경 대비 4.5:1 이상. */
 :root {
-  --bg: #f3f5f8;
-  --surface: #ffffff;
-  --surface-2: #eaeef3;
-  --fg: #15181d;
-  --muted: #69707b;
-  --line: #dfe3ea;
-  --accent: #2f5bea;
-  --accent-fg: #ffffff;
-  --ok: #138a4b;
-  --ok-bg: #e2f4e9;
-  --ng: #cf3a3a;
-  --ng-bg: #fbe8e8;
-  --warn: #b26b00;
+  color-scheme: light dark;
+  --bg: light-dark(#f3f5f8, #1d2026); /* prefs.ts THEME_COLOR·index.html theme-color와 같은 값 */
+  --surface: light-dark(#ffffff, #272b32);
+  --surface-2: light-dark(#eaeef3, #30353d);
+  --fg: light-dark(#15181d, #e8ebf0);
+  --muted: light-dark(#69707b, #9aa2ae);
+  --line: light-dark(#dfe3ea, #3a3f49);
+  --accent: light-dark(#2f5bea, #7ea2ff);
+  --accent-fg: light-dark(#ffffff, #0f1420);
+  --ok: light-dark(#117b43, #5fd08a);
+  --ok-bg: light-dark(#e2f4e9, #1f3a2b);
+  --ng: light-dark(#c63030, #ff7d7d);
+  --ng-bg: light-dark(#fbe8e8, #452628);
+  --warn: light-dark(#a06000, #f0a640);
+  --scrim: rgb(0 0 0 / 0.4);
   --radius: 12px;
   --tap: 52px;
   --mono: ui-monospace, 'SF Mono', 'Menlo', 'Roboto Mono', monospace;
+}
+:root[data-theme='light'] {
   color-scheme: light;
 }
-
-/* 다크: 예전 #111은 너무 깊어서 한 단계 밝은 슬레이트로. 설정에서 강제(data-theme)하거나 시스템을 따른다. */
 :root[data-theme='dark'] {
-  --bg: #1d2026;
-  --surface: #272b32;
-  --surface-2: #30353d;
-  --fg: #e8ebf0;
-  --muted: #9aa2ae;
-  --line: #3a3f49;
-  --accent: #7ea2ff;
-  --accent-fg: #0f1420;
-  --ok: #5fd08a;
-  --ok-bg: #1f3a2b;
-  --ng: #ff7d7d;
-  --ng-bg: #452628;
-  --warn: #f0a640;
   color-scheme: dark;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme='light']) {
-    --bg: #1d2026;
-    --surface: #272b32;
-    --surface-2: #30353d;
-    --fg: #e8ebf0;
-    --muted: #9aa2ae;
-    --line: #3a3f49;
-    --accent: #7ea2ff;
-    --accent-fg: #0f1420;
-    --ok: #5fd08a;
-    --ok-bg: #1f3a2b;
-    --ng: #ff7d7d;
-    --ng-bg: #452628;
-    --warn: #f0a640;
-    color-scheme: dark;
-  }
 }
 
 * {
@@ -153,6 +126,11 @@ code {
   align-items: center;
   justify-content: space-between;
   padding: 24px 4px 4px;
+}
+.home-head .head-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .home-head h1 {
   margin: 0;
@@ -289,10 +267,6 @@ button.start {
   align-items: center;
   gap: 12px;
   padding: 20px 4px 16px;
-}
-.home-foot .ver {
-  text-align: right;
-  line-height: 1.4;
 }
 
 /* ───── 기록 ───── */
@@ -679,6 +653,11 @@ button.start {
   background: var(--ok-bg);
   font-weight: 600;
 }
+/* 색만으로 구분하지 않도록 기호를 함께 (오답은 취소선) */
+.choices.compact li.answer::before {
+  content: '✓';
+  margin-right: 0.3em;
+}
 .choices.compact li.wrong {
   border-color: var(--ng);
   color: var(--ng);
@@ -698,7 +677,7 @@ button.start {
 .sheet-backdrop {
   position: fixed;
   inset: 0;
-  background: rgb(0 0 0 / 0.4);
+  background: var(--scrim);
   display: flex;
   align-items: flex-end;
   justify-content: center;

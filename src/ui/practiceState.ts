@@ -18,9 +18,16 @@ export interface PracticeState {
 
 const KEY = 'practice';
 
+/** 다른 모드이거나 모양이 깨진 값(이전 버전·손상)은 버리고 새 문항으로 시작한다 */
 export function loadPractice(mode: string): PracticeState | null {
   const s = readJson<Partial<PracticeState>>(KEY, {});
-  return s.mode === mode && s.item ? (s as PracticeState) : null;
+  const ok =
+    s.mode === mode &&
+    Array.isArray(s.item?.terms) &&
+    Array.isArray(s.item?.choices) &&
+    Array.isArray(s.recent) &&
+    (s.phase === 'answering' || s.phase === 'revealed');
+  return ok ? (s as PracticeState) : null;
 }
 
 export function savePractice(s: PracticeState): void {

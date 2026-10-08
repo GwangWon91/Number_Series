@@ -14,3 +14,5 @@ data/feedback/*
 reports/*
 !reports/.gitkeep
 .claude/
+# 집단 통계 집계 결과 (소유자 로컬 전용, 공개하지 않음)
+data/crowd/

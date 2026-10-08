@@ -9,6 +9,7 @@
 import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { parseArgs } from 'node:util';
+import { typeLabel } from '../src/engine/config';
 import { formatValue } from '../src/engine/value';
 import { requireConfig, ROOT } from '../src/node/load';
 import type { Attempt, ExportFile, Flag } from '../src/store/types';
@@ -34,7 +35,6 @@ for (const f of files) {
 }
 
 const reasonLabel = new Map(config.feedback.reasons.map((r) => [r.id, r.label]));
-const typeLabel = (id: string) => config.types.find((t) => t.id === id)?.label ?? id;
 const median = (xs: number[]) => {
   const s = [...xs].sort((a, b) => a - b);
   return s.length ? s[Math.floor(s.length / 2)] : 0;
@@ -58,7 +58,7 @@ for (const typeId of typeIds) {
   const top = [...reasons].sort((a, b) => b[1] - a[1]);
   console.log(
     [
-      typeLabel(typeId).padEnd(16),
+      typeLabel(config, typeId).padEnd(16),
       as.length,
       pct(acc),
       `${(med / 1000).toFixed(0)}초`,
@@ -91,7 +91,7 @@ if (flags.size) {
       f.terms.map((t, i) => (t === null ? (q?.kind === 'pair' ? (q.blanks[0] === i ? 'A' : 'B') : '?') : formatValue(t))).join(', ') +
       (q?.kind === 'pair' ? ` (A ${q.op} B)` : q?.kind === 'nth' ? ` … ${q.n}번째` : '');
     const why = f.reasons.map((r) => reasonLabel.get(r) ?? r).join(', ');
-    console.log(`- [${typeLabel(f.typeId)}] ${seq} (정답 ${formatValue(f.answer)}) — ${why}${f.note ? ` / "${f.note}"` : ''}`);
+    console.log(`- [${typeLabel(config, f.typeId)}] ${seq} (정답 ${formatValue(f.answer)}) — ${why}${f.note ? ` / "${f.note}"` : ''}`);
     console.log(`    재현: typeId=${f.typeId} difficulty=${f.difficulty} seed=${f.seed ?? '-'} config v${f.configVersion}`);
   }
 }

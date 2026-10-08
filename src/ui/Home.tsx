@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { config } from '../app/engine';
-import { BUILD_LABEL } from '../app/version';
+import { applyTheme, loadPrefs, savePrefs, THEME_OPTIONS, type Theme } from '../app/prefs';
 import { recordSummary, type RecordSummary } from '../store/records';
 import { savedPracticeMode } from './practiceState';
 
@@ -13,8 +13,19 @@ interface Props {
 /** 오늘의 수열에 보여 줄 최대 칸 수 (넘으면 앞쪽을 "+N"으로 줄인다) */
 const STRIP_MAX = 34;
 
+/** 텍스트 표시 문자(\uFE0E)로 이모지 렌더링을 막는다 */
+const THEME_ICON: Record<Theme, string> = { system: '◐', light: '☀\uFE0E', dark: '☾' };
+
 export function Home({ onStart, onSettings, onRecords }: Props) {
   const [sum, setSum] = useState<RecordSummary | null>(null);
+  const [theme, setTheme] = useState(() => loadPrefs().theme);
+  const themeIndex = THEME_OPTIONS.findIndex(([t]) => t === theme);
+  const cycleTheme = () => {
+    const next = THEME_OPTIONS[(themeIndex + 1) % THEME_OPTIONS.length][0];
+    savePrefs({ ...loadPrefs(), theme: next });
+    applyTheme(next);
+    setTheme(next);
+  };
   const resumeMode = savedPracticeMode();
   // 출제 비중이 큰 유형부터
   const types = config.types.filter((t) => t.enabled).sort((a, b) => b.weight - a.weight);
@@ -34,9 +45,14 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
     <div className="screen home">
       <header className="home-head">
         <h1>수열추리</h1>
-        <button className="link" onClick={onRecords}>
-          기록 보기
-        </button>
+        <div className="head-actions">
+          <button className="icon" onClick={cycleTheme} aria-label={`화면 밝기: ${THEME_OPTIONS[themeIndex][1]}`}>
+            {THEME_ICON[theme]}
+          </button>
+          <button className="link" onClick={onRecords}>
+            기록 보기
+          </button>
+        </div>
       </header>
 
       <main className="home-main">
@@ -64,11 +80,6 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
               {today.length > 0 && (
                 <span>
                   정답률 <b>{Math.round((correct / today.length) * 100)}%</b>
-                </span>
-              )}
-              {sum.streakDays > 1 && (
-                <span>
-                  <b>{sum.streakDays}</b>일 연속
                 </span>
               )}
               <span>
@@ -117,11 +128,6 @@ export function Home({ onStart, onSettings, onRecords }: Props) {
         <button className="link" onClick={onSettings}>
           설정과 동기화
         </button>
-        <span className="muted small ver">
-          {BUILD_LABEL}
-          <br />
-          출제 설정 v{config.version}
-        </span>
       </footer>
     </div>
   );

@@ -6,7 +6,8 @@ import { itemKey } from '../engine/item';
 import { pickNextItem } from '../engine/session';
 import { questionText } from '../engine/question';
 import { eqNum, formatValue } from '../engine/value';
-import { addAttempt, addFlag, newId } from '../store/records';
+import { typeLabel } from '../engine/config';
+import { addAttempt, addFlag, itemSnapshot, newId } from '../store/records';
 import { FlagSheet } from './FlagSheet';
 import { loadPractice, savePractice, type PracticeState } from './practiceState';
 import { SequenceView, Term } from './SequenceView';
@@ -38,8 +39,6 @@ function freshState(mode: string, prev?: PracticeState): PracticeState {
   };
 }
 
-const typeLabel = (id: string) => config.types.find((t) => t.id === id)?.label ?? id;
-
 export function Practice({ mode, onExit }: Props) {
   const [state, setState] = useState<PracticeState>(() => loadPractice(mode) ?? freshState(mode));
   const [pending, setPending] = useState<number | null>(null);
@@ -61,18 +60,10 @@ export function Practice({ mode, onExit }: Props) {
         id: attemptId,
         ts: Date.now(),
         mode,
-        itemId: item.id,
+        ...itemSnapshot(item),
         source: item.source,
-        typeId: item.typeId,
-        difficulty: item.difficulty,
-        seed: item.seed,
         bankId: item.bankId,
-        configVersion: item.configVersion,
         appVersion: APP_VERSION,
-        terms: item.terms,
-        question: item.question,
-        answer: item.answer,
-        choices: item.choices,
         chosen,
         correct,
         elapsedMs,
@@ -135,15 +126,7 @@ export function Practice({ mode, onExit }: Props) {
       id: newId(),
       ts: Date.now(),
       attemptId: state.attemptId,
-      itemId: item.id,
-      typeId: item.typeId,
-      difficulty: item.difficulty,
-      seed: item.seed,
-      configVersion: item.configVersion,
-      terms: item.terms,
-      question: item.question,
-      answer: item.answer,
-      choices: item.choices,
+      ...itemSnapshot(item),
       reasons,
       note,
     });
@@ -161,7 +144,7 @@ export function Practice({ mode, onExit }: Props) {
           ←
         </button>
         <div className="head-title">
-          <span>{mode === 'all' ? '전체 무작위' : typeLabel(mode)}</span>
+          <span>{mode === 'all' ? '전체 무작위' : typeLabel(config, mode)}</span>
         </div>
         <div className="score" aria-label={`${state.solved}문제 중 ${state.correct}문제 정답`}>
           <div>
