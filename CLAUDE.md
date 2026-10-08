@@ -13,6 +13,7 @@ SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하
 | `npm test` | 엔진 단위 테스트 |
 | `npm run typecheck` / `npm run build` | 타입 검사 / 배포 빌드 |
 | `npm run sample -- [--type <id>] [--n 60] [--compare]` | 생성 문항 HTML 리포트 (`reports/`), `--compare`면 문제은행과 나란히 + 형식 통계 |
+| `npm run review` | `validate:bank` + 은행 분석 리포트 `reports/bank-analysis.md` (집계·id만, 커밋 금지) |
 | `npm run bank:variants` | 비공개 기출 → 숫자를 바꾼 공개 변형 문항 `data/bank/public/variants.yaml` 다시 만들기 (검사 통과한 것만) |
 | `npm run ship` | 현재 브랜치를 PR → CI → 병합 → 릴리스 → Pages 배포까지 (아래 "브랜치·커밋·릴리스") |
 | `npm run calibrate` | `data/feedback/*.json`(앱에서 내보낸 기록) 집계 → 조정 후보 제안 |
