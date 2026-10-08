@@ -7,7 +7,7 @@ import { pickNextItem } from '../engine/session';
 import { questionText } from '../engine/question';
 import { eqNum, formatValue } from '../engine/value';
 import { typeLabel } from '../engine/config';
-import { addAttempt, addFlag, itemSnapshot, newId } from '../store/records';
+import { addAttempt, addFlag, addSession, itemSnapshot, newId } from '../store/records';
 import { FlagSheet } from './FlagSheet';
 import { loadPractice, savePractice, type PracticeState } from './practiceState';
 import { SequenceView, Term } from './SequenceView';
@@ -18,6 +18,8 @@ interface Props {
   mode: string;
   onExit(): void;
 }
+
+const newSession = () => ({ sessionId: newId(), sessionStart: Date.now(), solved: 0, correct: 0 });
 
 function freshState(mode: string, prev?: PracticeState): PracticeState {
   const recent = prev?.recent ?? [];
@@ -33,8 +35,7 @@ function freshState(mode: string, prev?: PracticeState): PracticeState {
     elapsedMs: 0,
     attemptId: null,
     flagged: false,
-    solved: prev?.solved ?? 0,
-    correct: prev?.correct ?? 0,
+    ...(prev ? { sessionId: prev.sessionId, sessionStart: prev.sessionStart, solved: prev.solved, correct: prev.correct } : newSession()),
     recent: [...recent, itemKey(item)].slice(-config.exam.avoidRecent),
   };
 }
@@ -60,6 +61,7 @@ export function Practice({ mode, onExit }: Props) {
         id: attemptId,
         ts: Date.now(),
         mode,
+        sessionId: state.sessionId,
         ...itemSnapshot(item),
         source: item.source,
         bankId: item.bankId,
@@ -79,8 +81,28 @@ export function Practice({ mode, onExit }: Props) {
         correct: s.correct + (correct ? 1 : 0),
       }));
     },
-    [item, mode, state.phase],
+    [item, mode, state.phase, state.sessionId],
   );
+
+  // 나가기 = 세션 종료: 푼 문제가 있으면 기록하고, 다음에 들어오면 보던 문항에서 새 세션으로 이어 간다
+  const leave = useCallback(() => {
+    if (state.solved > 0) {
+      const endedAt = Date.now();
+      void addSession({
+        id: state.sessionId,
+        ts: state.sessionStart,
+        endedAt,
+        modeId: mode,
+        total: state.solved,
+        correct: state.correct,
+        durationMs: endedAt - state.sessionStart,
+        appVersion: APP_VERSION,
+        configVersion: config.version,
+      });
+      savePractice({ ...state, ...newSession() });
+    }
+    onExit();
+  }, [mode, onExit, state]);
 
   const choose = useCallback(
     (index: number) => {
@@ -113,12 +135,12 @@ export function Practice({ mode, onExit }: Props) {
       } else if ((e.key === 'f' || e.key === 'F') && phase === 'revealed' && !state.flagged) {
         setFlagOpen(true);
       } else if (e.key === 'Escape') {
-        onExit();
+        leave();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [choose, flagOpen, item.choices.length, next, onExit, pending, phase, state.flagged, submit]);
+  }, [choose, flagOpen, item.choices.length, leave, next, pending, phase, state.flagged, submit]);
 
   const saveFlag = async (reasons: string[], note: string) => {
     if (!state.attemptId) return;
@@ -140,7 +162,7 @@ export function Practice({ mode, onExit }: Props) {
   return (
     <div className={`screen practice ${revealed ? 'revealed' : ''}`}>
       <header className="bar-head">
-        <button className="icon" onClick={onExit} aria-label="홈으로">
+        <button className="icon" onClick={leave} aria-label="홈으로">
           ←
         </button>
         <div className="head-title">
