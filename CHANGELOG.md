@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.5.0](https://github.com/GwangWon91/Number_Series/compare/v0.4.0...v0.5.0) (2026-10-08)
+
+
+### 새 기능
+
+* **ui:** 점수·콤보, 10문제 구간 요약, 세션 요약 ([1c73e6d](https://github.com/GwangWon91/Number_Series/commit/1c73e6d6168e4b59fb2bcef533548462b052f79f))
+* **ui:** 정답·오답 효과음과 진동 (기본 켜짐, 끌 수 있음) ([f3ba13d](https://github.com/GwangWon91/Number_Series/commit/f3ba13dc432f704341a20f8ee67f3485cc19398c))
+
 ## [0.4.0](https://github.com/GwangWon91/Number_Series/compare/v0.3.0...v0.4.0) (2026-10-08)
 
 
