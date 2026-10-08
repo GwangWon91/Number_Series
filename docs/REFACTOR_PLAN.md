@@ -391,7 +391,7 @@ B10(은행 확충, 콘텐츠) ─▶ 실전 모드 은행 비율 상향 (4단계
 
 ### 2단계 — 기록·수집 기반 (화면 변화 거의 없음)
 - **항목**: B1, B2, B3, B4, B6, B7
-- **전제**: B7(수집 필드)은 Firebase가 연결돼 있을 때만 의미가 있다. 연결 전이면 B7은 5단계로 미룬다.
+- **전제**: B7(수집 필드)은 Firebase가 연결돼 있을 때만 의미가 있다. **2026-10-08 기준 미연결(추정) → B7은 5단계로 미룬다.** 5단계 시작 전에 `docs/deploy.md` 절차로 Firebase를 연결한다.
 - **파일**: `src/store/db.ts`(v3), `src/store/types.ts`, `src/store/records.ts`, `src/store/sync.ts`, `src/store/pool.ts`(choiceTags·family 전송), `src/engine/item.ts`·`src/engine/compose.ts`·`src/engine/distractors.ts`(태그 전달), `src/engine/bank.ts`(은행 family), `firestore.rules`, `src/app/prefs.ts`, `tests/engine/compose.test.ts`(seed 스냅숏), `docs/deploy.md`(규칙 게시 순서)
 - **완료 기준**
   - 같은 seed의 생성 문항이 변경 전후 동일 (태그 외)
