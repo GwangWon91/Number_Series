@@ -8,6 +8,8 @@ export interface Attempt {
   ts: number;
   /** 'all' = 전체 무작위, 그 외 = 유형별 풀기의 typeId */
   mode: string;
+  /** 이 풀이가 속한 세션 (Session.id). 2026-10 이전 기록에는 없음 */
+  sessionId?: string;
   itemId: string;
   source: 'gen' | 'bank';
   typeId: string;
@@ -45,11 +47,28 @@ export interface Flag {
   note: string;
 }
 
-/** 내보내기/가져오기 파일 형식 (scripts/calibrate.ts의 입력) */
+/** 풀이 세션 1회 (풀기 화면에 들어가서 나갈 때까지). 나갈 때 한 번 저장하고 수정하지 않는다. */
+export interface Session {
+  id: string;
+  /** 시작 시각 */
+  ts: number;
+  endedAt: number;
+  /** 'all' 또는 typeId (Attempt.mode와 같음) */
+  modeId: string;
+  total: number;
+  correct: number;
+  /** 시작~종료 경과 시간 (앱을 닫았다 이어 푼 시간 포함) */
+  durationMs: number;
+  appVersion: string;
+  configVersion: number;
+}
+
+/** 내보내기/가져오기 파일 형식 (scripts/calibrate.ts의 입력). format 2부터 sessions 포함 */
 export interface ExportFile {
   app: 'skct-number-series';
-  format: 1;
+  format: 1 | 2;
   exportedAt: string;
   attempts: Attempt[];
   flags: Flag[];
+  sessions?: Session[];
 }

@@ -390,6 +390,11 @@ B10(은행 확충, 콘텐츠) ─▶ 실전 모드 은행 비율 상향 (4단계
 - **커밋**: `refactor(store): 문항 스냅숏 생성 통합` · `refactor(ui): 유형 이름 조회 통합` · `fix(ui): 테마 새로고침 깜빡임 제거` · `fix(ui): 라이트 모드 정답·오답 대비 보강` · `feat(ui): 홈 테마 전환 버튼` · `fix(ui): 오류 화면과 진행 상태 검증` · `refactor(ui): 연속 일수 표시 제거`
 
 ### 2단계 — 기록·수집 기반 (화면 변화 거의 없음)
+- **진행 기록 (2026-10-08 완료)**
+  - 세션은 지금의 무한 연습에 바로 붙였다. 풀기 화면에서 나갈 때 1건을 저장하고, 다시 들어오면 새 세션으로 시작한다.
+  - Session 필드는 지금 쓰는 것만 넣었다. 점수·콤보·구간은 3단계에서 추가한다.
+  - localStorage 값의 `schema` 번호 대신, 필드마다 zod `.catch(기본값)`으로 읽는다. 손상되거나 옛 형식인 값은 해당 필드만 기본값이 된다. 형식이 호환 안 되게 바뀔 때 버전 필드를 둔다.
+  - B7(추가 수집 필드)은 Firebase 미연결로 5단계로 연기했다.
 - **항목**: B1, B2, B3, B4, B6, B7
 - **전제**: B7(수집 필드)은 Firebase가 연결돼 있을 때만 의미가 있다. **2026-10-08 기준 미연결(추정) → B7은 5단계로 미룬다.** 5단계 시작 전에 `docs/deploy.md` 절차로 Firebase를 연결한다.
 - **파일**: `src/store/db.ts`(v3), `src/store/types.ts`, `src/store/records.ts`, `src/store/sync.ts`, `src/store/pool.ts`(choiceTags·family 전송), `src/engine/item.ts`·`src/engine/compose.ts`·`src/engine/distractors.ts`(태그 전달), `src/engine/bank.ts`(은행 family), `firestore.rules`, `src/app/prefs.ts`, `tests/engine/compose.test.ts`(seed 스냅숏), `docs/deploy.md`(규칙 게시 순서)

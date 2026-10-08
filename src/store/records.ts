@@ -1,6 +1,6 @@
 import type { Item } from '../engine/item';
 import { db, type Stored } from './db';
-import type { Attempt, ExportFile, Flag } from './types';
+import type { Attempt, ExportFile, Flag, Session } from './types';
 
 /**
  * 기록 저장소. 기기 안(IndexedDB)이 항상 원본이고, 클라우드 동기화는 이 위에 얹힌다.
@@ -41,6 +41,15 @@ export async function addFlag(f: Flag): Promise<void> {
   await db.flags.put({ ...f, uploaded: 0, pooled: 0 });
   notify();
 }
+
+export async function addSession(s: Session): Promise<void> {
+  await db.sessions.put({ ...s, uploaded: 0 });
+  notify();
+}
+
+/** 동기화되는 기록 종류 (sync.ts가 같은 목록을 돈다) */
+export type RecordKind = 'attempts' | 'flags' | 'sessions';
+const table = (kind: RecordKind) => db[kind] as unknown as typeof db.attempts;
 
 export async function todayStats(): Promise<{ solved: number; correct: number }> {
   const start = new Date();
@@ -105,10 +114,11 @@ const strip = <T extends object>({ uploaded: _u, pooled: _p, ...rest }: Stored<T
 export async function exportAll(): Promise<ExportFile> {
   return {
     app: 'skct-number-series',
-    format: 1,
+    format: 2,
     exportedAt: new Date().toISOString(),
     attempts: (await db.attempts.orderBy('ts').toArray()).map(strip<Attempt>),
     flags: (await db.flags.orderBy('ts').toArray()).map(strip<Flag>),
+    sessions: (await db.sessions.orderBy('ts').toArray()).map(strip<Session>),
   };
 }
 
@@ -116,7 +126,7 @@ export async function exportAll(): Promise<ExportFile> {
 export async function importAll(file: ExportFile): Promise<{ attempts: number; flags: number }> {
   if (file.app !== 'skct-number-series') throw new Error('이 앱에서 내보낸 파일이 아닙니다');
   const added = { attempts: 0, flags: 0 };
-  await db.transaction('rw', db.attempts, db.flags, async () => {
+  await db.transaction('rw', db.attempts, db.flags, db.sessions, async () => {
     for (const a of file.attempts ?? []) {
       if (!(await db.attempts.get(a.id))) {
         await db.attempts.put({ ...a, uploaded: 0, pooled: 0 });
@@ -129,16 +139,22 @@ export async function importAll(file: ExportFile): Promise<{ attempts: number; f
         added.flags++;
       }
     }
+    // 세션은 화면에 개수를 보여 주지 않으므로 이미 있는 것만 건너뛴다 (format 1 파일에는 없음)
+    for (const s of file.sessions ?? []) {
+      if (!(await db.sessions.get(s.id))) await db.sessions.put({ ...s, uploaded: 0 });
+    }
   });
   if (added.attempts || added.flags) notify();
   return added;
 }
 
 /** 동기화 모듈용: 다른 기기에서 받은 기록 저장 (이미 업로드됨 + 원래 기기가 pool로 보냈으므로 pooled도 1) */
-export async function mergeRemote(attempts: Attempt[], flags: Flag[]): Promise<void> {
-  await db.transaction('rw', db.attempts, db.flags, async () => {
+export async function mergeRemote(remote: { attempts: Attempt[]; flags: Flag[]; sessions: Session[] }): Promise<void> {
+  const { attempts, flags, sessions } = remote;
+  await db.transaction('rw', db.attempts, db.flags, db.sessions, async () => {
     if (attempts.length) await db.attempts.bulkPut(attempts.map((a) => ({ ...a, uploaded: 1 as const, pooled: 1 as const })));
     if (flags.length) await db.flags.bulkPut(flags.map((f) => ({ ...f, uploaded: 1 as const, pooled: 1 as const })));
+    if (sessions.length) await db.sessions.bulkPut(sessions.map((s) => ({ ...s, uploaded: 1 as const })));
   });
 }
 
@@ -155,14 +171,10 @@ export async function markPooled(kind: 'attempts' | 'flags', ids: string[]): Pro
   await table.bulkUpdate(ids.map((key) => ({ key, changes: { pooled: 1 as const } })));
 }
 
-export async function pendingUploads(): Promise<{ attempts: Attempt[]; flags: Flag[] }> {
-  return {
-    attempts: (await db.attempts.where('uploaded').equals(0).toArray()).map(strip<Attempt>),
-    flags: (await db.flags.where('uploaded').equals(0).toArray()).map(strip<Flag>),
-  };
+export async function pendingUploads(kind: RecordKind): Promise<{ id: string }[]> {
+  return (await table(kind).where('uploaded').equals(0).toArray()).map(strip);
 }
 
-export async function markUploaded(kind: 'attempts' | 'flags', ids: string[]): Promise<void> {
-  const table = kind === 'attempts' ? db.attempts : db.flags;
-  await table.bulkUpdate(ids.map((key) => ({ key, changes: { uploaded: 1 as const } })));
+export async function markUploaded(kind: RecordKind, ids: string[]): Promise<void> {
+  await table(kind).bulkUpdate(ids.map((key) => ({ key, changes: { uploaded: 1 as const } })));
 }

@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 /**
  * 기기별 편의 설정과 진행 중 세션 (localStorage).
  * 저장이 막힌 환경(사생활 보호 모드 등)에서도 앱은 동작해야 하므로 모든 접근을 try/catch로 감싼다.
@@ -36,14 +38,16 @@ export const THEME_OPTIONS: readonly (readonly [Theme, string])[] = [
   ['dark', '어둡게'],
 ];
 
-export interface Prefs {
+/** 필드마다 기본값으로 대체 → 손상·이전 버전 값이 섞여도 버전 번호·마이그레이션 없이 읽힌다 (형식이 호환 안 되게 바뀌면 그때 버전 필드) */
+const prefsSchema = z.object({
   /** true면 선택 후 한 번 더 눌러야 제출 (흔들리는 차 안 오탭 방지) */
-  confirmBeforeSubmit: boolean;
-  theme: Theme;
-}
+  confirmBeforeSubmit: z.boolean().catch(false),
+  theme: z.enum(['system', 'light', 'dark']).catch('system'),
+});
+export type Prefs = z.infer<typeof prefsSchema>;
 
 const PREFS_KEY = 'prefs';
-export const loadPrefs = (): Prefs => readJson<Prefs>(PREFS_KEY, { confirmBeforeSubmit: false, theme: 'system' });
+export const loadPrefs = (): Prefs => prefsSchema.parse(readJson<object>(PREFS_KEY, {}));
 export const savePrefs = (p: Prefs) => writeJson(PREFS_KEY, p);
 
 /** styles.css --bg와 같은 값 (meta theme-color는 CSS 변수를 못 읽는다) */

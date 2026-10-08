@@ -2,7 +2,7 @@
  * 기기 간 기록 동기화 (Firebase Auth 이메일/비밀번호 + Firestore).
  *
  * 구조: 로컬(IndexedDB)이 원본. 로그인 상태면
- *  - push: 아직 올리지 않은 기록(uploaded=0)을 users/{uid}/{attempts|flags}/{id}에 set
+ *  - push: 아직 올리지 않은 기록(uploaded=0)을 users/{uid}/{attempts|flags|sessions}/{id}에 set
  *  - pull: 마지막으로 받은 이후 syncedAt이 바뀐 문서를 받아 로컬에 병합
  * 기록은 추가만 하므로(append-only) 같은 id를 여러 번 써도 충돌이 없다.
  *
@@ -13,8 +13,8 @@ import type { FirebaseApp } from 'firebase/app';
 import type { Auth, User } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
 import { readJson, writeJson } from '../app/prefs';
-import { markUploaded, mergeRemote, onLocalWrite, pendingUploads } from './records';
-import type { Attempt, Flag } from './types';
+import { markUploaded, mergeRemote, onLocalWrite, pendingUploads, type RecordKind } from './records';
+import type { Attempt, Flag, Session } from './types';
 
 const env = import.meta.env;
 const firebaseConfig = {
@@ -66,13 +66,13 @@ export function loadServices() {
 }
 
 const pullKey = (uid: string) => `sync-pulled-${uid}`;
+const KINDS: readonly RecordKind[] = ['attempts', 'flags', 'sessions'];
 
 async function push(uid: string): Promise<void> {
   const { db } = await loadServices();
   const { doc, serverTimestamp, writeBatch } = await import('firebase/firestore');
-  const pending = await pendingUploads();
-  for (const kind of ['attempts', 'flags'] as const) {
-    const rows: (Attempt | Flag)[] = pending[kind];
+  for (const kind of KINDS) {
+    const rows = await pendingUploads(kind);
     for (let i = 0; i < rows.length; i += 400) {
       const chunk = rows.slice(i, i + 400);
       const batch = writeBatch(db);
@@ -88,7 +88,7 @@ async function pull(uid: string): Promise<void> {
   const { collection, getDocs, orderBy, query, Timestamp, where } = await import('firebase/firestore');
   const since = readJson<{ ms: number }>(pullKey(uid), { ms: 0 }).ms;
   let newest = since;
-  const fetch = async <T>(kind: 'attempts' | 'flags') => {
+  const fetch = async <T>(kind: RecordKind) => {
     const snap = await getDocs(
       query(collection(db, 'users', uid, kind), where('syncedAt', '>', Timestamp.fromMillis(since)), orderBy('syncedAt')),
     );
@@ -98,8 +98,12 @@ async function pull(uid: string): Promise<void> {
       return rest as T;
     });
   };
-  const [attempts, flags] = await Promise.all([fetch<Attempt>('attempts'), fetch<Flag>('flags')]);
-  await mergeRemote(attempts, flags);
+  const [attempts, flags, sessions] = await Promise.all([
+    fetch<Attempt>('attempts'),
+    fetch<Flag>('flags'),
+    fetch<Session>('sessions'),
+  ]);
+  await mergeRemote({ attempts, flags, sessions });
   writeJson(pullKey(uid), { ms: newest });
 }
 

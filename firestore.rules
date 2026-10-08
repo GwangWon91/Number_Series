@@ -1,6 +1,6 @@
 rules_version = '2';
 // Firebase 콘솔 → Firestore → 규칙 에 붙여넣어 게시한다 (docs/deploy.md).
-//  - users/{uid}/…  : 각 사용자는 자기 기록만 읽고 쓴다 (기기 간 동기화)
+//  - users/{uid}/…  : 각 사용자는 자기 기록(attempts·flags·sessions)만 읽고 쓴다 (기기 간 동기화)
 //  - poolAttempts / poolFlags : 익명 풀이 기록. 누구나 "생성"만, 읽기는 소유자만, 수정·삭제 금지
 //    OWNER_UID 를 소유자 계정의 uid로 바꿔서 게시할 것 (Firebase 콘솔 → Authentication → 사용자)
 service cloud.firestore {
@@ -22,7 +22,7 @@ service cloud.firestore {
 
     match /users/{uid}/{collection}/{docId} {
       allow read, write: if request.auth != null && request.auth.uid == uid
-        && collection in ['attempts', 'flags'];
+        && collection in ['attempts', 'flags', 'sessions'];
     }
 
     match /poolAttempts/{id} {

@@ -10,6 +10,9 @@ export interface PracticeState {
   elapsedMs: number;
   attemptId: string | null;
   flagged: boolean;
+  /** 현재 세션 (나가면 Session으로 저장하고 새로 시작) */
+  sessionId: string;
+  sessionStart: number;
   solved: number;
   correct: number;
   /** 최근 문항 키 (반복 출제 회피) */
@@ -23,6 +26,7 @@ export function loadPractice(mode: string): PracticeState | null {
   const s = readJson<Partial<PracticeState>>(KEY, {});
   const ok =
     s.mode === mode &&
+    typeof s.sessionId === 'string' &&
     Array.isArray(s.item?.terms) &&
     Array.isArray(s.item?.choices) &&
     Array.isArray(s.recent) &&
