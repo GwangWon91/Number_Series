@@ -13,6 +13,7 @@ SKCT 인지역량 '수열추리'를 폰·노트북에서 끊김 없이 연습하
 | `npm test` | 엔진 단위 테스트 |
 | `npm run typecheck` / `npm run build` | 타입 검사 / 배포 빌드 |
 | `npm run sample -- [--type <id>] [--n 60] [--compare]` | 생성 문항 HTML 리포트 (`reports/`), `--compare`면 문제은행과 나란히 + 형식 통계 |
+| `npm run ship` | 현재 브랜치를 PR → CI → 병합 → 릴리스 → Pages 배포까지 (아래 "브랜치·커밋·릴리스") |
 | `npm run calibrate` | `data/feedback/*.json`(앱에서 내보낸 기록) 집계 → 조정 후보 제안 |
 
 ## 구조
@@ -72,6 +73,9 @@ scripts/                    validate / sample / calibrate / make-icons
 
 ## 브랜치·커밋·릴리스
 - `main`에 직접 push하지 않는다. 브랜치(`feat/…`, `fix/…`, `chore/…`) → PR → CI(`.github/workflows/ci.yml`) 통과 → 병합.
+- **배포는 Claude가 끝까지 한다**: 작업 브랜치에서 커밋을 마친 뒤 `npm run ship` (`scripts/ship.sh`).
+  push → PR(없으면 커밋으로 생성, 있으면 재사용) → CI 대기 → 병합 → release-please 릴리스 PR의 CI 대기(안 돌면 직접 실행) → 병합 → Pages 배포 확인.
+  릴리스할 커밋이 없으면 병합까지만. CI가 실패하면 멈추므로 고쳐서 다시 실행한다. 사람의 병합 승인은 필요 없다(사용자 결정, 2026-10-08).
 - 커밋 메시지는 Conventional Commits. release-please가 이걸로 다음 버전과 CHANGELOG를 만든다.
   - `feat(scope): …` 새 기능(마이너↑), `fix(scope): …` 버그(패치↑), `config: …` 출제 설정 보정, `docs`·`refactor`·`test`·`chore`·`ci`는 버전 안 올림
   - scope: `engine` · `ui` · `store` · `config` · `bank` · `scripts`
