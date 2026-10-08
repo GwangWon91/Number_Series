@@ -13,3 +13,4 @@ data/feedback/*
 # 비교 리포트 (기출 원문이 포함될 수 있음)
 reports/*
 !reports/.gitkeep
+.claude/
