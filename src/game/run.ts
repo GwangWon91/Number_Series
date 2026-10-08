@@ -8,8 +8,11 @@
 import type { Scoring } from './modes';
 
 export const CHECKPOINT_EVERY = 10;
-/** 점수 체계 버전. 최고 기록은 같은 버전끼리만 비교한다 (v1: v0.8 이전의 큰 점수) */
-export const SCORE_VERSION = 2;
+/**
+ * 점수 체계 버전. 최고 기록은 같은 버전끼리만 비교한다.
+ * v1: v0.8 이전의 큰 점수 · v2: 모드별 scoring (v0.9.0) · v3: 실전 = 정답 1점·20점 만점
+ */
+export const SCORE_VERSION = 3;
 
 /** 10문제 구간 하나의 결과 */
 export interface Checkpoint {
