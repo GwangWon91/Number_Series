@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.12.0](https://github.com/GwangWon91/Number_Series/compare/v0.11.0...v0.12.0) (2026-10-08)
+
+
+### 새 기능
+
+* **bank:** 변형 문항에 출제 유형 보존 ([49067c0](https://github.com/GwangWon91/Number_Series/commit/49067c063e6bb2a1bc83cae7b3e7974613aade5c))
+
+
+### 문서
+
+* 출제 유형 주기적 검토 절차(체크리스트 D)와 typeId 필수 규칙 ([8446f4c](https://github.com/GwangWon91/Number_Series/commit/8446f4c881398f595c6863f3587dd2065d5610dc))
+
 ## [0.11.0](https://github.com/GwangWon91/Number_Series/compare/v0.10.0...v0.11.0) (2026-10-08)
 
 
